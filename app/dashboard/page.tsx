@@ -167,7 +167,9 @@ export default async function DashboardPage() {
                     <span className="text-lg font-bold text-foreground">
                       {"₹"}{Number(session.price).toFixed(0)}
                     </span>
-                    <Button size="sm">Book now</Button>
+                    <Button size="sm" asChild>
+                      <Link href="/dashboard/sessions">Book now</Link>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
