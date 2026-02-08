@@ -44,6 +44,7 @@ export async function updateSession(request: NextRequest) {
   if (
     // if the user is not logged in and a protected path is accessed, redirect to the login page
     (request.nextUrl.pathname.startsWith('/dashboard') ||
+     request.nextUrl.pathname.startsWith('/onboarding') ||
      request.nextUrl.pathname.startsWith('/protected')) &&
     !user
   ) {

@@ -16,7 +16,20 @@ export default async function DashboardLayout({
     redirect("/auth/login")
   }
 
+  // Check onboarding status
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("onboarding_complete, display_name, full_name")
+    .eq("id", user.id)
+    .single()
+
+  if (!profile?.onboarding_complete) {
+    redirect("/onboarding")
+  }
+
   const userName =
+    profile?.display_name ||
+    profile?.full_name ||
     user.user_metadata?.full_name ||
     user.user_metadata?.display_name ||
     user.email?.split("@")[0] ||
