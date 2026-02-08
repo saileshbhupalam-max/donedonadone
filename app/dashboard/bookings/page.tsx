@@ -15,6 +15,8 @@ import {
   Star,
   IndianRupee,
   RotateCcw,
+  UsersRound,
+  LogIn,
 } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
@@ -38,10 +40,13 @@ const statusLabels: Record<string, string> = {
 
 interface Booking {
   id: string
+  session_id: string
+  group_id: string | null
   status: string
   amount: number
   booked_at: string
   sessions: {
+    id: string
     title: string
     session_date: string
     start_time: string
@@ -233,18 +238,37 @@ export default function BookingsPage() {
                             </span>
                           </div>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCancel(b.id)}
-                          disabled={cancelling === b.id}
-                          className="shrink-0 text-destructive hover:bg-destructive/5 hover:text-destructive"
-                        >
-                          {cancelling === b.id && (
-                            <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                        <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                          {/* Session-day contextual links */}
+                          {b.group_id && b.sessions?.session_date === today && (
+                            <Button variant="outline" size="sm" asChild>
+                              <Link href={`/session/${b.session_id}/group`}>
+                                <UsersRound className="mr-1 h-3 w-3" />
+                                View Group
+                              </Link>
+                            </Button>
                           )}
-                          Cancel
-                        </Button>
+                          {b.sessions?.session_date === today && (
+                            <Button variant="outline" size="sm" asChild>
+                              <Link href={`/session/${b.session_id}/checkin`}>
+                                <LogIn className="mr-1 h-3 w-3" />
+                                Check In
+                              </Link>
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCancel(b.id)}
+                            disabled={cancelling === b.id}
+                            className="text-destructive hover:bg-destructive/5 hover:text-destructive"
+                          >
+                            {cancelling === b.id && (
+                              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                            )}
+                            Cancel
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -297,9 +321,12 @@ export default function BookingsPage() {
                           variant="outline"
                           size="sm"
                           className="shrink-0"
+                          asChild
                         >
-                          <Star className="mr-1 h-3.5 w-3.5" />
-                          Rate Session
+                          <Link href={`/session/${b.session_id}/feedback`}>
+                            <Star className="mr-1 h-3.5 w-3.5" />
+                            Rate Session
+                          </Link>
                         </Button>
                       </div>
                     </CardContent>

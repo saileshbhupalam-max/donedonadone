@@ -20,7 +20,7 @@ import {
   Loader2,
 } from "lucide-react"
 
-const PLATFORM_FEE = 100
+import { PLATFORM_FEE_2HR } from "@/lib/config"
 
 type Step = "confirm" | "payment" | "success"
 
@@ -58,7 +58,7 @@ export function BookingSheet({
   const [error, setError] = useState<string | null>(null)
 
   const price = Number(session.price)
-  const venueFee = Math.max(price - PLATFORM_FEE, 0)
+  const venueFee = Math.max(price - PLATFORM_FEE_2HR, 0)
 
   const handleClose = () => {
     setStep("confirm")
@@ -144,7 +144,7 @@ export function BookingSheet({
                 </h4>
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <span>Platform fee</span>
-                  <span>{"₹"}{PLATFORM_FEE}</span>
+                  <span>{"₹"}{PLATFORM_FEE_2HR}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <span>Venue charge</span>

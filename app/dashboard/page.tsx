@@ -15,16 +15,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 
-const vibeColors: Record<string, string> = {
-  deep_focus: "bg-teal-100 text-teal-800",
-  casual_social: "bg-amber-100 text-amber-800",
-  balanced: "bg-stone-200 text-stone-700",
-}
-const vibeLabels: Record<string, string> = {
-  deep_focus: "Deep Focus",
-  casual_social: "Casual Social",
-  balanced: "Balanced",
-}
+import { VIBE_CONFIG } from "@/lib/config"
 
 function timeDiffHours(start: string, end: string): number {
   const [sh, sm] = start.split(":").map(Number)
@@ -291,10 +282,10 @@ export default async function DashboardPage() {
                       {session.title}
                     </CardTitle>
                     <Badge
-                      className={vibeColors[session.vibe] || vibeColors.balanced}
+                      className={VIBE_CONFIG[session.vibe]?.className || VIBE_CONFIG.balanced.className}
                       variant="secondary"
                     >
-                      {vibeLabels[session.vibe] || session.vibe}
+                      {VIBE_CONFIG[session.vibe]?.label || session.vibe}
                     </Badge>
                   </div>
                 </CardHeader>

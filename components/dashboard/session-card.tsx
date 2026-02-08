@@ -3,52 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  CalendarDays,
-  Clock,
-  MapPin,
-  Wifi,
-  Plug,
-  Coffee,
-  DoorOpen,
-  Monitor,
-  Printer,
-  Phone,
-  VolumeX,
-} from "lucide-react"
-
-const vibeConfig: Record<string, { label: string; className: string }> = {
-  deep_focus: { label: "Deep Focus", className: "bg-teal-100 text-teal-800" },
-  casual_social: {
-    label: "Casual Social",
-    className: "bg-amber-100 text-amber-800",
-  },
-  balanced: { label: "Balanced", className: "bg-stone-200 text-stone-700" },
-}
-
-const amenityIcons: Record<string, React.ElementType> = {
-  wifi: Wifi,
-  power_outlets: Plug,
-  coffee: Coffee,
-  meeting_rooms: DoorOpen,
-  standing_desks: Monitor,
-  printer: Printer,
-  phone_booths: Phone,
-  quiet_zone: VolumeX,
-}
-
-const amenityLabels: Record<string, string> = {
-  wifi: "Wi-Fi",
-  power_outlets: "Outlets",
-  coffee: "Coffee",
-  meeting_rooms: "Meeting Rooms",
-  standing_desks: "Standing Desks",
-  printer: "Printer",
-  phone_booths: "Phone Booths",
-  quiet_zone: "Quiet Zone",
-}
-
-const PLATFORM_FEE = 100
+import { CalendarDays, Clock, MapPin } from "lucide-react"
+import { VIBE_CONFIG, AMENITY_ICONS, AMENITY_LABELS, PLATFORM_FEE_2HR } from "@/lib/config"
 
 interface SessionCardProps {
   session: {
@@ -82,9 +38,9 @@ export function SessionCard({
   isBooked,
   isLoading,
 }: SessionCardProps) {
-  const vibe = vibeConfig[session.vibe] || vibeConfig.balanced
+  const vibe = VIBE_CONFIG[session.vibe] || VIBE_CONFIG.balanced
   const price = Number(session.price)
-  const venueFee = Math.max(price - PLATFORM_FEE, 0)
+  const venueFee = Math.max(price - PLATFORM_FEE_2HR, 0)
   const spotsPercent =
     (session.current_participants / session.max_participants) * 100
   const spotsLeft = session.max_participants - session.current_participants
@@ -137,15 +93,15 @@ export function SessionCard({
         {session.venues?.amenities && session.venues.amenities.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {session.venues.amenities.slice(0, 5).map((amenity) => {
-              const Icon = amenityIcons[amenity]
+              const Icon = AMENITY_ICONS[amenity]
               return (
                 <span
                   key={amenity}
                   className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground"
-                  title={amenityLabels[amenity] || amenity}
+                  title={AMENITY_LABELS[amenity] || amenity}
                 >
                   {Icon && <Icon className="h-3 w-3" />}
-                  {amenityLabels[amenity] || amenity}
+                  {AMENITY_LABELS[amenity] || amenity}
                 </span>
               )
             })}
@@ -197,7 +153,7 @@ export function SessionCard({
               {"₹"}{price.toFixed(0)}
             </span>
             <p className="text-[11px] leading-tight text-muted-foreground">
-              {"₹"}{PLATFORM_FEE} platform + {"₹"}{venueFee.toFixed(0)} venue
+              {"₹"}{PLATFORM_FEE_2HR} platform + {"₹"}{venueFee.toFixed(0)} venue
             </p>
           </div>
           <Button
