@@ -88,3 +88,47 @@ export const COMM_STYLE_CONFIG: Record<string, { label: string; className: strin
   moderate: { label: "Moderate", className: "bg-cyan-100 text-cyan-800" },
   chatty: { label: "Chatty", className: "bg-pink-100 text-pink-800" },
 }
+
+// ── Trust Tiers (reputation badges) ──────────────────
+export const TRUST_TIER_CONFIG = [
+  { min: 0, max: 2, label: "New Member", className: "bg-stone-100 text-stone-600", icon: "Sprout" },
+  { min: 3, max: 10, label: "Rising", className: "bg-blue-100 text-blue-700", icon: "TrendingUp" },
+  { min: 11, max: 25, label: "Trusted", className: "bg-teal-100 text-teal-700", icon: "Shield" },
+  { min: 26, max: 50, label: "Community Pillar", className: "bg-amber-100 text-amber-700", icon: "Award" },
+  { min: 51, max: Infinity, label: "OG", className: "bg-purple-100 text-purple-700", icon: "Crown" },
+] as const
+
+export function getTrustTier(sessionsCompleted: number) {
+  return TRUST_TIER_CONFIG.find(
+    (t) => sessionsCompleted >= t.min && sessionsCompleted <= t.max
+  ) || TRUST_TIER_CONFIG[0]
+}
+
+export function getNextTier(sessionsCompleted: number) {
+  const currentIdx = TRUST_TIER_CONFIG.findIndex(
+    (t) => sessionsCompleted >= t.min && sessionsCompleted <= t.max
+  )
+  return currentIdx < TRUST_TIER_CONFIG.length - 1
+    ? TRUST_TIER_CONFIG[currentIdx + 1]
+    : null
+}
+
+// ── Member Rating Tags ───────────────────────────────
+export const MEMBER_RATING_TAGS = [
+  { value: "helpful", label: "Helpful" },
+  { value: "focused", label: "Focused" },
+  { value: "fun", label: "Fun" },
+  { value: "great-conversation", label: "Great Conversation" },
+  { value: "good-energy", label: "Good Energy" },
+] as const
+
+// ── Venue Rating Dimensions ──────────────────────────
+export const VENUE_RATING_DIMENSIONS = [
+  { key: "venue_wifi", label: "WiFi", weight: 0.20 },
+  { key: "venue_ambiance", label: "Ambiance", weight: 0.20 },
+  { key: "venue_fnb", label: "Food & Drinks", weight: 0.20 },
+  { key: "venue_service", label: "Service", weight: 0.15 },
+  { key: "venue_power", label: "Power Outlets", weight: 0.10 },
+  { key: "venue_noise", label: "Noise Level", weight: 0.10 },
+  { key: "venue_cleanliness", label: "Cleanliness", weight: 0.05 },
+] as const

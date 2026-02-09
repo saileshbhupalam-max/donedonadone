@@ -21,6 +21,7 @@ export default function SignUpPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [repeatPassword, setRepeatPassword] = useState('')
+  const [referralCode, setReferralCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -52,6 +53,20 @@ export default function SignUpPage() {
         },
       })
       if (error) throw error
+
+      // Apply referral code if provided
+      if (referralCode.trim()) {
+        try {
+          await fetch('/api/referrals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: referralCode.trim() }),
+          })
+        } catch {
+          // Referral is optional, don't block signup
+        }
+      }
+
       router.push('/auth/sign-up-success')
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'An error occurred')
@@ -121,6 +136,17 @@ export default function SignUpPage() {
                       required
                       value={repeatPassword}
                       onChange={(e) => setRepeatPassword(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="referral-code">Referral code (optional)</Label>
+                    <Input
+                      id="referral-code"
+                      type="text"
+                      placeholder="e.g., SAIL1234"
+                      value={referralCode}
+                      onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                      className="font-mono uppercase"
                     />
                   </div>
                   {error && (

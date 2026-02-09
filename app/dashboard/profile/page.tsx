@@ -24,8 +24,16 @@ import {
   CloudSun,
   Sunset,
   Moon,
+  Share2,
+  Copy,
+  TrendingUp,
+  Users,
+  CalendarCheck,
+  Star,
+  Flame,
 } from "lucide-react"
 import { SignOutButton } from "@/components/dashboard/sign-out-button"
+import { getTrustTier } from "@/lib/config"
 
 const workTypeLabels: Record<string, string> = {
   freelancer: "Freelancer",
@@ -101,6 +109,32 @@ export default async function ProfilePage() {
       })
     : "Unknown"
 
+  // Fetch user stats
+  let userStats = { sessions_completed: 0, unique_coworkers: 0, venues_visited: 0, avg_rating_received: 0, hours_focused: 0 }
+  const { data: statsData } = await supabase.rpc("get_user_stats", { p_user_id: user?.id || "" })
+  if (statsData) userStats = statsData
+
+  // Fetch reputation score
+  let reputation = { score: 0, attendance: 0, cowork_again_rate: 0, avg_energy: 0, session_score: 0, streak_score: 0, feedback_score: 0, total_ratings: 0, sessions_completed: 0 }
+  const { data: repData } = await supabase.rpc("compute_coworker_score", { p_user_id: user?.id || "" })
+  if (repData) reputation = repData
+
+  // Fetch streak
+  const { data: streakData } = await supabase
+    .from("user_streaks")
+    .select("current_streak, longest_streak")
+    .eq("user_id", user?.id || "")
+    .single()
+
+  // Fetch referral code
+  const { data: referralCode } = await supabase
+    .from("referral_codes")
+    .select("code, uses")
+    .eq("user_id", user?.id || "")
+    .single()
+
+  const tier = getTrustTier(userStats.sessions_completed)
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -158,6 +192,85 @@ export default async function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* ---- Stats & Reputation ---- */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Card className="border-border">
+          <CardContent className="flex flex-col items-center gap-1 p-4 text-center">
+            <CalendarCheck className="h-5 w-5 text-primary" />
+            <p className="text-2xl font-bold text-foreground">{userStats.sessions_completed}</p>
+            <p className="text-xs text-muted-foreground">Sessions</p>
+          </CardContent>
+        </Card>
+        <Card className="border-border">
+          <CardContent className="flex flex-col items-center gap-1 p-4 text-center">
+            <Users className="h-5 w-5 text-secondary" />
+            <p className="text-2xl font-bold text-foreground">{userStats.unique_coworkers}</p>
+            <p className="text-xs text-muted-foreground">People Met</p>
+          </CardContent>
+        </Card>
+        <Card className="border-border">
+          <CardContent className="flex flex-col items-center gap-1 p-4 text-center">
+            <Star className="h-5 w-5 text-amber-500" />
+            <p className="text-2xl font-bold text-foreground">{reputation.score || "—"}</p>
+            <p className="text-xs text-muted-foreground">Coworker Score</p>
+          </CardContent>
+        </Card>
+        <Card className="border-border">
+          <CardContent className="flex flex-col items-center gap-1 p-4 text-center">
+            <Flame className="h-5 w-5 text-orange-500" />
+            <p className="text-2xl font-bold text-foreground">{streakData?.current_streak || 0}</p>
+            <p className="text-xs text-muted-foreground">Week Streak</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ---- Trust Tier ---- */}
+      <Card className="border-border">
+        <CardContent className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
+            <div className={`flex items-center gap-2 rounded-full px-3 py-1.5 ${tier.className}`}>
+              <TrendingUp className="h-4 w-4" />
+              <span className="text-sm font-semibold">{tier.label}</span>
+            </div>
+            <span className="text-sm text-muted-foreground">
+              {userStats.sessions_completed} sessions completed
+            </span>
+          </div>
+          {streakData?.longest_streak ? (
+            <span className="text-xs text-muted-foreground">
+              Longest streak: {streakData.longest_streak}w
+            </span>
+          ) : null}
+        </CardContent>
+      </Card>
+
+      {/* ---- Referral Code ---- */}
+      {referralCode && (
+        <Card className="border-border">
+          <CardContent className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-3">
+              <Share2 className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Your Referral Code</p>
+                <p className="font-mono text-lg font-bold text-primary">{referralCode.code}</p>
+                <p className="text-xs text-muted-foreground">
+                  {referralCode.uses} referral{referralCode.uses !== 1 ? "s" : ""} used
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {}}
+              title="Share link will be copied"
+            >
+              <Copy className="mr-1 h-3 w-3" />
+              Copy
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* ---- Personal Info ---- */}

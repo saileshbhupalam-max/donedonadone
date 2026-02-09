@@ -12,10 +12,13 @@ import {
   Hourglass,
   CalendarCheck,
   Star,
+  Flame,
+  TrendingUp,
+  Crown,
 } from "lucide-react"
 import Link from "next/link"
 
-import { VIBE_CONFIG } from "@/lib/config"
+import { VIBE_CONFIG, getTrustTier, getNextTier } from "@/lib/config"
 
 function timeDiffHours(start: string, end: string): number {
   const [sh, sm] = start.split(":").map(Number)
@@ -45,32 +48,69 @@ export default async function DashboardPage() {
     .from("bookings")
     .select("*, sessions(*, venues(*))")
     .eq("user_id", userId)
-    .neq("status", "cancelled")
-    .order("booked_at", { ascending: false })
+    .neq("payment_status", "cancelled")
+    .order("created_at", { ascending: false })
 
   const bookings = allBookings || []
 
   // Split into past + upcoming
   const pastBookings = bookings.filter(
-    (b) => b.sessions && b.sessions.session_date < today
+    (b) => b.sessions && b.sessions.date < today
   )
   const upcomingBookings = bookings.filter(
-    (b) => b.sessions && b.sessions.session_date >= today
+    (b) => b.sessions && b.sessions.date >= today
   )
 
   // This month bookings
   const thisMonthCount = pastBookings.filter(
-    (b) => b.sessions && b.sessions.session_date >= monthStart
+    (b) => b.sessions && b.sessions.date >= monthStart
   ).length
 
-  // Hours focused
-  const hoursFocused = pastBookings.reduce((sum, b) => {
-    if (!b.sessions) return sum
-    return sum + timeDiffHours(b.sessions.start_time, b.sessions.end_time)
-  }, 0)
+  // Get real stats from get_user_stats RPC
+  let stats = {
+    sessions_completed: pastBookings.length,
+    unique_coworkers: 0,
+    venues_visited: 0,
+    avg_rating_received: 0,
+    hours_focused: 0,
+    member_since: user?.created_at || "",
+  }
 
-  // People met (estimate: avg 4 per session minus self)
-  const peopleMet = pastBookings.length * 3
+  const { data: statsData } = await supabase.rpc("get_user_stats", {
+    p_user_id: userId,
+  })
+  if (statsData) {
+    stats = statsData
+  }
+
+  // Fallback hours if RPC not available
+  if (!stats.hours_focused) {
+    stats.hours_focused = pastBookings.reduce((sum, b) => {
+      if (!b.sessions) return sum
+      return sum + timeDiffHours(b.sessions.start_time, b.sessions.end_time)
+    }, 0)
+  }
+
+  // Streak data
+  const { data: streakData } = await supabase
+    .from("user_streaks")
+    .select("current_streak, longest_streak")
+    .eq("user_id", userId)
+    .single()
+
+  const currentStreak = streakData?.current_streak || 0
+
+  // Subscription status
+  const { data: subscription } = await supabase
+    .from("user_subscriptions")
+    .select("*, subscription_plans(name, sessions_per_month)")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .single()
+
+  // Trust tier
+  const tier = getTrustTier(stats.sessions_completed)
+  const nextTier = getNextTier(stats.sessions_completed)
 
   // Next session
   const nextBooking = upcomingBookings.length > 0 ? upcomingBookings[upcomingBookings.length - 1] : null
@@ -84,16 +124,46 @@ export default async function DashboardPage() {
     .from("sessions")
     .select("*, venues(*)")
     .eq("status", "upcoming")
-    .gte("session_date", today)
-    .order("session_date", { ascending: true })
+    .gte("date", today)
+    .order("date", { ascending: true })
     .limit(10)
 
   const recommendedSessions = (recommended || [])
     .filter((s) => !bookedSessionIds.includes(s.id))
     .slice(0, 3)
 
+  // Favorites
+  const { data: favorites } = await supabase
+    .from("favorite_coworkers")
+    .select("favorite_user_id, profiles:favorite_user_id(display_name, avatar_url)")
+    .eq("user_id", userId)
+    .limit(5)
+
   return (
     <div className="flex flex-col gap-6">
+      {/* ---- Streak + Tier Banner ---- */}
+      <div className="flex flex-wrap items-center gap-3">
+        {currentStreak > 0 && (
+          <div className="flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5">
+            <Flame className="h-4 w-4 text-orange-500" />
+            <span className="text-sm font-semibold text-orange-700">{currentStreak}-week streak</span>
+          </div>
+        )}
+        <div className={`flex items-center gap-2 rounded-full px-3 py-1.5 ${tier.className}`}>
+          <TrendingUp className="h-4 w-4" />
+          <span className="text-sm font-semibold">{tier.label}</span>
+        </div>
+        {subscription && (
+          <div className="flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5">
+            <Crown className="h-4 w-4 text-violet-600" />
+            <span className="text-sm font-semibold text-violet-700">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              {(subscription as any).subscription_plans?.name} Plan
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* ---- Quick Stats ---- */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card className="border-border">
@@ -102,7 +172,7 @@ export default async function DashboardPage() {
               <CalendarCheck className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-foreground">{pastBookings.length}</p>
+              <p className="text-2xl font-bold text-foreground">{stats.sessions_completed}</p>
               <p className="text-xs text-muted-foreground">Sessions attended</p>
             </div>
           </CardContent>
@@ -113,7 +183,7 @@ export default async function DashboardPage() {
               <Users className="h-5 w-5 text-secondary" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-foreground">{peopleMet}</p>
+              <p className="text-2xl font-bold text-foreground">{stats.unique_coworkers}</p>
               <p className="text-xs text-muted-foreground">People met</p>
             </div>
           </CardContent>
@@ -124,7 +194,7 @@ export default async function DashboardPage() {
               <Hourglass className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-foreground">{Math.round(hoursFocused)}</p>
+              <p className="text-2xl font-bold text-foreground">{Math.round(stats.hours_focused)}</p>
               <p className="text-xs text-muted-foreground">Hours focused</p>
             </div>
           </CardContent>
@@ -142,6 +212,54 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
+      {/* ---- Trust Tier Progress ---- */}
+      {nextTier && (
+        <Card className="border-border">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                <span className="font-medium text-foreground">{stats.sessions_completed}</span> sessions
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-medium text-foreground">{nextTier.min}</span> for {nextTier.label}
+              </span>
+            </div>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{
+                  width: `${Math.min((stats.sessions_completed / nextTier.min) * 100, 100)}%`,
+                }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ---- Subscription Status ---- */}
+      {subscription && (
+        <Card className="border-border">
+          <CardContent className="flex items-center justify-between p-4">
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {(subscription as any).subscription_plans?.name} Plan
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {(subscription as any).subscription_plans?.sessions_per_month
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  ? `${subscription.sessions_used}/${(subscription as any).subscription_plans.sessions_per_month} sessions used`
+                  : `${subscription.sessions_used} sessions used (unlimited)`}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/pricing">Manage</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* ---- Next Session ---- */}
       <div>
         <h2 className="mb-3 text-lg font-semibold text-foreground">
@@ -152,7 +270,7 @@ export default async function DashboardPage() {
             <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-col gap-2">
                 <h3 className="text-xl font-bold">
-                  {nextBooking.sessions.title}
+                  Coworking Session
                 </h3>
                 <div className="flex flex-col gap-1 text-sm text-teal-100">
                   <span className="flex items-center gap-2">
@@ -162,7 +280,7 @@ export default async function DashboardPage() {
                   <span className="flex items-center gap-2">
                     <CalendarDays className="h-4 w-4" />
                     {new Date(
-                      nextBooking.sessions.session_date
+                      nextBooking.sessions.date
                     ).toLocaleDateString("en-IN", {
                       weekday: "long",
                       month: "short",
@@ -176,7 +294,7 @@ export default async function DashboardPage() {
                   </span>
                 </div>
                 <p className="mt-1 text-sm text-teal-200">
-                  {nextBooking.sessions.current_participants}/{nextBooking.sessions.max_participants} coworkers confirmed
+                  {nextBooking.sessions.spots_filled}/{nextBooking.sessions.max_spots} coworkers confirmed
                 </p>
               </div>
               <div className="flex gap-2">
@@ -186,7 +304,7 @@ export default async function DashboardPage() {
                   className="bg-white/20 text-white hover:bg-white/30"
                   asChild
                 >
-                  <Link href="/dashboard/sessions">View Details</Link>
+                  <Link href="/dashboard/bookings">View Details</Link>
                 </Button>
               </div>
             </CardContent>
@@ -209,6 +327,32 @@ export default async function DashboardPage() {
         )}
       </div>
 
+      {/* ---- Favorites ---- */}
+      {favorites && favorites.length > 0 && (
+        <div>
+          <h2 className="mb-3 text-lg font-semibold text-foreground">
+            Your Favorites
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {favorites.map((f: Record<string, unknown>) => {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const prof = (f as any).profiles
+              return (
+                <div
+                  key={f.favorite_user_id as string}
+                  className="flex items-center gap-2 rounded-full border border-pink-200 bg-pink-50 px-3 py-1.5"
+                >
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-pink-200 text-xs font-semibold text-pink-700">
+                    {prof?.display_name?.charAt(0)?.toUpperCase() || "?"}
+                  </div>
+                  <span className="text-sm text-pink-700">{prof?.display_name || "Unknown"}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ---- Recent Sessions ---- */}
       {recentBookings.length > 0 && (
         <div>
@@ -228,7 +372,7 @@ export default async function DashboardPage() {
                 <CardContent className="flex items-center justify-between p-4">
                   <div className="flex flex-col gap-0.5">
                     <p className="font-medium text-foreground">
-                      {b.sessions?.title || "Session"}
+                      Coworking Session
                     </p>
                     <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
@@ -236,20 +380,22 @@ export default async function DashboardPage() {
                         {b.sessions?.venues?.name}
                       </span>
                       <span>
-                        {new Date(b.sessions?.session_date).toLocaleDateString(
+                        {new Date(b.sessions?.date).toLocaleDateString(
                           "en-IN",
                           { month: "short", day: "numeric" }
                         )}
                       </span>
                       <span className="flex items-center gap-1">
                         <Users className="h-3 w-3" />
-                        {b.sessions?.current_participants} coworkers
+                        {b.sessions?.spots_filled} coworkers
                       </span>
                     </div>
                   </div>
-                  <Badge variant="outline" className="shrink-0 text-xs">
-                    <Star className="mr-1 h-3 w-3" /> Rate
-                  </Badge>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/session/${b.session_id}/feedback`}>
+                      <Star className="mr-1 h-3 w-3" /> Rate
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -279,14 +425,13 @@ export default async function DashboardPage() {
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-sm text-foreground">
-                      {session.title}
+                      Coworking Session
                     </CardTitle>
-                    <Badge
-                      className={VIBE_CONFIG[session.vibe]?.className || VIBE_CONFIG.balanced.className}
-                      variant="secondary"
-                    >
-                      {VIBE_CONFIG[session.vibe]?.label || session.vibe}
-                    </Badge>
+                    {session.venues?.name && (
+                      <Badge variant="secondary" className="text-xs">
+                        {session.venues.name}
+                      </Badge>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-2">
@@ -297,7 +442,7 @@ export default async function DashboardPage() {
                     </span>
                     <span className="flex items-center gap-1.5">
                       <CalendarDays className="h-3 w-3" />
-                      {new Date(session.session_date).toLocaleDateString(
+                      {new Date(session.date).toLocaleDateString(
                         "en-IN",
                         { weekday: "short", month: "short", day: "numeric" }
                       )}
@@ -309,7 +454,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="mt-2 flex items-center justify-between">
                     <span className="text-base font-bold text-foreground">
-                      {"\u20B9"}{Number(session.price).toFixed(0)}
+                      {"\u20B9"}{session.total_price}
                     </span>
                     <Button size="sm" variant="outline" asChild>
                       <Link href="/dashboard/sessions">Book</Link>
@@ -321,6 +466,19 @@ export default async function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* ---- Monthly Wrapped Link ---- */}
+      <Card className="border-border">
+        <CardContent className="flex items-center justify-between p-4">
+          <div>
+            <p className="text-sm font-medium text-foreground">Monthly Summary</p>
+            <p className="text-xs text-muted-foreground">See your coworking wrapped for this month</p>
+          </div>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard/wrapped">View</Link>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   )
 }

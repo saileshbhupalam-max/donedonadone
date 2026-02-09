@@ -1,8 +1,10 @@
--- Auto-assign groups RPC: greedy compatibility-scored grouping algorithm.
--- Picks a seed user, repeatedly adds highest-compatibility unassigned user.
+-- Auto-assign groups RPC: enhanced greedy compatibility-scored grouping algorithm.
 -- Scoring: work_vibe match = 3pts, noise_pref match = 2pts, comm_style match = 2pts,
---          social_goals overlap = 1pt each, introvert_extrovert within 1 = 1pt.
--- Remainder users merge into last group.
+--          social_goals overlap = 1pt each, introvert_extrovert within 1 = 1pt,
+--          would_cowork_again history = +2pts, favorite bonus = +1pt,
+--          anti-repetition penalty = -5pts per recent co-grouping (last 3 sessions),
+--          streak affinity = +1pt if both are active streakers,
+--          industry diversity = +1pt if different industries.
 
 CREATE OR REPLACE FUNCTION auto_assign_groups(p_session_id UUID)
 RETURNS JSONB AS $$
@@ -29,6 +31,11 @@ DECLARE
   v_goals_a TEXT[];
   v_goals_b TEXT[];
   v_g TEXT;
+  v_history_penalty INTEGER;
+  v_favorite_bonus INTEGER;
+  v_streak_bonus INTEGER;
+  v_diversity_bonus INTEGER;
+  v_cowork_again_bonus INTEGER;
 BEGIN
   -- Get session details
   SELECT * INTO v_session FROM sessions WHERE id = p_session_id;
@@ -48,11 +55,12 @@ BEGIN
     RETURN '{"error": "Not enough users to form groups"}'::JSONB;
   END IF;
 
-  -- Load all preferences into a JSONB map
+  -- Load all preferences into a JSONB map (including industry for diversity)
   FOR v_bookings IN
     SELECT cp.user_id, cp.work_vibe, cp.noise_preference, cp.communication_style,
-           cp.social_goals, cp.introvert_extrovert
+           cp.social_goals, cp.introvert_extrovert, p.industry
     FROM coworker_preferences cp
+    JOIN profiles p ON p.id = cp.user_id
     WHERE cp.user_id = ANY(v_users)
   LOOP
     v_prefs := v_prefs || jsonb_build_object(
@@ -62,7 +70,8 @@ BEGIN
         'noise', v_bookings.noise_preference,
         'comm', v_bookings.communication_style,
         'goals', to_jsonb(v_bookings.social_goals),
-        'ie', v_bookings.introvert_extrovert
+        'ie', v_bookings.introvert_extrovert,
+        'industry', v_bookings.industry
       )
     );
   END LOOP;
@@ -96,7 +105,7 @@ BEGIN
       AND array_length(v_assigned, 1) < array_length(v_users, 1) LOOP
 
       v_best_user := NULL;
-      v_best_score := -1;
+      v_best_score := -999;
 
       -- Score each unassigned candidate against seed
       FOREACH v_candidate IN ARRAY v_users LOOP
@@ -105,6 +114,11 @@ BEGIN
         v_pref_a := v_prefs -> v_seed::TEXT;
         v_pref_b := v_prefs -> v_candidate::TEXT;
         v_score := 0;
+        v_history_penalty := 0;
+        v_favorite_bonus := 0;
+        v_streak_bonus := 0;
+        v_diversity_bonus := 0;
+        v_cowork_again_bonus := 0;
 
         -- work_vibe match = 3pts
         IF v_pref_a IS NOT NULL AND v_pref_b IS NOT NULL THEN
@@ -134,7 +148,44 @@ BEGIN
               v_score := v_score + v_overlap;
             END IF;
           END IF;
+
+          -- Industry diversity bonus = +1pt if different industries
+          IF (v_pref_a ->> 'industry') IS NOT NULL AND (v_pref_b ->> 'industry') IS NOT NULL
+             AND (v_pref_a ->> 'industry') != (v_pref_b ->> 'industry') THEN
+            v_diversity_bonus := 1;
+          END IF;
         END IF;
+
+        -- Anti-repetition penalty: -5 per co-grouping in last 3 sessions
+        SELECT count(*) INTO v_history_penalty
+        FROM group_history gh
+        JOIN sessions s ON s.id = gh.session_id
+        WHERE gh.user_id = v_seed
+          AND gh.co_member_id = v_candidate
+          AND s.date >= (CURRENT_DATE - INTERVAL '30 days')
+        LIMIT 3;
+        v_history_penalty := v_history_penalty * (-5);
+
+        -- Favorite bonus: +1 if seed has favorited candidate
+        SELECT count(*) INTO v_favorite_bonus
+        FROM favorite_coworkers
+        WHERE user_id = v_seed AND favorite_user_id = v_candidate;
+
+        -- Would cowork again bonus: +2 if either rated the other positively
+        SELECT count(*) INTO v_cowork_again_bonus
+        FROM member_ratings
+        WHERE ((from_user = v_seed AND to_user = v_candidate)
+           OR (from_user = v_candidate AND to_user = v_seed))
+          AND would_cowork_again = TRUE;
+        IF v_cowork_again_bonus > 0 THEN v_cowork_again_bonus := 2; END IF;
+
+        -- Streak affinity: +1 if both are active streakers
+        IF EXISTS (SELECT 1 FROM user_streaks WHERE user_id = v_seed AND current_streak > 0)
+           AND EXISTS (SELECT 1 FROM user_streaks WHERE user_id = v_candidate AND current_streak > 0) THEN
+          v_streak_bonus := 1;
+        END IF;
+
+        v_score := v_score + v_history_penalty + v_favorite_bonus + v_cowork_again_bonus + v_streak_bonus + v_diversity_bonus;
 
         IF v_score > v_best_score THEN
           v_best_score := v_score;
@@ -164,7 +215,7 @@ BEGIN
     VALUES (p_session_id, v_group_num)
     RETURNING id INTO v_group_id;
 
-    -- Insert members
+    -- Insert members and log matching outcomes
     FOREACH v_user IN ARRAY v_current_group LOOP
       INSERT INTO group_members (group_id, user_id) VALUES (v_group_id, v_user);
       -- Update booking with group_id
@@ -181,6 +232,9 @@ BEGIN
 
     v_group_num := v_group_num + 1;
   END LOOP;
+
+  -- Populate group history for rotation tracking
+  PERFORM populate_group_history(p_session_id);
 
   RETURN jsonb_build_object('groups', v_result, 'total_groups', v_group_num - 1);
 END;

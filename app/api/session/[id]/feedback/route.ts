@@ -58,11 +58,19 @@ export async function GET(
     .eq("id", sessionId)
     .single()
 
+  // Get user's goals for this session
+  const { data: goals } = await supabase
+    .from("session_goals")
+    .select("id, goal_text, completed")
+    .eq("session_id", sessionId)
+    .eq("user_id", user.id)
+
   return NextResponse.json({
     booking: { id: booking.id },
     existing: existing || null,
     members,
     session,
+    goals: goals || [],
   })
 }
 
@@ -93,35 +101,77 @@ export async function POST(
   }
 
   const body = await request.json()
-  const { overall_rating, tags, comment, member_ratings } = body
+  const { overall_rating, tags, comment, venue_ratings, member_ratings, favorites, goal_completions } = body
 
   if (!overall_rating || overall_rating < 1 || overall_rating > 5) {
     return NextResponse.json({ error: "Rating must be 1-5" }, { status: 400 })
   }
 
-  // Insert session feedback
-  const { error: fbError } = await supabase.from("session_feedback").insert({
+  // Insert session feedback with venue ratings
+  const feedbackRow: Record<string, unknown> = {
     booking_id: booking.id,
     user_id: user.id,
     session_id: sessionId,
     overall_rating,
     tags: tags || [],
     comment: comment || null,
-  })
+  }
+
+  // Add venue dimension ratings if provided
+  if (venue_ratings && typeof venue_ratings === "object") {
+    for (const [key, value] of Object.entries(venue_ratings)) {
+      if (key.startsWith("venue_") && typeof value === "number" && value >= 1 && value <= 5) {
+        feedbackRow[key] = value
+      }
+    }
+  }
+
+  const { error: fbError } = await supabase.from("session_feedback").insert(feedbackRow)
 
   if (fbError) return NextResponse.json({ error: fbError.message }, { status: 500 })
 
-  // Insert member ratings
+  // Insert member ratings (with enhanced fields)
   if (member_ratings && Array.isArray(member_ratings)) {
-    const ratings = member_ratings.map((mr: { to_user: string; would_cowork_again: boolean }) => ({
+    const ratings = member_ratings.map((mr: {
+      to_user: string
+      would_cowork_again: boolean
+      tags?: string[]
+      energy_match?: number | null
+    }) => ({
       from_user: user.id,
       to_user: mr.to_user,
       session_id: sessionId,
       would_cowork_again: mr.would_cowork_again,
+      tags: mr.tags || [],
+      energy_match: mr.energy_match || null,
     }))
 
     if (ratings.length > 0) {
       await supabase.from("member_ratings").insert(ratings)
+    }
+  }
+
+  // Insert favorites
+  if (favorites && Array.isArray(favorites) && favorites.length > 0) {
+    const favRows = favorites.map((favoriteUserId: string) => ({
+      user_id: user.id,
+      favorite_user_id: favoriteUserId,
+    }))
+
+    // Upsert to handle duplicates gracefully
+    await supabase.from("favorite_coworkers").upsert(favRows, {
+      onConflict: "user_id,favorite_user_id",
+    })
+  }
+
+  // Update goal completions
+  if (goal_completions && Array.isArray(goal_completions)) {
+    for (const gc of goal_completions) {
+      await supabase
+        .from("session_goals")
+        .update({ completed: gc.completed })
+        .eq("id", gc.goal_id)
+        .eq("user_id", user.id)
     }
   }
 

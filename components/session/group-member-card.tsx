@@ -1,4 +1,5 @@
 import { TraitBadge } from "@/components/admin/trait-badge"
+import { Lock } from "lucide-react"
 
 interface GroupMemberCardProps {
   name: string
@@ -8,6 +9,7 @@ interface GroupMemberCardProps {
   workVibe?: string | null
   noisePref?: string | null
   commStyle?: string | null
+  isLimited?: boolean
 }
 
 export function GroupMemberCard({
@@ -18,6 +20,7 @@ export function GroupMemberCard({
   workVibe,
   noisePref,
   commStyle,
+  isLimited = false,
 }: GroupMemberCardProps) {
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
@@ -29,16 +32,21 @@ export function GroupMemberCard({
             name.charAt(0).toUpperCase()
           )}
         </div>
-        <div>
+        <div className="flex-1">
           <p className="font-semibold text-foreground">{name}</p>
           {workType && <p className="text-xs text-muted-foreground">{workType}</p>}
+          {isLimited && !workType && (
+            <p className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Lock className="h-3 w-3" /> Profile unlocks after check-in
+            </p>
+          )}
         </div>
       </div>
       {bio && <p className="text-sm text-muted-foreground">{bio}</p>}
       <div className="flex flex-wrap gap-1.5">
         <TraitBadge type="vibe" value={workVibe || null} />
-        <TraitBadge type="noise" value={noisePref || null} />
-        <TraitBadge type="comm" value={commStyle || null} />
+        {!isLimited && <TraitBadge type="noise" value={noisePref || null} />}
+        {!isLimited && <TraitBadge type="comm" value={commStyle || null} />}
       </div>
     </div>
   )

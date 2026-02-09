@@ -120,5 +120,142 @@ export interface MemberRating {
   to_user: string
   session_id: string
   would_cowork_again: boolean
+  tags: string[]
+  energy_match: number | null
   created_at: string
+}
+
+// Limited profile shown before check-in (information asymmetry)
+export interface LimitedProfile {
+  display_name: string  // First name only
+  work_vibe: string | null
+  avatar_url: string | null
+}
+
+// User stats (non-portable value)
+export interface UserStats {
+  sessions_completed: number
+  unique_coworkers: number
+  venues_visited: number
+  avg_rating_received: number
+  hours_focused: number
+  member_since: string
+}
+
+// Streak tracking
+export interface UserStreak {
+  user_id: string
+  current_streak: number
+  longest_streak: number
+  last_session_week: string | null
+  streak_frozen: boolean
+  updated_at: string
+}
+
+// Session goals (accountability hook)
+export interface SessionGoal {
+  id: string
+  booking_id: string
+  user_id: string
+  session_id: string
+  goal_text: string
+  completed: boolean
+  created_at: string
+}
+
+// Reputation / Coworker Score
+export interface UserReputation {
+  score: number
+  attendance: number
+  cowork_again_rate: number
+  avg_energy: number
+  session_score: number
+  streak_score: number
+  feedback_score: number
+  total_ratings: number
+  sessions_completed: number
+}
+
+// Subscription plans
+export interface SubscriptionPlan {
+  id: string
+  name: string
+  price: number
+  sessions_per_month: number | null
+  features: {
+    priority_matching: boolean
+    streak_freezes: number
+    exclusive_venues: boolean
+  }
+  active: boolean
+  created_at: string
+}
+
+export interface UserSubscription {
+  id: string
+  user_id: string
+  plan_id: string
+  status: "active" | "paused" | "cancelled" | "expired"
+  current_period_start: string
+  current_period_end: string
+  sessions_used: number
+  created_at: string
+  updated_at: string
+  // Joined
+  subscription_plans?: SubscriptionPlan | null
+}
+
+// Referrals
+export interface ReferralCode {
+  id: string
+  user_id: string
+  code: string
+  uses: number
+  created_at: string
+}
+
+export interface ReferralEvent {
+  id: string
+  referrer_id: string
+  referred_id: string
+  code: string
+  credit_amount: number
+  created_at: string
+}
+
+// Favorites
+export interface FavoriteCoworker {
+  id: string
+  user_id: string
+  favorite_user_id: string
+  created_at: string
+  // Joined
+  profiles?: Profile | null
+}
+
+// Notifications
+export interface Notification {
+  id: string
+  user_id: string
+  type: string
+  channel: "in_app" | "whatsapp" | "email"
+  title: string
+  body: string | null
+  payload: Record<string, unknown>
+  sent_at: string | null
+  read_at: string | null
+  created_at: string
+}
+
+// Venue quality score
+export interface VenueScore {
+  score: number
+  wifi: number
+  ambiance: number
+  fnb: number
+  service: number
+  power: number
+  noise: number
+  cleanliness: number
+  total_reviews: number
 }
