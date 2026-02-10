@@ -41,19 +41,29 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (
-    // if the user is not logged in and a protected path is accessed, redirect to the login page
-    (request.nextUrl.pathname.startsWith('/dashboard') ||
-     request.nextUrl.pathname.startsWith('/partner') ||
-     request.nextUrl.pathname.startsWith('/admin') ||
-     request.nextUrl.pathname.startsWith('/session') ||
-     request.nextUrl.pathname.startsWith('/onboarding') ||
-     request.nextUrl.pathname.startsWith('/protected')) &&
-    !user
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  const isProtectedPath =
+    request.nextUrl.pathname.startsWith('/dashboard') ||
+    request.nextUrl.pathname.startsWith('/partner') ||
+    request.nextUrl.pathname.startsWith('/admin') ||
+    request.nextUrl.pathname.startsWith('/session') ||
+    request.nextUrl.pathname.startsWith('/onboarding') ||
+    request.nextUrl.pathname.startsWith('/protected')
+
+  if (isProtectedPath && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
+    return NextResponse.redirect(url)
+  }
+
+  // Email verification gate — redirect unverified users to verify page
+  if (
+    isProtectedPath &&
+    user &&
+    !user.email_confirmed_at &&
+    !request.nextUrl.pathname.startsWith('/auth/')
+  ) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth/verify-email'
     return NextResponse.redirect(url)
   }
 

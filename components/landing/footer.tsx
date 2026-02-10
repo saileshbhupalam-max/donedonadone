@@ -14,8 +14,8 @@ const links = [
     title: "Company",
     items: [
       { label: "About", href: "#" },
-      { label: "FAQ", href: "#" },
-      { label: "Contact", href: "#" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Privacy Policy", href: "/privacy" },
     ],
   },
   {
@@ -70,6 +70,9 @@ export function Footer() {
         <div className="mt-10 border-t border-border pt-6 text-center">
           <p className="text-xs text-muted-foreground">
             Made with coffee in HSR Layout, Bangalore
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground/60">
+            donedonadone &middot; HSR Layout, Bangalore, India &middot; GSTIN pending
           </p>
         </div>
       </div>

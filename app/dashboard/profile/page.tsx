@@ -25,7 +25,6 @@ import {
   Sunset,
   Moon,
   Share2,
-  Copy,
   TrendingUp,
   Users,
   CalendarCheck,
@@ -33,6 +32,9 @@ import {
   Flame,
 } from "lucide-react"
 import { SignOutButton } from "@/components/dashboard/sign-out-button"
+import { DeleteAccountButton } from "@/components/dashboard/delete-account-button"
+import { CopyReferralButton } from "@/components/dashboard/copy-referral-button"
+import { ShareReferralButton } from "@/components/dashboard/share-referral-button"
 import { getTrustTier } from "@/lib/config"
 
 const workTypeLabels: Record<string, string> = {
@@ -259,15 +261,10 @@ export default async function ProfilePage() {
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {}}
-              title="Share link will be copied"
-            >
-              <Copy className="mr-1 h-3 w-3" />
-              Copy
-            </Button>
+            <div className="flex gap-1">
+              <CopyReferralButton code={referralCode.code} />
+              <ShareReferralButton code={referralCode.code} />
+            </div>
           </CardContent>
         </Card>
       )}
@@ -495,8 +492,9 @@ export default async function ProfilePage() {
               </div>
             </div>
           )}
-          <div className="border-t border-border pt-4">
+          <div className="flex items-center justify-between border-t border-border pt-4">
             <SignOutButton />
+            <DeleteAccountButton />
           </div>
         </CardContent>
       </Card>

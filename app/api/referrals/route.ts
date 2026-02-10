@@ -74,6 +74,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Cannot use your own code" }, { status: 400 })
   }
 
+  // Check referral cap (max_uses)
+  if (referralCode.max_uses && referralCode.uses >= referralCode.max_uses) {
+    return NextResponse.json({ error: "This referral code has reached its limit" }, { status: 400 })
+  }
+
   // Create referral event
   const { error } = await supabase.from("referral_events").insert({
     referrer_id: referralCode.user_id,

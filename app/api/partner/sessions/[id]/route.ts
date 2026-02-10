@@ -34,12 +34,18 @@ export async function PUT(
     return NextResponse.json({ error: "Session not found" }, { status: 404 })
   }
 
+  // Whitelist allowed update fields — prevent mass assignment
+  const ALLOWED_FIELDS = ["date", "start_time", "end_time", "duration_hours", "venue_price", "max_spots", "status"] as const
+  const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
+  for (const field of ALLOWED_FIELDS) {
+    if (body[field] !== undefined) {
+      updates[field] = body[field]
+    }
+  }
+
   const { data: session, error } = await supabase
     .from("sessions")
-    .update({
-      ...body,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updates)
     .eq("id", id)
     .select()
     .single()

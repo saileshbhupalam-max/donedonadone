@@ -58,11 +58,11 @@ export function HeroSection() {
               <div className="flex items-center gap-1">
                 <Users className="h-4 w-4 text-secondary" />
                 <span className="text-2xl font-bold text-foreground">
-                  1000+
+                  HSR
                 </span>
               </div>
               <span className="text-xs text-muted-foreground">
-                Coworkers joined
+                Layout, Bangalore
               </span>
             </div>
           </div>

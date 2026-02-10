@@ -1,13 +1,24 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { buildNotification } from "@/lib/notifications"
+import { timingSafeEqual } from "crypto"
+
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b))
+}
 
 // Vercel Cron handler — runs every hour
 // Checks for pending notifications to send
 export async function GET(request: NextRequest) {
-  // Verify cron secret (set in vercel.json)
-  const authHeader = request.headers.get("authorization")
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Verify cron secret (set in vercel.json) — timing-safe comparison
+  const cronSecret = process.env.CRON_SECRET
+  if (!cronSecret) {
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 })
+  }
+  const authHeader = request.headers.get("authorization") || ""
+  const expected = `Bearer ${cronSecret}`
+  if (!safeCompare(authHeader, expected)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
@@ -95,6 +106,61 @@ export async function GET(request: NextRequest) {
         })
         notifications.push(notif as never)
       }
+    }
+  }
+
+  // 4. Session auto-transitions (upcoming → in_progress → completed)
+  {
+    // Mark sessions as in_progress if they've started
+    await supabase
+      .from("sessions")
+      .update({ status: "in_progress" })
+      .eq("status", "upcoming")
+      .eq("date", today)
+      .lte("start_time", `${String(currentHour).padStart(2, "0")}:00:00`)
+
+    // Mark sessions as completed if they've ended
+    await supabase
+      .from("sessions")
+      .update({ status: "completed" })
+      .eq("status", "in_progress")
+      .eq("date", today)
+      .lte("end_time", `${String(currentHour).padStart(2, "0")}:00:00`)
+
+    // Also mark past dates as completed
+    await supabase
+      .from("sessions")
+      .update({ status: "completed" })
+      .in("status", ["upcoming", "in_progress"])
+      .lt("date", today)
+  }
+
+  // 5. Expire subscriptions past their period end
+  {
+    await supabase
+      .from("user_subscriptions")
+      .update({ status: "expired" })
+      .eq("status", "active")
+      .lt("current_period_end", today)
+  }
+
+  // 6. Expire stale unpaid bookings (15-min window)
+  {
+    const { data: expired } = await supabase
+      .from("bookings")
+      .select("id, session_id")
+      .lt("expires_at", now.toISOString())
+      .not("payment_status", "in", '("paid","confirmed")')
+      .is("cancelled_at", null)
+
+    for (const booking of expired || []) {
+      await supabase
+        .from("bookings")
+        .update({ cancelled_at: now.toISOString(), payment_status: "cancelled" })
+        .eq("id", booking.id)
+
+      // Decrement spots_filled
+      await supabase.rpc("decrement_spots", { p_session_id: booking.session_id })
     }
   }
 

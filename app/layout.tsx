@@ -20,6 +20,7 @@ export const metadata: Metadata = {
     "freelancer",
     "cafe coworking",
   ],
+  manifest: "/manifest.json",
   openGraph: {
     title: "donedonadone - Stop Working Alone",
     description:

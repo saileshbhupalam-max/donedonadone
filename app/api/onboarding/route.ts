@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { moderateText, sanitizeDisplayName } from "@/lib/moderation"
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -13,15 +14,28 @@ export async function POST(request: Request) {
 
   const body = await request.json()
 
+  // Moderate bio and display name
+  if (body.bio) {
+    const bioCheck = moderateText(body.bio)
+    if (!bioCheck.clean) {
+      return NextResponse.json({ error: bioCheck.reason }, { status: 400 })
+    }
+  }
+
+  const displayName = sanitizeDisplayName(body.display_name || "")
+  if (!displayName) {
+    return NextResponse.json({ error: "Display name is required" }, { status: 400 })
+  }
+
   // Update profile
   const { error: profileError } = await supabase
     .from("profiles")
     .update({
-      display_name: body.display_name,
+      display_name: displayName,
       phone: body.phone,
       work_type: body.work_type,
       industry: body.industry,
-      bio: body.bio,
+      bio: body.bio?.slice(0, 200),
       onboarding_complete: true,
       updated_at: new Date().toISOString(),
     })

@@ -35,12 +35,12 @@ export async function GET() {
     })
   }
 
-  // Get all non-cancelled bookings for these sessions
+  // Get only confirmed/paid bookings for these sessions
   const { data: bookings } = await supabase
     .from("bookings")
     .select("session_id, payment_amount, created_at")
     .in("session_id", sessionIds)
-    .neq("payment_status", "cancelled")
+    .in("payment_status", ["paid", "confirmed"])
 
   const allBookings = bookings || []
 

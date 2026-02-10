@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import { moderateText } from "@/lib/moderation"
+import { isValidUUID } from "@/lib/utils"
 
 export async function GET(
   _request: NextRequest,
@@ -14,17 +16,18 @@ export async function GET(
 
   const { id: sessionId } = await params
 
-  // Verify booking
+  // Verify booking (must be checked in)
   const { data: booking } = await supabase
     .from("bookings")
     .select("id, group_id")
     .eq("session_id", sessionId)
     .eq("user_id", user.id)
     .in("payment_status", ["paid", "confirmed"])
+    .eq("checked_in", true)
     .single()
 
   if (!booking) {
-    return NextResponse.json({ error: "No confirmed booking found" }, { status: 403 })
+    return NextResponse.json({ error: "No confirmed & checked-in booking found" }, { status: 403 })
   }
 
   // Check if feedback already submitted
@@ -87,17 +90,33 @@ export async function POST(
 
   const { id: sessionId } = await params
 
-  // Verify booking
+  // Verify booking (must be checked in)
   const { data: booking } = await supabase
     .from("bookings")
-    .select("id")
+    .select("id, group_id")
     .eq("session_id", sessionId)
     .eq("user_id", user.id)
     .in("payment_status", ["paid", "confirmed"])
+    .eq("checked_in", true)
     .single()
 
   if (!booking) {
-    return NextResponse.json({ error: "No confirmed booking found" }, { status: 403 })
+    return NextResponse.json({ error: "No confirmed & checked-in booking found" }, { status: 403 })
+  }
+
+  // Enforce 7-day feedback window
+  const { data: sessionData } = await supabase
+    .from("sessions")
+    .select("date")
+    .eq("id", sessionId)
+    .single()
+
+  if (sessionData?.date) {
+    const sessionDate = new Date(sessionData.date)
+    const daysSince = (Date.now() - sessionDate.getTime()) / (1000 * 60 * 60 * 24)
+    if (daysSince > 7) {
+      return NextResponse.json({ error: "Feedback window has closed (7 days)" }, { status: 400 })
+    }
   }
 
   const body = await request.json()
@@ -105,6 +124,19 @@ export async function POST(
 
   if (!overall_rating || overall_rating < 1 || overall_rating > 5) {
     return NextResponse.json({ error: "Rating must be 1-5" }, { status: 400 })
+  }
+
+  // Validate session ID format
+  if (!isValidUUID(sessionId)) {
+    return NextResponse.json({ error: "Invalid session ID" }, { status: 400 })
+  }
+
+  // Moderate comment text
+  if (comment) {
+    const modResult = moderateText(comment)
+    if (!modResult.clean) {
+      return NextResponse.json({ error: modResult.reason }, { status: 400 })
+    }
   }
 
   // Insert session feedback with venue ratings
@@ -117,10 +149,14 @@ export async function POST(
     comment: comment || null,
   }
 
-  // Add venue dimension ratings if provided
+  // Add venue dimension ratings if provided (whitelist keys)
+  const ALLOWED_VENUE_KEYS = [
+    "venue_wifi", "venue_ambiance", "venue_fnb",
+    "venue_service", "venue_power", "venue_noise", "venue_cleanliness",
+  ]
   if (venue_ratings && typeof venue_ratings === "object") {
     for (const [key, value] of Object.entries(venue_ratings)) {
-      if (key.startsWith("venue_") && typeof value === "number" && value >= 1 && value <= 5) {
+      if (ALLOWED_VENUE_KEYS.includes(key) && typeof value === "number" && value >= 1 && value <= 5) {
         feedbackRow[key] = value
       }
     }
@@ -130,21 +166,35 @@ export async function POST(
 
   if (fbError) return NextResponse.json({ error: fbError.message }, { status: 500 })
 
-  // Insert member ratings (with enhanced fields)
+  // Insert member ratings (with enhanced fields) — filter self-ratings and validate group membership
   if (member_ratings && Array.isArray(member_ratings)) {
-    const ratings = member_ratings.map((mr: {
-      to_user: string
-      would_cowork_again: boolean
-      tags?: string[]
-      energy_match?: number | null
-    }) => ({
-      from_user: user.id,
-      to_user: mr.to_user,
-      session_id: sessionId,
-      would_cowork_again: mr.would_cowork_again,
-      tags: mr.tags || [],
-      energy_match: mr.energy_match || null,
-    }))
+    // Get valid group members for this booking's group
+    let validGroupUserIds: string[] = []
+    if (booking.group_id) {
+      const { data: groupMembers } = await supabase
+        .from("group_members")
+        .select("user_id")
+        .eq("group_id", booking.group_id)
+      validGroupUserIds = (groupMembers || []).map((m: { user_id: string }) => m.user_id)
+    }
+
+    const ratings = member_ratings
+      .filter((mr: { to_user: string }) =>
+        mr.to_user !== user.id && validGroupUserIds.includes(mr.to_user)
+      )
+      .map((mr: {
+        to_user: string
+        would_cowork_again: boolean
+        tags?: string[]
+        energy_match?: number | null
+      }) => ({
+        from_user: user.id,
+        to_user: mr.to_user,
+        session_id: sessionId,
+        would_cowork_again: mr.would_cowork_again,
+        tags: mr.tags || [],
+        energy_match: mr.energy_match || null,
+      }))
 
     if (ratings.length > 0) {
       await supabase.from("member_ratings").insert(ratings)

@@ -1,6 +1,20 @@
 import { SupabaseClient } from "@supabase/supabase-js"
 
+export async function verifyPartner(supabase: SupabaseClient, userId: string) {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("user_type")
+    .eq("id", userId)
+    .single()
+
+  return profile?.user_type === "partner"
+}
+
 export async function getPartnerVenue(supabase: SupabaseClient, userId: string) {
+  // Verify user_type before returning venue
+  const isPartner = await verifyPartner(supabase, userId)
+  if (!isPartner) return null
+
   const { data, error } = await supabase
     .from("venues")
     .select("*")

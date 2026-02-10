@@ -4,9 +4,18 @@
 // ── Pricing ────────────────────────────────────────────
 export const PLATFORM_FEE_2HR = 100
 export const PLATFORM_FEE_4HR = 150
+export const GST_RATE = 0.18
 
 export function platformFee(durationHours: number): number {
   return durationHours === 2 ? PLATFORM_FEE_2HR : PLATFORM_FEE_4HR
+}
+
+export function priceWithGST(amount: number): number {
+  return Math.round(amount * (1 + GST_RATE))
+}
+
+export function gstAmount(amount: number): number {
+  return Math.round(amount * GST_RATE)
 }
 
 // ── Work Vibes ─────────────────────────────────────────

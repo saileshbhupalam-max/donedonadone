@@ -91,36 +91,50 @@ export function FeedbackForm({ sessionId }: FeedbackFormProps) {
     })
   }
 
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
   const handleSubmit = async () => {
     if (rating === 0) return
     setSubmitting(true)
+    setSubmitError(null)
 
-    await fetch(`/api/session/${sessionId}/feedback`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        overall_rating: rating,
-        tags,
-        comment: comment || null,
-        venue_ratings: venueRatings,
-        member_ratings: Object.entries(memberRatings).map(([to_user, would_cowork_again]) => ({
-          to_user,
-          would_cowork_again,
-          tags: memberTags[to_user] || [],
-          energy_match: memberEnergy[to_user] || null,
-        })),
-        favorites: Object.entries(favorites)
-          .filter(([, isFav]) => isFav)
-          .map(([userId]) => userId),
-        goal_completions: Object.entries(goalCompletions).map(([goalId, completed]) => ({
-          goal_id: goalId,
-          completed,
-        })),
-      }),
-    })
+    try {
+      const res = await fetch(`/api/session/${sessionId}/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          overall_rating: rating,
+          tags,
+          comment: comment || null,
+          venue_ratings: venueRatings,
+          member_ratings: Object.entries(memberRatings).map(([to_user, would_cowork_again]) => ({
+            to_user,
+            would_cowork_again,
+            tags: memberTags[to_user] || [],
+            energy_match: memberEnergy[to_user] || null,
+          })),
+          favorites: Object.entries(favorites)
+            .filter(([, isFav]) => isFav)
+            .map(([userId]) => userId),
+          goal_completions: Object.entries(goalCompletions).map(([goalId, completed]) => ({
+            goal_id: goalId,
+            completed,
+          })),
+        }),
+      })
 
-    setSubmitted(true)
-    setSubmitting(false)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setSubmitError(data.error || "Something went wrong. Please try again.")
+        return
+      }
+
+      setSubmitted(true)
+    } catch {
+      setSubmitError("Network error. Please check your connection and try again.")
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -327,6 +341,9 @@ export function FeedbackForm({ sessionId }: FeedbackFormProps) {
       </div>
 
       {/* Submit */}
+      {submitError && (
+        <p className="text-sm text-destructive">{submitError}</p>
+      )}
       <Button onClick={handleSubmit} disabled={rating === 0 || submitting} className="w-full">
         {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
         Submit Feedback

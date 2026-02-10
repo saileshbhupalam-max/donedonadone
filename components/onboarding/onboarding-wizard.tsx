@@ -334,10 +334,22 @@ export function OnboardingWizard({ initialData }: OnboardingWizardProps) {
           </Button>
 
           {step < TOTAL_STEPS ? (
-            <Button onClick={() => setStep((s) => s + 1)} disabled={!canNext()}>
-              Continue
-              <ArrowRight className="ml-1 h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              {step === 1 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => router.push("/dashboard/sessions")}
+                  className="text-muted-foreground"
+                >
+                  Skip for now
+                </Button>
+              )}
+              <Button onClick={() => setStep((s) => s + 1)} disabled={!canNext()}>
+                Continue
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            </div>
           ) : (
             <Button onClick={handleSubmit} disabled={submitting}>
               {submitting ? (
@@ -374,6 +386,9 @@ function StepWelcome({ data, update, toggleArray }: StepProps) {
         </h1>
         <p className="mt-2 leading-relaxed text-muted-foreground">
           {"Let's set up your profile so we can find your perfect coworking crew."}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground/70">
+          You can change all of these anytime from your profile settings.
         </p>
       </div>
 
