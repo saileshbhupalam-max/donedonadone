@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import useSWR from "swr"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Loader2, CheckCircle2, Circle, QrCode } from "lucide-react"
+import { Loader2, CheckCircle2, Circle, MapPin } from "lucide-react"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -19,14 +19,39 @@ export function CheckinPanel({ sessionId }: CheckinPanelProps) {
     { refreshInterval: 10000 }
   )
   const [checking, setChecking] = useState(false)
+  const [geoError, setGeoError] = useState<string | null>(null)
+
+  const getLocation = useCallback((): Promise<{ lat: number; lng: number } | null> => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve(null) // Geolocation not supported, allow check-in without
+        return
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => resolve(null), // Permission denied or error, allow check-in without
+        { enableHighAccuracy: true, timeout: 10000 }
+      )
+    })
+  }, [])
 
   const handleCheckin = async () => {
     setChecking(true)
+    setGeoError(null)
+
+    const coords = await getLocation()
+
     const res = await fetch(`/api/session/${sessionId}/checkin`, {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(coords || {}),
     })
+
     if (res.ok) {
       mutate()
+    } else {
+      const data = await res.json().catch(() => ({}))
+      setGeoError(data.error || "Check-in failed")
     }
     setChecking(false)
   }
@@ -87,12 +112,17 @@ export function CheckinPanel({ sessionId }: CheckinPanelProps) {
                 <Loader2 className="h-8 w-8 animate-spin" />
               ) : (
                 <div className="flex flex-col items-center gap-1">
-                  <QrCode className="h-8 w-8" />
+                  <MapPin className="h-8 w-8" />
                   <span className="text-sm font-semibold">Check In</span>
                 </div>
               )}
             </button>
-            <p className="text-sm text-muted-foreground">Tap to check in</p>
+            <p className="text-sm text-muted-foreground">
+              Tap to check in at venue
+            </p>
+            {geoError && (
+              <p className="max-w-xs text-center text-sm text-destructive">{geoError}</p>
+            )}
           </div>
         )}
       </div>

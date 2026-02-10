@@ -24,6 +24,11 @@ import { PLATFORM_FEE_2HR } from "@/lib/config"
 
 type Step = "confirm" | "payment" | "success"
 
+// eslint-disable-next-line @next/next/no-img-element
+const QRImage = ({ src, alt }: { src: string; alt: string }) => (
+  <img src={src} alt={alt} className="h-48 w-48 rounded-lg" />
+)
+
 interface BookingSheetProps {
   session: {
     id: string
@@ -56,6 +61,8 @@ export function BookingSheet({
   const [step, setStep] = useState<Step>("confirm")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
+  const [bookingId, setBookingId] = useState<string | null>(null)
 
   const price = Number(session.price)
   const venueFee = Math.max(price - PLATFORM_FEE_2HR, 0)
@@ -71,7 +78,21 @@ export function BookingSheet({
     setLoading(true)
     setError(null)
     try {
-      await onConfirm()
+      const result = await onConfirm() as { booking?: { id: string } } | undefined
+      const bId = result?.booking?.id
+      if (bId) {
+        setBookingId(bId)
+        // Fetch QR code from payment API
+        try {
+          const payRes = await fetch(`/api/bookings/${bId}/payment`, { method: "POST" })
+          const payData = await payRes.json()
+          if (payData.qrDataUrl) {
+            setQrDataUrl(payData.qrDataUrl)
+          }
+        } catch {
+          // QR generation failed, will show fallback
+        }
+      }
       setStep("payment")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Booking failed")
@@ -80,7 +101,18 @@ export function BookingSheet({
     }
   }
 
-  const handleMarkPaid = () => {
+  const handleMarkPaid = async () => {
+    if (bookingId) {
+      try {
+        await fetch(`/api/bookings/${bookingId}/payment`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        })
+      } catch {
+        // Non-blocking — proceed to success even if PATCH fails
+      }
+    }
     setStep("success")
   }
 
@@ -192,16 +224,20 @@ export function BookingSheet({
             </SheetHeader>
 
             <div className="mt-6 flex flex-1 flex-col items-center gap-6">
-              {/* UPI QR mock */}
+              {/* UPI QR code */}
               <div className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card p-6">
-                <div className="flex h-48 w-48 items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted">
-                  <div className="flex flex-col items-center gap-2">
-                    <QrCode className="h-16 w-16 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">
-                      UPI QR Code
-                    </span>
+                {qrDataUrl ? (
+                  <QRImage src={qrDataUrl} alt="UPI QR Code" />
+                ) : (
+                  <div className="flex h-48 w-48 items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted">
+                    <div className="flex flex-col items-center gap-2">
+                      <QrCode className="h-16 w-16 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">
+                        UPI QR Code
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
                 <div className="text-center">
                   <p className="text-2xl font-bold text-foreground">
                     {"₹"}{price.toFixed(0)}

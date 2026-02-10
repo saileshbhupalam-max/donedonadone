@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
-import { generateUPILink } from "@/lib/payments"
+import { generateUPILink, generateQRDataUrl } from "@/lib/payments"
 
 // POST: Generate UPI payment link for a booking
 export async function POST(
@@ -32,11 +32,13 @@ export async function POST(
     return NextResponse.json({ error: "Payment already initiated or completed" }, { status: 400 })
   }
 
-  // Generate UPI link
+  // Generate UPI link and QR code
   const upiLink = generateUPILink({
     amount: booking.payment_amount,
     bookingId: booking.id,
   })
+
+  const qrDataUrl = await generateQRDataUrl(upiLink)
 
   // Update booking status to payment_pending
   await supabase
@@ -44,7 +46,11 @@ export async function POST(
     .update({ payment_status: "payment_pending" })
     .eq("id", bookingId)
 
-  return NextResponse.json({ upiLink, amount: booking.payment_amount })
+  return NextResponse.json({
+    upiLink,
+    qrDataUrl,
+    amount: booking.payment_amount,
+  })
 }
 
 // PATCH: Mark payment as "I've paid" (user confirms)

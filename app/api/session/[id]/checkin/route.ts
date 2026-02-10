@@ -74,8 +74,25 @@ export async function GET(
   })
 }
 
+// Maximum distance (meters) from venue to allow check-in
+const MAX_CHECKIN_DISTANCE_M = 500
+
+function haversineDistance(
+  lat1: number, lon1: number,
+  lat2: number, lon2: number
+): number {
+  const R = 6371e3 // Earth radius in meters
+  const toRad = (deg: number) => (deg * Math.PI) / 180
+  const dLat = toRad(lat2 - lat1)
+  const dLon = toRad(lon2 - lon1)
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createClient()
@@ -98,6 +115,34 @@ export async function POST(
 
   if (!booking) {
     return NextResponse.json({ error: "No confirmed booking found" }, { status: 403 })
+  }
+
+  // Geolocation verification (optional — if user sends coordinates)
+  let body: { lat?: number; lng?: number } = {}
+  try {
+    body = await request.json()
+  } catch {
+    // No body or invalid JSON — allow check-in without geo (fallback)
+  }
+
+  if (body.lat != null && body.lng != null) {
+    // Get venue coordinates
+    const { data: session } = await supabase
+      .from("sessions")
+      .select("venues(lat, lng)")
+      .eq("id", sessionId)
+      .single()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const venue = (session as any)?.venues
+    if (venue?.lat && venue?.lng) {
+      const distance = haversineDistance(body.lat, body.lng, venue.lat, venue.lng)
+      if (distance > MAX_CHECKIN_DISTANCE_M) {
+        return NextResponse.json({
+          error: `You appear to be ${Math.round(distance)}m from the venue. Please check in from within ${MAX_CHECKIN_DISTANCE_M}m.`,
+        }, { status: 400 })
+      }
+    }
   }
 
   // Call check_in RPC
