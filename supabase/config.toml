@@ -1,0 +1,19 @@
+project_id = "wrcvsfysvxuipktjyvem"
+
+[functions.generate-match-explanations]
+verify_jwt = false
+
+[functions.draft-intro]
+verify_jwt = false
+
+[functions.compute-weekly-digest]
+verify_jwt = false
+
+[functions.send-notification]
+verify_jwt = false
+
+[functions.send-streak-warnings]
+verify_jwt = false
+
+[functions.send-session-reminders]
+verify_jwt = false

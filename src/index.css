@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 36 60% 98.4%;
+    --foreground: 0 0% 17.6%;
+
+    --card: 28 26% 94.1%;
+    --card-foreground: 0 0% 17.6%;
+
+    --popover: 36 60% 98.4%;
+    --popover-foreground: 0 0% 17.6%;
+
+    --primary: 18 46% 56.1%;
+    --primary-foreground: 36 60% 98.4%;
+
+    --secondary: 141 14% 55.3%;
+    --secondary-foreground: 36 60% 98.4%;
+
+    --muted: 28 26% 94.1%;
+    --muted-foreground: 0 0% 40%;
+
+    --accent: 28 26% 94.1%;
+    --accent-foreground: 0 0% 17.6%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 28 18% 88%;
+    --input: 28 18% 88%;
+    --ring: 18 46% 56.1%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 0 0% 10%;
+    --foreground: 30 33% 94.5%;
+
+    --card: 0 0% 15%;
+    --card-foreground: 30 33% 94.5%;
+
+    --popover: 0 0% 12%;
+    --popover-foreground: 30 33% 94.5%;
+
+    --primary: 18 46% 56.1%;
+    --primary-foreground: 30 33% 94.5%;
+
+    --secondary: 141 14% 55.3%;
+    --secondary-foreground: 30 33% 94.5%;
+
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 0 0% 18%;
+    --accent-foreground: 30 33% 94.5%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 30 33% 94.5%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 18%;
+    --ring: 18 46% 56.1%;
+
+    --sidebar-background: 0 0% 12%;
+    --sidebar-foreground: 30 33% 94.5%;
+    --sidebar-primary: 30 33% 94.5%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 0 0% 18%;
+    --sidebar-accent-foreground: 30 33% 94.5%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 18 46% 56.1%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'DM Serif Display', serif;
+  }
+}
