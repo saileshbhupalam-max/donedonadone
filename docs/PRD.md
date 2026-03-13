@@ -1,256 +1,242 @@
 # FocusClub — Product Requirements Document
 
-> Version: 1.0 (derived from codebase audit, March 2026)
-> Status: Living document — reflects what IS built + what SHOULD be built
+> Version: 2.0 | March 2026 | Living document
 
 ---
 
 ## 1. Product Overview
 
 ### What is FocusClub?
-FocusClub matches solo workers into groups of 3-5 at partner cafes and coworking spaces. Users RSVP to structured or casual sessions, get grouped with compatible people, cowork together, and build relationships over time.
+FocusClub is the AI-native community layer for workspaces. Members sign up permissionlessly, build rich profiles of what they seek and offer, attend structured deep work sessions at coworking spaces and cafes, and get matched with the right people — customers, collaborators, mentors, investors, friends. The platform turns any shared workspace into a place where careers are built through structured serendipity.
+
+### Vision
+We increase the surface area of luck. We are the community operating system for every workspace on earth — permissionless, member-driven, AI-powered.
 
 ### Value Proposition
-- **For coworkers:** Accountability, community, and structure for solo workers who want the energy of a team without the commitment of an office.
-- **For venue partners:** Predictable foot traffic, recurring customers, and community marketing.
-- **For the platform:** Per-session revenue (platform fee) + subscription tiers.
+
+**For companies:** Find customers, investors, collaborators, pooled buying, cross-selling to each other's customers, employees, interns. The community makes them stay instead of leaving to standalone offices.
+
+**For employees:** Find referrals, mentors, mentees, a community, a space to do deep work with accountability.
+
+**For freelancers:** Find customers, collaborators, mentors, gigs, referrals, a community, structured deep work.
+
+**For founders:** Find first customers, employees, interns, investors, co-founders.
+
+**The human angle:** Over time the space becomes warm. Most people know each other. New members are welcomed by the community. Day pass holders interface with regulars daily. People stay because their friends are there — and they keep meeting new people along the way.
+
+### Business Model
+- **Revenue from members** via tiered subscriptions: Free (Explorer), Plus, Pro, Max
+- **Session Boost:** Rs.99 for 24-hour tier upgrade
+- **Day pass sessions:** Outsiders buy a pass for structured sessions, increasing revenue for the space
+- **Permissionless:** Members sign up directly. Spaces may optionally get a free insights dashboard.
 
 ### Target Market
-- **Geography:** HSR Layout, Bangalore (launch market)
-- **Users:** Freelancers, remote workers, startup founders, students, creators
+- **Geography:** HSR Layout, Bangalore (launch), then Bangalore-wide, then India
+- **Primary venues:** Coworking spaces (initial GTM), then cafes
+- **Users:** Freelancers, remote workers, startup founders, employees, students, creators
 - **Scale target:** 1,000 bookings/day
-
-### Revenue Model
-- Per-session pricing: Platform takes Rs.100 (2hr) / Rs.150 (4hr). Venue sets their price.
-- Subscription tiers: Free, Plus (Rs.299/mo), Pro (Rs.599/mo), Max (Rs.999/mo)
-- Session Boost: Rs.99 for 24-hour tier upgrade
 
 ---
 
 ## 2. User Types
 
-| Type | Description | Implementation Status |
-|------|-------------|----------------------|
-| **Coworker** | Primary user. Books sessions, coworks, gives props. | Fully implemented |
-| **Venue Partner** | Cafe/coworking space owner. Lists venue, hosts sessions. | Partially implemented (no self-serve, no dashboard) |
-| **Admin** | Community manager. Creates events, manages groups/prompts. | Partially implemented (basic admin, no moderation tools) |
+| Type | Description | Status |
+|------|-------------|--------|
+| **Member** | Primary user. Signs up, builds profile, attends sessions, connects. Has role: founder/freelancer/employee/student/creative | Fully implemented |
+| **Company** | Organization profile. Lists needs/offers, gets B2B matches, sends intros | Fully implemented |
+| **Venue Partner** | Cafe/coworking owner. Applies, lists venue, hosts sessions | Partially implemented |
+| **Admin** | Community manager. Creates events, manages groups/prompts/flags | Fully implemented |
 
 ---
 
-## 3. Core User Flows
+## 3. Core Features — Built
 
 ### 3.1 Signup & Onboarding
-
-**Current implementation:**
-- Google OAuth only (via Supabase Auth)
+- Google OAuth via Supabase Auth
 - 4-step onboarding: Identity → Work Preferences → Give & Get → Confirmation
-- Profile completion tracked (0-100%)
-- Referral processing on signup
+- Referral code processing and badge award
+- Profile completion tracking (0-100%)
+- Redirect logic: new → onboarding, returning → home
 
-**What's built:**
-- [x] Google OAuth sign-in
-- [x] 4-step onboarding wizard with progress persistence (localStorage)
-- [x] Profile fields: name, avatar, tagline, what I do, work vibe, communication style, noise preference, looking for, can offer
-- [x] Referral code processing and badge award
-- [x] Redirect logic: new user → onboarding, returning → home
+### 3.2 Taste Graph / Work DNA (7-step deep profile)
+- Role type: founder, freelancer, employee, student, creative, figuring_it_out
+- Current project + stage (Idea → Growing)
+- Skills by category: Tech (16), Design (8), Business (9), Content (8), Domain (9)
+- Industries (16 options)
+- Work seeking/offering + Play seeking/offering
+- Values (11 options), Topics (17 options)
+- Peak hours, session preferences, group size, conversation depth
+- Food preferences, weekend availability
+- Stored in `taste_graph` table, completion % tracked
 
-**What's missing:**
-- [ ] Email/password auth option
-- [ ] Apple sign-in
-- [ ] Neighborhood selection during onboarding
-- [ ] Session format/duration explanation during onboarding
-- [ ] "How it works" content (what a session looks like)
+### 3.3 AI Matching Engine
+**Person-to-person scoring (max 100):**
+- Work vibe match: 20pts
+- Neighborhood: 15pts
+- Looking-for/can-offer exchange: 15pts per match
+- Mutual seeking: 10pts per match
+- Shared interests: 5pts per match
+- Noise preference: 5pts
+- Communication style: 5pts
 
-### 3.2 Session Discovery & Booking
+**Company-to-company matching:**
+- `get_company_matches(p_company_id)` RPC
+- Matches company needs vs. other company offers and vice versa
+- Introduction system with rate limiting and credits
 
-**Current implementation:**
+**Match explanations:** AI-generated compatibility text stored in `ai_match_explanations`
+
+### 3.4 Session Discovery & Booking
 - Events page with Upcoming/Past tabs
-- Filters: All, Neighborhood (dynamic), Women Only (conditional)
+- 5 session formats: Structured 4hr, Structured 2hr, Focus Only 4hr, Focus Only 2hr, Casual
+- Filters: neighborhood (dynamic), women-only, session format
 - Event cards with social proof (avatars, circle members, attendance progress)
-- RSVP/cancel/waitlist flow
-- Intention setting at RSVP time (structured sessions)
+- Venue intelligence badges (WiFi, Power, Coffee, Quiet, Spacious)
+- RSVP/cancel/waitlist with optimistic UI
+- Intention setting at RSVP time
 - Add to calendar (Google/ICS)
 - Session request form for underserved areas
+- Map view with distance sorting
+- Popularity labels ("Almost full", "Filling fast")
 
-**What's built:**
-- [x] Event listing with date filtering
-- [x] Neighborhood filtering (dynamic from DB)
-- [x] Women-only filter (conditional on user gender)
-- [x] RSVP with optimistic UI and realtime count
-- [x] Waitlist with position tracking
-- [x] Low attendance warning with nearby session suggestions
-- [x] Session request form (neighborhood, days, times)
-- [x] Map view with distance sorting
-- [x] Popularity labels ("Almost full", "Filling fast", etc.)
+### 3.5 Structured Session Experience
 
-**What's missing:**
-- [ ] Session format/duration filter
-- [ ] Neighborhood default from user profile
-- [ ] Pre-session reminders (push notification 24hr, 1hr)
-- [ ] Price display on session cards
-- [ ] Women-only RSVP enforcement (server-side)
-- [ ] Booking limits enforcement (per subscription tier)
+**4-hour format:**
+```
+30 min — Icebreaker (AI-selected rounds: quick_fire, pair_share, group_challenge, intention_set)
+90 min — Deep Work Block 1 (traffic light status: red/amber/green, realtime sync)
+30 min — Social Break (energy check, photo moment, skill swap suggestions)
+90 min — Deep Work Block 2
+15 min — Wrap-up (props, venue rating, cowork-again, scrapbook)
+```
 
-### 3.3 Session Experience (Structured Format)
+**Focus Only format (no social elements):**
+```
+5 min  — Check-in
+50/110 min — Deep Work Block 1
+5/10 min  — Silent Break
+50/110 min — Deep Work Block 2
+10/5 min  — Quick Wrap
+```
 
-**Current implementation:**
-- Pre-start: GroupReveal + CheckIn (geo or PIN) + phase preview
-- During: Phase timer + traffic light status + icebreakers + captain nudges
-- Social break: Energy check, photo moment, skill swap suggestions
-- Wrap-up: Intention accomplishment → props → cowork-again → venue rating → scrapbook
+**Session features:**
+- Smart group formation (captain distribution → experience balance → newbie spreading → gender balance, 10 iterations)
+- Pre-session buddy introductions (YourTableCard)
+- Phase-by-phase timer with auto-advance
+- Traffic light status sync (Supabase Realtime)
+- Icebreaker engine (adaptive depth based on group experience)
+- Captain nudges per phase
+- Energy check (battery level, group average)
+- Photo moment capture + storage
+- Skill swap suggestions during breaks
+- Quick feedback (1-tap emoji) or detailed feedback path
+- Geolocation check-in with PIN fallback
 
-**What's built:**
-- [x] Two structured formats: 4hr (5 phases, 240min) and 2hr (5 phases, 120min)
-- [x] Casual format (no phases, free-form)
-- [x] Group reveal (tablemate cards)
-- [x] Geolocation check-in with PIN fallback
-- [x] Phase-by-phase timer with auto-advance
-- [x] Traffic light status sync (realtime)
-- [x] Icebreaker engine (4 round types, adaptive depth)
-- [x] Energy check (battery level, group average)
-- [x] Photo moment capture + storage
-- [x] Captain nudges per phase
-- [x] Session wrap-up flow (5 sequential components)
-
-**What's missing:**
-- [ ] Skip mechanism for wrap-up flow ("quick rate and go")
-- [ ] DND/focus mode (persist through phases)
-- [ ] Captain tools (announce, extend/skip phase)
-- [ ] First-timer session explainer
-- [ ] Check-in PIN visibility for attendees
-- [ ] Group notification when groups are formed
-
-### 3.4 Post-Session & Retention
-
-**Current implementation:**
-- Feedback card (emoji rating + comment)
-- Props system (6 types, anonymous option, echo delay mechanic)
-- Cowork-again selections (builds circle for matching)
+### 3.6 Post-Session & Retention
+- Feedback (emoji rating + comment)
+- Props system (6 types: energy/helpful/focused/inspiring/fun/kind, echo delay mechanic)
+- Cowork-again selections → builds circle for future matching
 - Venue vibe rating (5 categories)
 - Scrapbook auto-generation
 - Weekly digest (Mondays)
-- Community rituals (Monday Focus, Friday Wins)
-- Gratitude echoes (delayed prop delivery)
-- Streak tracking with warning cards
-- Badge system (17 badges)
-- Rank system (6 tiers based on focus hours)
-- Milestone celebrations (22 milestones)
+- Community rituals (Monday Focus Intention, Friday Wins)
+- Gratitude echoes (30% of props delivered with delay)
 - Re-engagement notifications (7/10/14 day thresholds)
 
-**What's built:**
-- [x] Full feedback + props + venue rating flow
-- [x] Cowork-again → circle formation
-- [x] Session scrapbook with sharing
-- [x] 17 badge definitions with auto-award
-- [x] 6-rank system with rank-up notifications
-- [x] 22 milestones with share messages
-- [x] Weekly digest on Mondays
-- [x] Community rituals (Monday/Friday)
-- [x] Gratitude echo (30% props delayed)
-- [x] Re-engagement at 7/10/14 days
+### 3.7 Social & Discovery
 
-**What's missing:**
-- [ ] Streak insurance (DB field exists, no UI to use it)
-- [ ] Email digest delivery
-- [ ] WhatsApp re-engagement messages
-- [ ] Post-session email summary
-- [ ] Shortened feedback path option
+**Discover page (People tab):**
+- Best matches (top 8 by score)
+- New members (last 2 weeks)
+- In your area (same neighborhood)
+- Can help you (offer what you need)
+- Same vibe (matching work_vibe)
+- Active this week
+- Full directory with search, vibe filter, women-only filter, sorting
 
-### 3.5 Social & Discovery
+**Discover page (Companies tab):**
+- Company directory with search & stage filters
+- Company needs/offers matching
+- Company intro system with rate limiting
 
-**Current implementation:**
-- Discover page: People (active locations, suggested connections, your connections) + Companies
-- Profile viewing with match scoring
-- Connection requests
-- Prompt-of-the-week with fire reactions
-- Circle (mutual cowork-again picks)
-- Referral system with code sharing
+**Active Locations:**
+- "Who's here" at each venue (RPC: `get_location_activity`)
+- Taste match scores for people at your location
 
-**What's built:**
-- [x] Match scoring algorithm (work vibe, neighborhood, skills, interests, noise, comm style)
-- [x] Suggested connections sorted by match score
-- [x] Active locations (who's working where)
-- [x] Connection request/accept flow
-- [x] Community prompts with answers and fire reactions
-- [x] Profile completion nudges (progressive, milestone-gated)
-- [x] Referral code generation and tracking
-- [x] Company directory with matching
+**Connection system:**
+- Connection requests with messages
+- Accept/decline/block
+- Connection types: colleague/mentor/friend/network
+- Strength scoring
 
-**What's missing:**
-- [ ] Direct messaging between members
-- [ ] Buddy pre-introduction messaging
-- [ ] "People in your neighborhood" section on Home
-- [ ] Prompt scheduling (admin queues future prompts)
+**Community features:**
+- Coffee Roulette (random AI-matched 1:1s, weekly rate limit)
+- Micro Request Board (skill_help, coffee_chat, feedback, collaboration)
+- Community prompts with fire reactions
+- Profile completion nudges (progressive, milestone-gated)
+- Referral code generation and tracking
 
-### 3.6 Subscription & Payments
+### 3.8 Company Features (B2B Layer)
+- Company profiles: name, one-liner, stage (Idea → Series B+), industry tags, team size, logo, website
+- Team management with roles (founder/admin/member)
+- Needs board: what company needs (need_type, title, description)
+- Offers board: what company can offer (offer_type, title, description)
+- AI-powered company matching RPC
+- Introduction system with monthly limits + credit system
+- AI-generated intro drafts
+- Company analytics
 
-**Current implementation:**
-- 4 tiers defined in DB: Free, Plus, Pro, Max
-- Feature gating infrastructure (tier_features, tier_limits tables)
-- Subscription hook with realtime updates
-- Pricing page with tier comparison
-- Session Boost concept (24hr upgrade)
+### 3.9 Gamification Stack
+| System | Detail | Status |
+|--------|--------|--------|
+| Ranks | 6 tiers: Newcomer → Grandmaster (0-150+ focus hours) | Implemented |
+| Badges | 17 types, auto-awarded | Implemented |
+| Streaks | Weekly attendance, insurance (1/month) | Implemented |
+| Milestones | 22 achievement types with celebrations | Implemented |
+| Monthly Titles | 6 competitive titles per month | Defined |
+| Props | 6 peer recognition types with echo delay | Implemented |
+| Leaderboard | Focus hours ranking | Implemented |
 
-**What's built:**
-- [x] Subscription DB schema (tiers, features, limits, user_subscriptions)
-- [x] `useSubscription` hook with `hasFeature()` and `getLimit()`
-- [x] Pricing page UI with all 4 tiers
-- [x] Session Boost UI concept
-- [x] Tier badge display in TopBar
-- [x] RPC `get_effective_tier()` with boost logic
+### 3.10 Subscription & Payments
+- 4 tiers: Free (Explorer) / Plus / Pro / Max
+- Feature gating via `tier_features` table (min_tier per feature)
+- Limit gating via `tier_limits` table (per-tier numeric caps, -1 = unlimited)
+- `useSubscription` hook with `hasFeature()` and `getLimit()`
+- `FeatureGate` component supporting: feature flags, required tier, min level, check-in, DNA completion
+- Session Boost (Rs.99 for 24hr upgrade) — UI built, payment pending
+- Pricing page with tier comparison matrix, 8 feature categories
+- `get_effective_tier()` RPC with boost logic
+- **Payment integration: NOT BUILT** — upgrade button shows toast
 
-**What's NOT built:**
-- [ ] Payment processor integration (UPI QR, Razorpay, or Stripe)
-- [ ] Actual feature enforcement at RSVP/action level
-- [ ] Subscription management (cancel, downgrade)
-- [ ] Invoice/receipt generation
-- [ ] Venue partner revenue share
-- [ ] Session pricing display and collection
+### 3.11 Venue Partner Experience
+- Partner application form (multi-step)
+- Partner dashboard (stats, sessions hosted, members acquired)
+- Venue vibe crowdsourcing (post-session ratings)
+- Venue intelligence panel (detailed breakdown with dominant vibe)
+- Venue quick badges on event cards (cached, 5-min TTL)
+- QR code scan tracking (`venue_scans`)
+- Partners showcase page
 
-### 3.7 Venue Partner Experience
+### 3.12 Admin Dashboard
+- Grouped sidebar: Overview, Community, Sessions, Partners, Settings (18 tabs total)
+- Member search, sort, CSV export
+- Event management + smart group creation + buddy notifications
+- Prompt management (create, activate, notify)
+- Flag review with escalation stats
+- Feature flag toggles
+- Icebreaker management
+- AI config and growth tabs
+- Subscription management
+- Analytics + engagement dashboards
 
-**Current implementation:**
-- Partners page (read-only showcase)
-- Contact via WhatsApp CTA
-- Venue vibe crowdsourcing (post-session)
-
-**What's built:**
-- [x] Partner venue display with ratings
-- [x] Venue fields on events (name, address, coords, partner link)
-- [x] Venue vibe rating collection
-- [x] Venue vibe summary display
-
-**What's NOT built:**
-- [ ] Venue partner self-serve registration
-- [ ] Venue dashboard (upcoming sessions, headcount, revenue)
-- [ ] Session approval/reject by venue
-- [ ] Capacity and blackout date management
-- [ ] Revenue reporting for venues
-
-### 3.8 Admin & Operations
-
-**Current implementation:**
-- Admin page with tabs: Overview, Members, Events, Prompts, Settings (+13 more)
-- Smart group creation algorithm
-- Manual settings key-value editor
-- CSV member export
-
-**What's built:**
-- [x] Admin gate by email allowlist
-- [x] Member search, sort, CSV export
-- [x] Event management + smart group creation
-- [x] Prompt management (create, activate, notify)
-- [x] Key-value app settings editor
-- [x] Overview stats (members, events, prompts)
-
-**What's NOT built:**
-- [ ] Flag review and moderation UI
-- [ ] Member suspension/ban tools
-- [ ] Group preview/edit before saving
-- [ ] Prompt scheduling queue
-- [ ] Settings with labels and documentation
-- [ ] Admin access via DB role (currently hardcoded email list)
-- [ ] Operational analytics (conversion funnel, retention cohorts)
+### 3.13 Infrastructure
+- PWA with service worker (130 precached entries)
+- Offline banner (navigator.onLine detection)
+- Runtime caching: Supabase API (NetworkFirst, 5s timeout), images (CacheFirst, 30d), fonts (CacheFirst, 1yr), map tiles (CacheFirst, 7d)
+- Push notification registration (VAPID, sw-push.js)
+- Sentry error tracking
+- Analytics event tracking (`analytics_events`, `conversion_events`)
+- Feature flags (server-side toggles, independent from subscription gating)
 
 ---
 
@@ -260,127 +246,111 @@ FocusClub matches solo workers into groups of 3-5 at partner cafes and coworking
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 18 + Vite SPA + TypeScript |
-| UI | shadcn/ui + Tailwind CSS + Framer Motion |
+| UI | shadcn/ui (48 primitives) + Tailwind CSS + Framer Motion |
 | Backend | Supabase (Auth, Postgres, Storage, Edge Functions, Realtime) |
 | Hosting | Vercel (static SPA) |
 | Maps | Leaflet + React Leaflet |
 | State | React Context (Auth, Subscription, FeatureFlags, Personality) |
+| PWA | vite-plugin-pwa with Workbox |
 
-### Database (Key Tables)
-```
-profiles          — User profiles with all preferences
-events            — Session listings
-event_rsvps       — RSVP + waitlist
-session_phases    — Structured session phase definitions
-member_statuses   — Realtime traffic light state
-peer_props        — Props between members (with echo delay)
-cowork_preferences — "Cowork again" selections
-venue_vibes       — Crowdsourced venue ratings
-session_scrapbook — Auto-generated session memories
-prompts           — Community questions
-prompt_responses  — Answers with fire reactions
-user_subscriptions — Tier + billing
-subscription_tiers — Tier definitions
-tier_features     — Feature-to-tier mapping
-tier_limits       — Per-tier numeric limits
-feature_flags     — Server-side feature toggles
-notifications     — In-app notifications
-push_subscriptions — Web Push endpoints
-analytics_events  — Conversion tracking
-member_flags      — Safety reports
-```
+### Database: 78 Tables
+**Core:** profiles (64 fields), events, event_rsvps, session_phases, group_members, member_statuses
+**Matching:** taste_graph, match_templates, ai_match_explanations, connections, connection_requests
+**Companies:** companies, company_members, company_needs, company_offers, company_intros, intro_credits
+**Community:** prompts, prompt_responses, prompt_reactions, community_rituals, coffee_roulette_queue, micro_requests
+**Gamification:** peer_props, member_badges, member_milestones, exclusive_achievements, monthly_titles, user_streaks
+**Session:** session_intentions, session_photos, session_scrapbook, session_boosts, icebreaker_questions, energy_checks, check_ins
+**Subscription:** subscription_tiers, tier_features, tier_limits, user_subscriptions, session_boosts
+**Venue:** locations, venue_partners, venue_vibes, venue_scans, partner_applications
+**Infrastructure:** feature_flags, notifications, push_subscriptions, analytics_events, conversion_events, app_settings, ai_providers, ai_task_config, ai_usage_log
 
 ### Key Algorithms
-1. **Smart Grouping** (`createSmartGroups`): Captain distribution → experienced member balancing → newbie spreading → gender balancing (10 iterations)
-2. **Match Scoring** (`calculateMatch`): Work vibe (20) + neighborhood (15) + skill exchange (25) + interests (15) + noise (5) + comm style (5) = max 100
-3. **Session Matching** (`sessionMatchScore`): Day preference + time preference + format preference + neighborhood proximity
-4. **Icebreaker Selection** (`selectIcebreakerRounds`): Least-used questions, depth adapted to group experience level
-5. **Focus Hours** (`calculateSessionHours`): Format-based (4hr→3h, 2hr→1.33h) with time-parsing fallback
+1. **Match Scoring** (`calculateMatch`): 6-dimension scoring, max 100, returns score + 4 reasons
+2. **Smart Grouping** (`createSmartGroups`): Captain → experienced → newbie → gender balance (10 iterations)
+3. **Session Matching** (`sessionMatchScore`): Day + time + format + neighborhood proximity
+4. **Icebreaker Selection** (`selectIcebreakerRounds`): Least-used questions, depth adapted to group experience
+5. **Focus Hours** (`calculateSessionHours`): Format-based (4hr→3h, 2hr→1.33h)
+6. **Company Matching** (`get_company_matches` RPC): Cross-references needs/offers between companies
+7. **Reliability Scoring** (`updateReliability` RPC): Tracks RSVPs, shows, no-shows, late cancels
+8. **Effective Tier** (`get_effective_tier` RPC): Subscription tier + boost logic
+
+### Codebase Stats
+- **26 pages** with lazy-loaded routes
+- **140+ components** across 18 directories
+- **14 hooks** for state management
+- **22 lib files** for business logic
+- **2 context providers** (Auth, Personality)
+- **555 tests** across 39 files (unit, integration, smoke, edge)
 
 ---
 
-## 5. Feature Flag vs Subscription Gating
-
-> **Architecture issue:** Two separate gating systems exist and need unification.
-
-| System | Source | Used By | Purpose |
-|--------|--------|---------|---------|
-| Feature Flags | `feature_flags` table | `FeatureGate` component, `useFeatureFlags` | Kill switches, A/B tests, rollout control |
-| Subscription | `tier_features` table | `useSubscription.hasFeature()` | Tier-based access |
-
-**Recommendation:** Feature flags should control rollout (on/off for everyone). Subscription should control access (free vs paid). Currently mixed in UI.
-
----
-
-## 6. Content & Personality System
-
-The app uses a centralized personality system (`src/lib/personality.ts`) for all user-facing copy:
-- Contextual greetings (time of day, context-aware)
-- Loading messages (rotating witty copy)
-- Error states (branded, humorous)
-- Confirmations (warm, personal)
-- Celebrations (streak, rank, milestone)
-- Community language mappings ("session" not "event", "table" not "group")
-
----
-
-## 7. Gamification System
-
-| System | Mechanic | Current State |
-|--------|----------|---------------|
-| **Ranks** | 6 tiers (0-150+ focus hours) | Implemented, visual badges |
-| **Badges** | 17 types, auto-awarded | Implemented |
-| **Streaks** | Weekly session attendance | Implemented (insurance not functional) |
-| **Milestones** | 22 achievement types | Implemented with celebrations |
-| **Monthly Titles** | 6 competitive titles per month | Defined, award logic exists |
-| **Exclusive Achievements** | 11 one-time/seasonal | Defined, partially implemented |
-| **Props** | 6 peer recognition types | Implemented with echo delay |
-| **Leaderboard** | Focus hours ranking | Component exists |
-
----
-
-## 8. What Needs to Be Built (Prioritized)
+## 5. What Needs to Be Built
 
 ### P0 — Launch Blockers
 
-| Feature | Why | Effort |
+| Feature | Why | Status |
 |---------|-----|--------|
-| Payment integration (UPI QR → Razorpay) | No revenue without it | High |
-| Transactional notifications (email + WhatsApp) | Users won't know about sessions, groups, or reminders | Medium |
-| Women-only RSVP enforcement | Trust & safety requirement | Low |
-| Admin flag review + moderation | Cannot operate safely without it | Medium |
-| Pre-session push reminders (24hr + 1hr) | Attendance rates will be terrible without reminders | Low |
+| Payment integration (UPI QR → Razorpay) | No revenue without it | Not built |
+| Email notifications (Resend/SendGrid) | Members won't know about sessions, groups, reminders | Not built |
+| WhatsApp automation | Primary communication channel in India | Not built |
+| Pre-session push scheduling (cron) | Attendance rates depend on reminders | Infrastructure exists, no trigger |
+| Women-only RLS policy | Client-side enforcement only, needs DB-level | Not built |
+| Day pass purchase flow | Revenue driver for spaces, GTM critical | Not built |
 
-### P1 — First Month After Launch
-
-| Feature | Why |
-|---------|-----|
-| Session format/duration filter | Usability (busy users need to filter by time) |
-| Neighborhood default from profile | Reduces friction on every visit |
-| Quick post-session feedback path | Retains casual users who hate long forms |
-| First-session explainer | Reduces anxiety for new users |
-| Venue partner self-serve registration | Cannot scale supply side manually |
-| Booking limits enforcement | Subscription revenue depends on it |
-| Streak insurance UI | DB field exists, just needs frontend |
-
-### P2 — Growth & Retention
+### P1 — First Month
 
 | Feature | Why |
 |---------|-----|
-| Landing page social proof | Higher conversion from ads |
-| Captain dashboard | Retain power users who drive community |
-| Admin UX redesign | Operations team efficiency |
-| Unified gating system | Architecture hygiene |
-| Home page prioritization | Information overload hurts engagement |
-| Direct messaging | Enable pre-session buddy intros |
-| Email weekly digest | Reach users who didn't enable push |
+| In-session smart intros during networking break | The "wow" moment — "talk to X because Y" |
+| AI "you should meet" proactive nudges | Passive matching → active matchmaking |
+| Booking limits enforcement at RSVP | Subscription revenue depends on it |
+| Day pass → member conversion flow | Growth funnel |
+| Email weekly digest delivery | Reach users without push enabled |
+| Workspace insights dashboard (free for spaces) | Give spaces a reason to promote FocusClub |
+
+### P2 — Growth
+
+| Feature | Why |
+|---------|-----|
+| AI community manager (auto-suggest intros, predict churn) | Scale community ops 10x |
+| Needs Board (companies post needs, AI matches members) | Unlock freelancer→company value exchange |
+| Mentor/mentee explicit matching track | High-value connection type for employees |
+| Configurable session formats per venue | Let venues customize their experience |
+| Multi-neighborhood expansion (Koramangala, Indiranagar) | Geographic growth |
 
 ### P3 — Expansion
 
 | Feature | Why |
 |---------|-----|
-| Focus-only session format | Expand TAM to deep focus users |
-| Offline resilience (service worker) | Indian cafe WiFi is unreliable |
-| Venue intelligence on event cards | Better session selection |
-| Prompt scheduling | Admin efficiency |
-| Multi-city expansion prep | Beyond HSR Layout |
+| Cross-space passport (visit any FocusClub space) | Network effect moat |
+| LLM-powered member search ("find someone who can help with Series A") | 10x discovery |
+| Corporate team session bookings | B2B revenue channel |
+| Offline data caching (IndexedDB for session/event data) | Indian WiFi resilience |
+| Multi-city expansion (Mumbai, Delhi) | Scale |
+
+---
+
+## 6. Feature Flag vs Subscription Gating
+
+Two separate systems — intentionally:
+
+| System | Source | Purpose |
+|--------|--------|---------|
+| Feature Flags | `feature_flags` table | Kill switches, A/B tests, rollout control (on/off for everyone) |
+| Subscription | `tier_features` + `tier_limits` | Tier-based access (free vs paid features) |
+
+`FeatureGate` component supports BOTH: `featureFlag` prop checks flags, `requiredTier` prop checks subscription. Can be combined.
+
+---
+
+## 7. Metrics
+
+| Metric | Target | Why |
+|--------|--------|-----|
+| Meaningful connections per member/month | 5+ | Core value delivery |
+| 90-day member retention | 70%+ | Community stickiness |
+| Session NPS | 60+ | Session quality |
+| Day pass → member conversion | 15%+ | Growth funnel |
+| Weekly active rate | 40%+ | Engagement |
+| Profile completion (taste graph) | 60%+ at 30 days | Matching quality |
+| Company needs fulfilled per company/month | 3+ | B2B value delivery |

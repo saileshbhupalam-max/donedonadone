@@ -98,19 +98,14 @@ Every interaction feeds the matching engine. Every session produces data. Every 
 
 ## Value Prop by User Type
 
-### For Coworking Space Operators (The Customer)
+### For Coworking Spaces (Optional — Free Insights Dashboard)
 
-**What they get:**
-- **Retention:** Members stay because their network is here. Switching cost goes from zero to "I'd lose my community."
-- **Revenue:** Day pass sales for structured sessions. Premium tier upsells. Corporate team bookings.
-- **Differentiation:** Every other space sells desks and WiFi. You sell a community that makes people's careers.
-- **Data:** Understand who your members are, what they need, and how engaged they are. Predict churn. Spot power users.
-- **Reduced overhead:** AI handles community management, matching, event programming, and member onboarding. Your community manager becomes 10x more effective.
-
-**Why they pay:**
-- Monthly SaaS fee per seat (the space pays, not the member for base features)
-- Revenue share on day passes sold through FocusClub
-- Premium API access for custom integrations
+FocusClub is permissionless. Members sign up directly. Spaces are not the customer — members are. But spaces benefit naturally:
+- **Retention:** Members stay because their network is here
+- **Revenue:** Day pass holders buy sessions at the space
+- **Data:** Free insights dashboard shows engagement, popular times, community health
+- **Differentiation:** "We're a FocusClub space" becomes a selling point
+- Spaces that want to buy FocusClub for all their members can do so (bulk plan), but this is not the primary GTM
 
 ### For Companies in the Space
 
