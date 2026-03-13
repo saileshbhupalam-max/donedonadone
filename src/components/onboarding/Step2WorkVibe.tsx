@@ -1,9 +1,8 @@
-/* DESIGN: Merged Step2Work + essentials from Step3Preferences.
-   Only collects what's needed for session matching before first session:
-   what you do, work vibe, gender, neighborhood, women-only interest. */
+/* DESIGN: Collects what's needed for session matching before first session:
+   work vibe, neighborhood, gender, women-only interest.
+   "What I do" and tagline deferred to profile (progressive profiling — CXL). */
 
 import type { OnboardingData } from "@/lib/types";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
@@ -15,9 +14,9 @@ interface Props {
 }
 
 const VIBES = [
-  { id: "deep_focus", emoji: "🎯", label: "Deep Focus", desc: "Headphones on. World off." },
-  { id: "casual_social", emoji: "☕", label: "Casual Social", desc: "Work a bit. Chat a bit. Live a bit." },
-  { id: "balanced", emoji: "⚖️", label: "Balanced", desc: "Best of both. You're versatile." },
+  { id: "deep_focus", emoji: "\uD83C\uDFAF", label: "Deep Focus", desc: "Headphones on. World off." },
+  { id: "casual_social", emoji: "\u2615", label: "Casual Social", desc: "Work a bit. Chat a bit. Live a bit." },
+  { id: "balanced", emoji: "\u2696\uFE0F", label: "Balanced", desc: "Best of both. You're versatile." },
 ];
 
 const GENDERS = [
@@ -27,30 +26,12 @@ const GENDERS = [
   { value: "prefer_not_to_say", label: "Prefer not to say" },
 ];
 
-// Neighborhoods now loaded dynamically via NeighborhoodInput
-
 export function Step2WorkVibe({ data, updateData }: Props) {
   return (
     <div className="flex flex-col pt-8 gap-6 max-w-sm mx-auto">
       <div className="text-center space-y-2">
-        <h1 className="font-serif text-3xl text-foreground">How do you work?</h1>
-        <p className="text-muted-foreground text-sm">This helps us match you with the right table</p>
-      </div>
-
-      {/* What I do */}
-      <div className="space-y-2">
-        <div className="flex justify-between items-baseline">
-          <label className="text-sm font-medium text-foreground">What do you do?</label>
-          <span className="text-xs text-muted-foreground">{data.what_i_do.length}/300</span>
-        </div>
-        <Textarea
-          value={data.what_i_do}
-          onChange={(e) => {
-            if (e.target.value.length <= 300) updateData({ what_i_do: e.target.value });
-          }}
-          placeholder="I run a design studio focused on brand identity for startups..."
-          className="rounded-xl resize-none min-h-[80px]"
-        />
+        <h1 className="font-serif text-3xl text-foreground">Pick your vibe.</h1>
+        <p className="text-muted-foreground text-sm">We'll match you with people who work like you.</p>
       </div>
 
       {/* Work vibe */}
@@ -78,10 +59,22 @@ export function Step2WorkVibe({ data, updateData }: Props) {
         </div>
       </div>
 
+      {/* Neighborhood */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground">Neighborhood</label>
+        <NeighborhoodInput
+          value={data.neighborhood}
+          onChange={(slug) => updateData({ neighborhood: slug })}
+          placeholder="Type your area (e.g., Koramangala, Indiranagar...)"
+          className="rounded-xl"
+        />
+        <p className="text-xs text-muted-foreground">We'll find sessions near you.</p>
+      </div>
+
       {/* Gender */}
       <div className="space-y-3">
         <label className="text-sm font-medium text-foreground">Gender</label>
-        <p className="text-xs text-muted-foreground -mt-1">Helps us build balanced tables. That's it.</p>
+        <p className="text-xs text-muted-foreground -mt-1">For balanced tables and women-only sessions.</p>
         <div className="flex flex-wrap gap-2">
           {GENDERS.map((g) => (
             <button
@@ -110,8 +103,8 @@ export function Step2WorkVibe({ data, updateData }: Props) {
             >
               <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border mt-2">
                 <div className="pr-4">
-                  <p className="text-sm font-medium text-foreground">Women-only meetups</p>
-                  <p className="text-xs text-muted-foreground">We organize women-only coworking sessions.</p>
+                  <p className="text-sm font-medium text-foreground">Women-only sessions</p>
+                  <p className="text-xs text-muted-foreground">Get matched with women-only coworking tables.</p>
                 </div>
                 <Switch
                   checked={data.women_only_interest}
@@ -121,17 +114,6 @@ export function Step2WorkVibe({ data, updateData }: Props) {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
-
-      {/* Neighborhood */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground">Neighborhood</label>
-        <NeighborhoodInput
-          value={data.neighborhood}
-          onChange={(slug) => updateData({ neighborhood: slug })}
-          placeholder="Type your area (e.g., Koramangala, Shoreditch...)"
-          className="rounded-xl"
-        />
       </div>
     </div>
   );

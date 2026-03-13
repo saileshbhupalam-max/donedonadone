@@ -25,14 +25,14 @@ export function Step3GiveGet({ data, updateData }: Props) {
   return (
     <div className="flex flex-col pt-8 gap-8 max-w-sm mx-auto">
       <div className="text-center space-y-2">
-        <h1 className="font-serif text-3xl text-foreground">What's your exchange?</h1>
+        <h1 className="font-serif text-3xl text-foreground">What are you looking for?</h1>
         <p className="text-muted-foreground text-sm">
-          donedonadone is about exchange. What do you bring to the table?
+          We'll match you with people who can help — and people you can help.
         </p>
       </div>
 
       <TagInput
-        label="I'm looking for... *"
+        label="I'm looking for..."
         tags={data.looking_for}
         onChange={(tags) => updateData({ looking_for: tags })}
         suggestions={LOOKING_SUGGESTIONS}
@@ -50,7 +50,7 @@ export function Step3GiveGet({ data, updateData }: Props) {
       />
 
       <p className="text-xs text-muted-foreground text-center">
-        This helps us match you with the right people at your table.
+        The more specific you are, the better your matches.
       </p>
     </div>
   );

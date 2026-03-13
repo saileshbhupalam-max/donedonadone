@@ -45,8 +45,8 @@ export function Step1Identity({ data, updateData, userId }: Props) {
   return (
     <div className="flex flex-col items-center pt-8 gap-6">
       <div className="text-center space-y-2">
-        <h1 className="font-serif text-3xl text-foreground">First things first.</h1>
-        <p className="text-muted-foreground text-sm">What do people call you?</p>
+        <h1 className="font-serif text-3xl text-foreground">Let's make it yours.</h1>
+        <p className="text-muted-foreground text-sm">This is how you'll appear at the table.</p>
       </div>
 
       {/* Avatar */}
@@ -71,7 +71,7 @@ export function Step1Identity({ data, updateData, userId }: Props) {
         disabled={uploading}
         className="text-sm text-primary font-medium hover:underline"
       >
-        {uploading ? "Uploading..." : "Show us your face"}
+        {uploading ? "Uploading..." : "Change photo"}
       </button>
 
       {/* Display name */}
@@ -85,21 +85,6 @@ export function Step1Identity({ data, updateData, userId }: Props) {
         />
       </div>
 
-      {/* Tagline */}
-      <div className="w-full max-w-sm space-y-2">
-        <div className="flex justify-between items-baseline">
-          <label className="text-sm font-medium text-foreground">Tagline</label>
-          <span className="text-xs text-muted-foreground">{data.tagline.length}/140</span>
-        </div>
-        <Input
-          value={data.tagline}
-          onChange={(e) => {
-            if (e.target.value.length <= 140) updateData({ tagline: e.target.value });
-          }}
-          placeholder="Designer by day, guitarist by night"
-          className="rounded-xl"
-        />
-      </div>
     </div>
   );
 }

@@ -27,7 +27,7 @@ export function Step4Done({ data }: Props) {
     <div className="flex flex-col items-center pt-8 gap-6 max-w-sm mx-auto">
       <div className="text-center space-y-2">
         <h1 className="font-serif text-3xl text-foreground">You're in! 🎉</h1>
-        <p className="text-muted-foreground text-sm">This is how others see you at the table.</p>
+        <p className="text-muted-foreground text-sm">Here's how you'll look at the table. Ready for your first session?</p>
       </div>
 
       {/* Profile preview card */}
@@ -89,9 +89,15 @@ export function Step4Done({ data }: Props) {
         )}
 
         {data.neighborhood && (
-          <p className="text-xs text-muted-foreground">📍 {data.neighborhood}</p>
+          <p className="text-xs text-muted-foreground">
+            📍 {data.neighborhood.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+          </p>
         )}
       </div>
+
+      <p className="text-xs text-muted-foreground text-center">
+        Your first session is just one tap away.
+      </p>
     </div>
   );
 }

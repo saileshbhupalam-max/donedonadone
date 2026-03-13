@@ -28,7 +28,7 @@ Ordered by conversion impact × traffic volume. Every user hits tiers 1-2. Tiers
 | # | Page/Flow | CXL Skill | Conversion Goal | Impact |
 |---|-----------|-----------|-----------------|--------|
 | 1 | **Landing Page** (`Index.tsx`) | `/cxl:landing-page` | Visitor → Sign-up | DONE |
-| 2 | **Onboarding Flow** (4 steps) | `/cxl:onboarding` + `/cxl:forms` | Sign-up → Activated member | CRITICAL |
+| 2 | **Onboarding Flow** (4 steps) | `/cxl:onboarding` + `/cxl:forms` | Sign-up → Activated member | DONE |
 | 3 | **Home Dashboard** (`Home/index.tsx`) | `/cxl:optimize` + `/cxl:copy` | Activated → First session booked | HIGH |
 
 ### Tier 2 — Core Loop (Session Booking → Attendance → Retention)
@@ -68,21 +68,11 @@ Ordered by conversion impact × traffic volume. Every user hits tiers 1-2. Tiers
 - **Changes**: Full redesign with Z-pattern hero, loss-framed copy, Von Restorff CTA, social proof near CTA, 3-step explainer, trust signals, dark warm aesthetic
 - **Audit artifact**: To be written retroactively
 
-### Phase 1: Onboarding Flow
-- **Target files**: `src/pages/Onboarding.tsx`, `src/components/onboarding/Step1Identity.tsx`, `Step2WorkVibe.tsx`, `Step3GiveGet.tsx`, `Step4Done.tsx`
-- **Skills**: `/cxl:onboarding`, `/cxl:forms`, `/cxl:copy`
-- **Goals**:
-  - Increase onboarding completion rate
-  - Reduce time-to-first-session (activation metric)
-  - Apply progressive commitment (easiest asks first)
-  - Apply Zeigarnik effect (progress bar optimization)
-  - Apply endowment effect (personalization early)
-- **Audit steps**:
-  1. `/cxl:onboarding` — Map current flow, identify activation metric, score each step
-  2. `/cxl:forms` — Audit each step's form fields (essential/defer/remove)
-  3. `/cxl:copy` — Rewrite all step titles, descriptions, CTAs, and microcopy
-  4. Implement changes
-  5. Write `docs/cxl-audits/onboarding-audit.md`
+### Phase 1: Onboarding Flow [COMPLETE]
+- **Status**: Done
+- **Skills used**: `/cxl:onboarding`, `/cxl:forms`, `/cxl:copy`
+- **Changes**: Removed 2 premature fields (tagline, what_i_do) via progressive profiling. Reordered Step 2 (work_vibe→neighborhood→gender). Step-specific CTAs. Contextual progress labels. All copy rewritten for benefit-framing. De-slugified neighborhood in preview. 30% field reduction → expected +15-30% completion rate increase.
+- **Audit artifact**: `docs/cxl-audits/onboarding-audit.md`
 
 ### Phase 2: Home Dashboard
 - **Target files**: `src/pages/Home/index.tsx` and Home components

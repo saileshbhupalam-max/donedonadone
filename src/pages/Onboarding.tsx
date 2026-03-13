@@ -24,6 +24,12 @@ import { trackAnalyticsEvent } from "@/lib/growth";
 import type { OnboardingData } from "@/lib/types";
 
 const TOTAL_STEPS = 4;
+const STEP_NAMES = ["About you", "Work style", "Interests", "All set"];
+const STEP_CTA: Record<number, string> = {
+  1: "Pick your work style \u2192",
+  2: "One more thing \u2192",
+  3: "See your profile \u2192",
+};
 
 export default function Onboarding() {
   usePageTitle("Join — donedonadone");
@@ -113,10 +119,10 @@ export default function Onboarding() {
 
   const calculateCompletion = () => {
     const fields = [
-      data.display_name, data.tagline, data.what_i_do, data.work_vibe,
+      data.display_name, data.work_vibe,
       data.gender, data.neighborhood,
     ];
-    const arrayFields = [data.looking_for, data.can_offer];
+    const arrayFields = [data.looking_for];
     const filled = fields.filter((f) => f && f.trim().length > 0).length;
     const arrayFilled = arrayFields.filter((a) => a.length > 0).length;
     return Math.round(((filled + arrayFilled) / (fields.length + arrayFields.length)) * 100);
@@ -215,7 +221,7 @@ export default function Onboarding() {
       <div className="min-h-screen flex flex-col">
         {/* Progress bar */}
         <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm">
-          <Progress value={(step / TOTAL_STEPS) * 100} className="h-1 rounded-none [&>div]:bg-primary" />
+          <Progress value={(step / TOTAL_STEPS) * 100} className="h-1.5 rounded-none [&>div]:bg-primary [&>div]:transition-all [&>div]:duration-500" />
           <div className="flex items-center justify-between px-5 py-3">
             {step > 1 && step < 4 ? (
               <button onClick={back} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -223,7 +229,7 @@ export default function Onboarding() {
               </button>
             ) : <div />}
             <span className="text-xs font-medium text-muted-foreground tracking-wide">
-              Step {step} of {TOTAL_STEPS}
+              {STEP_NAMES[step - 1]} &middot; {step}/{TOTAL_STEPS}
             </span>
           </div>
         </div>
@@ -255,7 +261,7 @@ export default function Onboarding() {
               size="lg"
               className="w-full rounded-full text-base font-medium"
             >
-              Next
+              {STEP_CTA[step] || "Next"}
             </Button>
           </div>
         )}
