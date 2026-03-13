@@ -24,7 +24,7 @@ function getClue(profile: Record<string, any> | null): string {
     const labels: Record<string, string> = { deep_focus: "Deep Focus", casual_social: "Social", balanced: "Balanced" };
     return `${labels[profile.work_vibe] || profile.work_vibe} worker`;
   }
-  if ((profile?.events_attended || 0) >= 10) return "FocusClub veteran";
+  if ((profile?.events_attended || 0) >= 10) return "donedonadone veteran";
   return "Someone interesting...";
 }
 

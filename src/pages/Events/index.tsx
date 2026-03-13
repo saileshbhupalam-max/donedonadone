@@ -47,7 +47,7 @@ import { SessionRequestSheet } from "./SessionRequestSheet";
 const SessionMap = lazy(() => import("@/components/map/SessionMap").then(m => ({ default: m.SessionMap })));
 
 export default function Events() {
-  usePageTitle("Sessions — FocusClub");
+  usePageTitle("Sessions — donedonadone");
   const { profile, user } = useAuth();
   const { upcoming, past, loading, toggleRsvp, getUserRsvp, fetchEvents } = useEvents();
   const [filter, setFilter] = useState<string>("all");

@@ -1,6 +1,6 @@
 /* DESIGN: Profile restructured into 3 tabs:
    - Profile: What others see (screenshot-worthy)
-   - Journey: Your FocusClub story (timeline)
+   - Journey: Your donedonadone story (timeline)
    - Settings: Edit everything */
 
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
@@ -59,7 +59,7 @@ const LocationPicker = lazy(() => import("@/components/map/LocationPicker").then
 
 // ─── Main Profile Page ──────────────────────────────────
 export default function Profile() {
-  usePageTitle("You — FocusClub");
+  usePageTitle("You — donedonadone");
   const { profile, user, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -726,7 +726,7 @@ export default function Profile() {
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>Sign out?</AlertDialogTitle>
-                    <AlertDialogDescription>You'll need to sign in again to access FocusClub.</AlertDialogDescription>
+                    <AlertDialogDescription>You'll need to sign in again to access donedonadone.</AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Never mind</AlertDialogCancel>

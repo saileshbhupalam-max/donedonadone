@@ -393,11 +393,11 @@ function LiveConversionHero({ locationId }: { locationId: string }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
           <Button asChild size="sm" variant="default" className="w-fit">
             <Link to="/">
-              Join FocusClub <ArrowRight className="w-4 h-4 ml-1" />
+              Join donedonadone <ArrowRight className="w-4 h-4 ml-1" />
             </Link>
           </Button>
           <span className="text-xs text-muted-foreground">
-            Powered by <span className="font-semibold text-foreground">FocusClub</span>
+            Powered by <span className="font-semibold text-foreground">donedonadone</span>
           </span>
         </div>
       </CardContent>
@@ -415,7 +415,7 @@ export default function SpaceInsights() {
   const [dateRange, setDateRange] = useState<DateRange>("quarter");
 
   usePageTitle(
-    data ? `${data.venue.name} Insights -- FocusClub` : "Space Insights -- FocusClub"
+    data ? `${data.venue.name} Insights -- donedonadone` : "Space Insights -- donedonadone"
   );
 
   useEffect(() => {
@@ -485,7 +485,7 @@ export default function SpaceInsights() {
                 </div>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   Powered by{" "}
-                  <span className="font-semibold text-foreground">FocusClub</span>
+                  <span className="font-semibold text-foreground">donedonadone</span>
                 </div>
               </div>
 
@@ -668,7 +668,7 @@ export default function SpaceInsights() {
                   href="/"
                   className="text-primary hover:underline font-medium"
                 >
-                  FocusClub
+                  donedonadone
                 </a>{" "}
                 -- Group coworking for Bangalore
               </p>

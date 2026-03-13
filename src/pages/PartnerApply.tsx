@@ -208,7 +208,7 @@ function Step4({ form }: { form: FormData }) {
 }
 
 export default function PartnerApply() {
-  usePageTitle("Partner Application — FocusClub");
+  usePageTitle("Partner Application — donedonadone");
   const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
@@ -274,7 +274,7 @@ export default function PartnerApply() {
     <AppShell>
       <div className="px-4 py-4 max-w-lg mx-auto space-y-4">
         <h1 className="font-serif text-2xl text-foreground">List Your Venue</h1>
-        <p className="text-xs text-muted-foreground">Join FocusClub as a partner venue and attract focused professionals to your space.</p>
+        <p className="text-xs text-muted-foreground">Join donedonadone as a partner venue and attract focused professionals to your space.</p>
 
         {/* Progress */}
         <div className="space-y-2">

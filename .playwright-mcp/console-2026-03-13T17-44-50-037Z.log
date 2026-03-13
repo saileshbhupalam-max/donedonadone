@@ -1,0 +1,57 @@
+[      95ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[     257ms] [WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[     258ms] [WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[     301ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1547795ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1548102ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1548303ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1548407ms] [WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[ 1548407ms] [WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[ 1548555ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1548944ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1549148ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1549358ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1549436ms] [WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[ 1549437ms] [WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[ 1549570ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1549900ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1550018ms] [WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[ 1550018ms] [WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[ 1550140ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1550370ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1550830ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1551180ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1551522ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1552149ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1552827ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1553478ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1554100ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1554273ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1554829ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1554920ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1555398ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1555570ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1555755ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1556020ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1556299ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Outdated Request) @ http://localhost:8080/src/contexts/AuthContext.tsx?t=1773425443272:0
+[ 1556304ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Outdated Request) @ http://localhost:8080/src/contexts/PersonalityContext.tsx?t=1773425443102:0
+[ 1556307ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Outdated Request) @ http://localhost:8080/src/hooks/useFeatureFlags.tsx?t=1773425442484:0
+[ 1556308ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Outdated Request) @ http://localhost:8080/src/hooks/useSubscription.tsx?t=1773425443272:0
+[ 1556309ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Outdated Request) @ http://localhost:8080/src/components/ProtectedRoute.tsx?t=1773425443538:0
+[ 1556310ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Outdated Request) @ http://localhost:8080/src/lib/utils.ts?t=1773425443538:0
+[ 1556312ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Outdated Request) @ http://localhost:8080/src/hooks/use-toast.ts?t=1773425442054:0
+[ 1556316ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Outdated Request) @ http://localhost:8080/src/components/ui/toast.tsx?t=1773425443538:0
+[ 1556317ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Outdated Request) @ http://localhost:8080/src/hooks/use-mobile.tsx?t=1773425442054:0
+[ 1556337ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1557011ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1557211ms] [WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[ 1557212ms] [WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[ 1557360ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1704913ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1705044ms] [WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[ 1705044ms] [WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[ 1705070ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1714201ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[ 1714349ms] [WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[ 1714350ms] [WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[ 1714393ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0

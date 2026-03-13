@@ -133,7 +133,7 @@ export default function ProfileView() {
   const [engagementScore, setEngagementScore] = useState<number | null>(null);
 
   const isOwnProfile = user?.id === id;
-  usePageTitle(profileData ? `${profileData.display_name}'s Profile — FocusClub` : "Profile — FocusClub");
+  usePageTitle(profileData ? `${profileData.display_name}'s Profile — donedonadone` : "Profile — donedonadone");
 
   useEffect(() => {
     if (!id || !user) return;
@@ -203,7 +203,7 @@ export default function ProfileView() {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] gap-4 px-6">
-          <p className="text-muted-foreground text-center">This person isn't on FocusClub yet.</p>
+          <p className="text-muted-foreground text-center">This person isn't on donedonadone yet.</p>
           <Button variant="outline" onClick={() => navigate(-1)}>Go back</Button>
         </div>
       </AppShell>

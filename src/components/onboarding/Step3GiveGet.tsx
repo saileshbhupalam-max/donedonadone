@@ -27,7 +27,7 @@ export function Step3GiveGet({ data, updateData }: Props) {
       <div className="text-center space-y-2">
         <h1 className="font-serif text-3xl text-foreground">What's your exchange?</h1>
         <p className="text-muted-foreground text-sm">
-          FocusClub is about exchange. What do you bring to the table?
+          donedonadone is about exchange. What do you bring to the table?
         </p>
       </div>
 

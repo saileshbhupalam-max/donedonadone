@@ -228,7 +228,7 @@ function NeedCard({
 }
 
 export default function Needs() {
-  usePageTitle("Needs Board -- FocusClub");
+  usePageTitle("Needs Board -- donedonadone");
   const { user, profile } = useAuth();
   const { getLimit, tier } = useSubscription();
   const { activeCheckIn } = useUserContext();

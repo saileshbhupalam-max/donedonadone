@@ -51,7 +51,7 @@ interface CompanyRow {
 }
 
 export default function Companies() {
-  usePageTitle("Companies -- FocusClub");
+  usePageTitle("Companies -- donedonadone");
   const { user } = useAuth();
   const navigate = useNavigate();
   const { hasFeature } = useSubscription();
@@ -354,7 +354,7 @@ export default function Companies() {
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           Unlock B2B matchmaking, find partners, and grow your
-                          business through the FocusClub network
+                          business through the donedonadone network
                         </p>
                       </div>
                       <Button

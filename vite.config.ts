@@ -18,8 +18,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "offline.html"],
       manifest: {
-        name: "FocusClub",
-        short_name: "FocusClub",
+        name: "donedonadone",
+        short_name: "donedonadone",
         description: "Cowork with your people at great cafes",
         theme_color: "#18181b",
         background_color: "#ffffff",

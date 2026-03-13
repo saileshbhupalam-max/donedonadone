@@ -1,4 +1,4 @@
-# CLAUDE.md — LLM Context for FocusClub Codebase
+# CLAUDE.md — LLM Context for donedonadone Codebase
 
 > This file is the **first thing any LLM should read** when working on this project.
 > It exists to overcome the context-window limitations of vibe-coding tools.
@@ -7,7 +7,7 @@
 
 ## Project Identity
 
-**FocusClub** is a social coworking platform that matches solo workers into groups
+**donedonadone** is a social coworking platform that matches solo workers into groups
 of 3-5 at cafes/coworking spaces. Launching in HSR Layout, Bangalore. Target: 1000
 bookings/day. The platform is designed to grow itself via permissionless mechanics —
 no admin bottleneck for venue discovery, session creation, or quality control.

@@ -43,9 +43,9 @@ export function getGoogleCalendarUrl(event: {
 
   const params = new URLSearchParams({
     action: 'TEMPLATE',
-    text: `FocusClub: ${event.title}`,
+    text: `donedonadone: ${event.title}`,
     dates: `${start}/${end}`,
-    details: `Cowork session${event.venueName ? ` at ${event.venueName}` : ''}.\n\nCheck in with the FocusClub app when you arrive.`,
+    details: `Cowork session${event.venueName ? ` at ${event.venueName}` : ''}.\n\nCheck in with the donedonadone app when you arrive.`,
     location,
     ctz: 'Asia/Kolkata',
   });
@@ -82,13 +82,13 @@ export function downloadICSFile(event: {
   const ics = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//FocusClub//EN',
+    'PRODID:-//donedonadone//EN',
     'BEGIN:VEVENT',
     `DTSTART;TZID=Asia/Kolkata:${start}`,
     `DTEND;TZID=Asia/Kolkata:${end}`,
-    `SUMMARY:FocusClub: ${event.title}`,
+    `SUMMARY:donedonadone: ${event.title}`,
     `LOCATION:${location}`,
-    `DESCRIPTION:Cowork session. Check in with the FocusClub app.`,
+    `DESCRIPTION:Cowork session. Check in with the donedonadone app.`,
     'END:VEVENT',
     'END:VCALENDAR',
   ].join('\r\n');

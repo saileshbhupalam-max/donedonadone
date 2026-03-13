@@ -86,7 +86,7 @@ export function ScrapbookCard({ entry, compact = false, onNoteUpdated }: Scrapbo
         if (!blob) return;
         if (navigator.share) {
           const file = new File([blob], "focusclub-session.png", { type: "image/png" });
-          navigator.share({ files: [file], title: entry.highlight || "My FocusClub Session" }).catch(() => {});
+          navigator.share({ files: [file], title: entry.highlight || "My donedonadone Session" }).catch(() => {});
         } else {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");

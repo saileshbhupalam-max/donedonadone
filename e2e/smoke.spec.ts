@@ -16,10 +16,10 @@ test.describe("App boots and serves pages", () => {
     await expect(page.locator("#root")).toBeAttached();
   });
 
-  test("/ shows FocusClub branding (loading or landing)", async ({ page }) => {
+  test("/ shows donedonadone branding (loading or landing)", async ({ page }) => {
     await page.goto("/");
-    // Both loading state and landing page show "FocusClub" heading
-    await expect(page.locator("h1")).toContainText("FocusClub", { timeout: 10000 });
+    // Both loading state and landing page show "donedonadone" heading
+    await expect(page.locator("h1")).toContainText("donedonadone", { timeout: 10000 });
   });
 
   test("/space/test-id/insights serves the app", async ({ page }) => {
@@ -37,7 +37,7 @@ test.describe("App boots and serves pages", () => {
 });
 
 test.describe("Protected routes show loading state for unauthenticated users", () => {
-  // Protected routes show the "FocusClub" loading screen while auth resolves,
+  // Protected routes show the "donedonadone" loading screen while auth resolves,
   // then redirect to "/". We verify they at least render without crashing.
   const protectedRoutes = [
     "/home",

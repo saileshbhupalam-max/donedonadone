@@ -112,7 +112,7 @@ describe("getPromptShareMessage edge cases", () => {
 describe("getProfileShareMessage edge cases", () => {
   it("includes display name in message", () => {
     const msg = getProfileShareMessage("John Doe", "user-123", "REF");
-    expect(msg).toContain("FocusClub");
+    expect(msg).toContain("donedonadone");
     expect(msg).toContain("/profile/user-123");
   });
 

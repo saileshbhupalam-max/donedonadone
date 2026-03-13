@@ -65,7 +65,7 @@ export function InstallPrompt() {
               <Download className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground">Add FocusClub to home screen</p>
+              <p className="text-sm font-medium text-foreground">Add donedonadone to home screen</p>
               <p className="text-xs text-muted-foreground mt-0.5">Get the best experience with quick access</p>
               <div className="flex gap-2 mt-2">
                 <Button size="sm" onClick={handleInstall} className="h-8 text-xs">

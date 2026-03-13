@@ -11,13 +11,13 @@ import { test, expect } from "@playwright/test";
 test.describe("Landing page", () => {
   test("has correct page title", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle(/FocusClub/i);
+    await expect(page).toHaveTitle(/donedonadone/i);
   });
 
-  test("shows FocusClub branding immediately", async ({ page }) => {
+  test("shows donedonadone branding immediately", async ({ page }) => {
     await page.goto("/");
-    // Both loading state and final render show FocusClub heading
-    await expect(page.locator("h1")).toContainText("FocusClub", { timeout: 10000 });
+    // Both loading state and final render show donedonadone heading
+    await expect(page.locator("h1")).toContainText("donedonadone", { timeout: 10000 });
   });
 
   test("displays feature cards after auth resolves", async ({ page }) => {

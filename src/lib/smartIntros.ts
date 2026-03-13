@@ -130,7 +130,7 @@ function buildConversationStarter(viewer: Profile, member: Profile): string {
   }
 
   // Generic but warm
-  return `"Hey ${firstName}, what brought you to FocusClub?"`;
+  return `"Hey ${firstName}, what brought you to donedonadone?"`;
 }
 
 /**

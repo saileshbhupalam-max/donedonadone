@@ -26,7 +26,7 @@ import type { OnboardingData } from "@/lib/types";
 const TOTAL_STEPS = 4;
 
 export default function Onboarding() {
-  usePageTitle("Join — FocusClub");
+  usePageTitle("Join — donedonadone");
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
@@ -158,7 +158,7 @@ export default function Onboarding() {
           await supabase.from("profiles").update({ referred_by: referrer.id }).eq("id", user.id);
           await supabase.rpc("create_system_notification", {
             p_user_id: referrer.id,
-            p_title: `${data.display_name} joined FocusClub through your invite! 🎉`,
+            p_title: `${data.display_name} joined donedonadone through your invite! 🎉`,
             p_body: "Your community is growing!",
             p_type: "referral",
             p_link: `/profile/${user.id}`,

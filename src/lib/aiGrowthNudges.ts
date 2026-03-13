@@ -153,7 +153,7 @@ export function shouldShowReferralNudge(
     candidates.push({
       show: true,
       type: 'referral_milestone',
-      message: `${context.sessionCount} sessions! You are a FocusClub regular. Invite friends and earn credits.`,
+      message: `${context.sessionCount} sessions! You are a donedonadone regular. Invite friends and earn credits.`,
       cta: 'Share your code',
       priority: 2,
     });
@@ -208,16 +208,16 @@ export function generateNudgeMessage(
 
   switch (nudgeType) {
     case 'referral_post_session':
-      return `Hey ${name}, that was a great session! Share FocusClub with a friend and earn ${config.credits.referralComplete} Focus Credits when they complete their first session.`;
+      return `Hey ${name}, that was a great session! Share donedonadone with a friend and earn ${config.credits.referralComplete} Focus Credits when they complete their first session.`;
 
     case 'referral_milestone':
-      return `${context.sessionCount} sessions and counting! You clearly love FocusClub. Each friend you refer earns you ${config.credits.referralComplete} FC. Your code: ${context.referralCode || 'check your profile'}`;
+      return `${context.sessionCount} sessions and counting! You clearly love donedonadone. Each friend you refer earns you ${config.credits.referralComplete} FC. Your code: ${context.referralCode || 'check your profile'}`;
 
     case 'referral_no_slots':
       return `No sessions available at your preferred time? More members in your area means more options. Share your code and help us grow!`;
 
     case 'referral_onboarding':
-      return `Welcome to FocusClub, ${name}! Coworking is better with friends. Invite someone and you both get rewarded.`;
+      return `Welcome to donedonadone, ${name}! Coworking is better with friends. Invite someone and you both get rewarded.`;
 
     case 'neighborhood_launch':
       return `${context.neighborhood || 'Your neighborhood'} is close to launching! Share with locals to unlock sessions in your area.`;

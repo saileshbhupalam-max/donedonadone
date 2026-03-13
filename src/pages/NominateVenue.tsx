@@ -52,7 +52,7 @@ import { normalizeNeighborhood } from "@/lib/neighborhoods";
 type View = "list" | "nominate" | "vouch";
 
 export default function NominateVenue() {
-  usePageTitle("Nominate a Venue — FocusClub");
+  usePageTitle("Nominate a Venue — donedonadone");
   const { user } = useAuth();
   const navigate = useNavigate();
 

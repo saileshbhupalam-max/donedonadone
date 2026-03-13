@@ -28,7 +28,7 @@ interface NearbySession {
 }
 
 export default function MapView() {
-  usePageTitle("Map — FocusClub");
+  usePageTitle("Map — donedonadone");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const focusEventId = searchParams.get("event");

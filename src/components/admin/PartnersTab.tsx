@@ -62,10 +62,10 @@ function getQrLink(venueId: string) {
   return `${APP_URL}/?venue=${venueId}&utm_source=qr&utm_medium=table_tent`;
 }
 
-function getPitchMessage(partner: VenuePartner, adminName = "FocusClub Team") {
+function getPitchMessage(partner: VenuePartner, adminName = "donedonadone Team") {
   return `Hi ${partner.contact_name || "there"}! 👋
 
-I'm ${adminName} from FocusClub — we organize coworking meetups in ${getNeighborhoodLabel(partner.neighborhood) || "Bangalore"}. We bring groups of 3-5 focused professionals to work at great cafes.
+I'm ${adminName} from donedonadone — we organize coworking meetups in ${getNeighborhoodLabel(partner.neighborhood) || "Bangalore"}. We bring groups of 3-5 focused professionals to work at great cafes.
 
 We'd love to feature ${partner.venue_name} as a partner venue. Here's what it means:
 

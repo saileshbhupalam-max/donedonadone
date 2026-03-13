@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 /**
  * Mobile Responsiveness E2E Tests
  *
- * FocusClub is a mobile-first PWA. These tests verify that
+ * donedonadone is a mobile-first PWA. These tests verify that
  * pages render correctly at common mobile viewport sizes.
  * No horizontal overflow, content visible, touch targets adequate.
  */
@@ -21,7 +21,7 @@ test.describe("Mobile responsiveness", () => {
 
       test("landing page has no horizontal overflow", async ({ page }) => {
         await page.goto("/");
-        await expect(page.locator("h1")).toContainText("FocusClub", { timeout: 15000 });
+        await expect(page.locator("h1")).toContainText("donedonadone", { timeout: 15000 });
         const isOverflowing = await page.evaluate(
           () => document.documentElement.scrollWidth > document.documentElement.clientWidth
         );

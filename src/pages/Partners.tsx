@@ -14,7 +14,7 @@ const NEIGHBORHOODS: Record<string, string> = {
 };
 
 export default function Partners() {
-  usePageTitle("Partner Venues — FocusClub");
+  usePageTitle("Partner Venues — donedonadone");
   const [venues, setVenues] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +42,7 @@ export default function Partners() {
       <div className="px-4 py-4 space-y-6 max-w-lg mx-auto">
         <div className="text-center space-y-2">
           <h1 className="font-serif text-2xl text-foreground">Our Partner Venues</h1>
-          <p className="text-sm text-muted-foreground">Great cafes and coworking spaces where FocusClub sessions happen</p>
+          <p className="text-sm text-muted-foreground">Great cafes and coworking spaces where donedonadone sessions happen</p>
         </div>
 
         {loading ? (
@@ -108,8 +108,8 @@ export default function Partners() {
         <Card className="border-primary/20">
           <CardContent className="p-6 text-center space-y-3">
             <h3 className="font-serif text-lg text-foreground">Want your venue featured?</h3>
-            <p className="text-sm text-muted-foreground">Partner with FocusClub and get focused professionals visiting your space regularly.</p>
-            <Button className="gap-2" onClick={() => window.open("https://wa.me/919876543210?text=Hi! I'd like to partner my venue with FocusClub.", "_blank")}>
+            <p className="text-sm text-muted-foreground">Partner with donedonadone and get focused professionals visiting your space regularly.</p>
+            <Button className="gap-2" onClick={() => window.open("https://wa.me/919876543210?text=Hi! I'd like to partner my venue with donedonadone.", "_blank")}>
               <MessageCircle className="w-4 h-4" /> Contact Us
             </Button>
           </CardContent>

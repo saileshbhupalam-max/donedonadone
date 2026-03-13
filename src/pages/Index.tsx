@@ -29,7 +29,7 @@ const features = [
 ];
 
 const Index = () => {
-  usePageTitle("FocusClub — Find your people. Focus together.");
+  usePageTitle("donedonadone — work. connect. grow.");
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
   const [signingIn, setSigningIn] = useState(false);
@@ -110,8 +110,7 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
         <h1 className="text-4xl tracking-tight animate-pulse">
-          <span className="font-serif">Focus</span>
-          <span className="font-sans font-light">Club</span>
+          <span className="font-sans font-bold tracking-tight">done</span><span className="font-sans font-light">done</span><span className="font-sans font-bold tracking-tight">done</span>
         </h1>
       </div>
     );
@@ -124,8 +123,7 @@ const Index = () => {
         {/* Logo */}
         <div className="mb-8">
           <h1 className="text-4xl tracking-tight">
-            <span className="font-serif">Focus</span>
-            <span className="font-sans font-light">Club</span>
+            <span className="font-sans font-bold tracking-tight">done</span><span className="font-sans font-light">done</span><span className="font-sans font-bold tracking-tight">done</span>
           </h1>
         </div>
 
@@ -143,7 +141,7 @@ const Index = () => {
         {venueInfo && (
           <div className="flex items-center gap-2 mb-4 bg-primary/10 rounded-full px-4 py-2 animate-fade-up" style={{ animationDelay: "0.15s" }}>
             <MapPin className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">{venueInfo.venue_name} is a FocusClub partner! 🎯</span>
+            <span className="text-sm font-medium text-foreground">{venueInfo.venue_name} is a donedonadone partner! 🎯</span>
           </div>
         )}
 

@@ -110,7 +110,7 @@ function groupForKey(key: string): string {
 // ------- Component -------
 
 export default function Admin() {
-  usePageTitle("Mission Control -- FocusClub");
+  usePageTitle("Mission Control -- donedonadone");
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { isAdmin, loading: adminLoading } = useAdminCheck();

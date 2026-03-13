@@ -1,0 +1,11 @@
+[     398ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[    1125ms] Error: supabaseUrl is required.
+    at validateSupabaseUrl (http://localhost:8080/node_modules/.vite/deps/@supabase_supabase-js.js?v=67794cdc:11371:26)
+    at new SupabaseClient (http://localhost:8080/node_modules/.vite/deps/@supabase_supabase-js.js?v=67794cdc:11409:21)
+    at createClient (http://localhost:8080/node_modules/.vite/deps/@supabase_supabase-js.js?v=67794cdc:11588:10)
+    at http://localhost:8080/src/integrations/supabase/client.ts:7:25
+[    1026ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[   34868ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0
+[   35921ms] [WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[   35921ms] [WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. @ http://localhost:8080/node_modules/.vite/deps/react-router-dom.js?v=6d3eb851:4435
+[   36253ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:8080/manifest.webmanifest:0

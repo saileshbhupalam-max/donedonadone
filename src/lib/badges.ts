@@ -27,7 +27,7 @@ export interface BadgeDef {
 }
 
 export const BADGE_DEFINITIONS: BadgeDef[] = [
-  { type: "early_adopter", emoji: "🌱", name: "Early Adopter", description: "Joined FocusClub early", hint: "Join within the first 30 days" },
+  { type: "early_adopter", emoji: "🌱", name: "Early Adopter", description: "Joined donedonadone early", hint: "Join within the first 30 days" },
   { type: "complete_profile", emoji: "✅", name: "Complete Profile", description: "Filled out everything", hint: "Reach 100% profile completion" },
   { type: "first_prompt", emoji: "💬", name: "First Prompt", description: "Answered your first prompt", hint: "Answer a community prompt" },
   { type: "prompt_streak_3", emoji: "🔥", name: "Prompt Streak", description: "Answered 3 prompts", hint: "Answer 3 different prompts" },
@@ -38,7 +38,7 @@ export const BADGE_DEFINITIONS: BadgeDef[] = [
   { type: "connector", emoji: "🔗", name: "Connector", description: "All socials linked", hint: "Add LinkedIn, Instagram & Twitter" },
   { type: "fire_starter", emoji: "⚡", name: "Fire Starter", description: "10+ reactions received", hint: "Get 10 fire reactions on your answers" },
   { type: "community_voice", emoji: "🌟", name: "Community Voice", description: "A prompt answer went viral", hint: "Get 5+ fires on a single answer" },
-  { type: "recruiter", emoji: "🤝", name: "Recruiter", description: "Invited someone to FocusClub", hint: "Invite a friend who joins" },
+  { type: "recruiter", emoji: "🤝", name: "Recruiter", description: "Invited someone to donedonadone", hint: "Invite a friend who joins" },
   { type: "first_props", emoji: "🙏", name: "Got Props", description: "Received first prop ever", hint: "Get your first peer prop" },
   { type: "energy_magnet", emoji: "⚡", name: "Energy Magnet", description: "Received 10+ energy props", hint: "Get 10 energy props" },
   { type: "helper_badge", emoji: "🤝", name: "Always Helpful", description: "Received 10+ helpful props", hint: "Get 10 helpful props" },

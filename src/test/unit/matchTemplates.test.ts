@@ -11,7 +11,7 @@ const TEMPLATES: MatchTemplate[] = [
   { match_type: "same_goals", template: "You're both here to {{goal}} — great accountability partners.", icebreaker_template: "Share what you're working on today", priority: 6, is_active: true },
   { match_type: "same_vibe", template: "You both thrive in {{vibe}} environments.", icebreaker_template: "Compare your favorite focus playlists", priority: 5, is_active: true },
   { match_type: "repeat_match", template: "You've worked together before — familiar faces.", icebreaker_template: "Catch up on what's changed", priority: 4, is_active: true },
-  { match_type: "new_member", template: "{{match_name}} is new to FocusClub — help them feel welcome!", icebreaker_template: "Share your favorite thing about coworking sessions", priority: 3, is_active: true },
+  { match_type: "new_member", template: "{{match_name}} is new to donedonadone — help them feel welcome!", icebreaker_template: "Share your favorite thing about coworking sessions", priority: 3, is_active: true },
 ];
 
 const baseUser: MatchProfile = {
@@ -154,7 +154,7 @@ describe("tryTemplateMatch", () => {
       const result = tryTemplateMatch(baseUser, match, [], [], 0, TEMPLATES);
       expect(result).not.toBeNull();
       expect(result!.explanation).toContain("Bob");
-      expect(result!.explanation).toContain("new to FocusClub");
+      expect(result!.explanation).toContain("new to donedonadone");
     });
 
     it("does not match when match is experienced", () => {

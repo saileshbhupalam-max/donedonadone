@@ -106,9 +106,9 @@ describe('sharing', () => {
       expect(msg).toContain('/profile/user-123');
     });
 
-    it('mentions FocusClub and Bangalore', () => {
+    it('mentions donedonadone and Bangalore', () => {
       const msg = getProfileShareMessage('Alice', 'user-123');
-      expect(msg).toContain('FocusClub');
+      expect(msg).toContain('donedonadone');
       expect(msg).toContain('Bangalore');
     });
 
@@ -126,8 +126,8 @@ describe('sharing', () => {
     });
 
     it('includes badge description', () => {
-      const msg = getBadgeShareMessage('🌱', 'Early Adopter', 'Joined FocusClub early');
-      expect(msg).toContain('Joined FocusClub early');
+      const msg = getBadgeShareMessage('🌱', 'Early Adopter', 'Joined donedonadone early');
+      expect(msg).toContain('Joined donedonadone early');
     });
 
     it('appends referral code to link', () => {

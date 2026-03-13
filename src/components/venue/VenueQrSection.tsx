@@ -81,7 +81,7 @@ export function VenueQrSection({ venueId, venueName }: VenueQrSectionProps) {
             </Suspense>
           </div>
           <p style={{ fontSize: 15, fontWeight: 600, color: "#2D2D2D", marginBottom: 6 }}>Scan to join the coworking community</p>
-          <p style={{ fontSize: 11, color: "#888" }}>Free to join · {venueName} is a FocusClub partner</p>
+          <p style={{ fontSize: 11, color: "#888" }}>Free to join · {venueName} is a donedonadone partner</p>
           <div style={{ borderTop: "1px solid #ddd", marginTop: 16, paddingTop: 12 }}>
             <p style={{ fontSize: 10, color: "#999" }}>focusclub.app</p>
           </div>

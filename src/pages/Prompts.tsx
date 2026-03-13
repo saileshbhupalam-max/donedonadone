@@ -228,7 +228,7 @@ function PreviousPromptCard({ prompt, userId }: { prompt: Prompt; userId: string
 
 /* ── Main Page ── */
 export default function Prompts() {
-  usePageTitle("The Question — FocusClub");
+  usePageTitle("The Question — donedonadone");
   const { activePrompt, previousPrompts, loading, user } = usePrompts();
 
   if (loading) {

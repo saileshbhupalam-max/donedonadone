@@ -260,7 +260,7 @@ export async function generateMatchNudges(
       type: classification.type,
       profile: {
         id: member.id,
-        displayName: member.display_name || "FocusClub Member",
+        displayName: member.display_name || "donedonadone Member",
         avatarUrl: member.avatar_url,
         tagline: member.tagline,
       },
