@@ -22,7 +22,7 @@ export function SessionRequestSheet() {
   const [requestType, setRequestType] = useState("general");
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [preferredTime, setPreferredTime] = useState("");
-  const [neighborhood, setNeighborhood] = useState("");
+  const [neighborhood, setNeighborhood] = useState(profile?.neighborhood || "");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -62,11 +62,11 @@ export function SessionRequestSheet() {
   return (
     <Card className="border-dashed">
       <CardContent className="p-4 text-center">
-        <p className="text-sm text-muted-foreground mb-2">Can't find a session near you?</p>
+        <p className="text-sm text-muted-foreground mb-2">Want a session on your schedule?</p>
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild><Button variant="outline" size="sm">Request a Session →</Button></SheetTrigger>
+          <SheetTrigger asChild><Button variant="outline" size="sm">Tell us when →</Button></SheetTrigger>
           <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto rounded-t-2xl">
-            <SheetHeader><SheetTitle className="font-serif">Request a Session</SheetTitle></SheetHeader>
+            <SheetHeader><SheetTitle className="font-serif">When do you want to cowork?</SheetTitle></SheetHeader>
             <div className="space-y-4 mt-4">
               {profile?.gender === "woman" && (
                 <div className="flex items-center gap-3">
@@ -75,7 +75,7 @@ export function SessionRequestSheet() {
                 </div>
               )}
               <div>
-                <Label className="text-sm">Preferred Days</Label>
+                <Label className="text-sm">When works for you?</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {DAYS.map((d) => (
                     <button key={d} onClick={() => toggleDay(d)}
@@ -87,7 +87,7 @@ export function SessionRequestSheet() {
                 </div>
               </div>
               <div>
-                <Label className="text-sm">Preferred Time</Label>
+                <Label className="text-sm">What time of day?</Label>
                 <div className="flex gap-2 mt-2">
                   {["morning", "afternoon", "evening"].map((t) => (
                     <button key={t} onClick={() => setPreferredTime(t)}
@@ -99,7 +99,7 @@ export function SessionRequestSheet() {
                 </div>
               </div>
               <div>
-                <Label className="text-sm">Neighborhood *</Label>
+                <Label className="text-sm">Where?</Label>
                 <NeighborhoodInput
                   value={neighborhood}
                   onChange={(slug) => setNeighborhood(slug)}
@@ -112,8 +112,11 @@ export function SessionRequestSheet() {
                 <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any preferences?" rows={2} className="mt-1" />
               </div>
               <Button className="w-full" onClick={handleSubmit} disabled={!neighborhood || submitting}>
-                <Send className="w-4 h-4" /> {submitting ? "Submitting..." : "Submit Request"}
+                <Send className="w-4 h-4" /> {submitting ? "Matching you..." : "Find my table"}
               </Button>
+              <p className="text-xs text-muted-foreground text-center">
+                We'll match you when enough people want the same slot
+              </p>
             </div>
           </SheetContent>
         </Sheet>

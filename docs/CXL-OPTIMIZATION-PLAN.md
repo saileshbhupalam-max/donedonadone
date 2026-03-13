@@ -35,7 +35,7 @@ Ordered by conversion impact × traffic volume. Every user hits tiers 1-2. Tiers
 
 | # | Page/Flow | CXL Skill | Conversion Goal | Impact |
 |---|-----------|-----------|-----------------|--------|
-| 4 | **Session Request Sheet** | `/cxl:forms` + `/cxl:copy` | Intent → Session booked | HIGH |
+| 4 | **Session Request Sheet** | `/cxl:forms` + `/cxl:copy` | Intent → Session booked | DONE |
 | 5 | **Events Page** (`Events/index.tsx`) | `/cxl:optimize` | Browse → Book | HIGH |
 | 6 | **Session Page** (live + wrap-up) | `/cxl:optimize` | Attend → Give feedback + props | MEDIUM |
 | 7 | **Discover Page** (`Discover.tsx`) | `/cxl:optimize` + `/cxl:copy` | Browse → Connect/Request | MEDIUM |
@@ -80,20 +80,11 @@ Ordered by conversion impact × traffic volume. Every user hits tiers 1-2. Tiers
 - **Changes**: Moved PrimaryActionCard from position #9 to #2 (serial position). Loss-framed empty states ("You haven't booked yet this week"). Benefit-framed profile completion ("Members with complete profiles get better matches"). Urgency labels for suggested events. Pushed growth/gamification cards below primary action.
 - **Audit artifact**: `docs/cxl-audits/home-audit.md`
 
-### Phase 3: Session Request Flow
-- **Target files**: `src/pages/Events/SessionRequestSheet.tsx`
-- **Skills**: `/cxl:forms`, `/cxl:copy`
-- **Goals**:
-  - Minimize fields (essential only for booking)
-  - Smart defaults (next available time, nearest venue)
-  - Inline validation
-  - CTA copy: benefit-oriented ("Find my table" > "Submit request")
-  - Friction reducer near CTA ("Matched within 24 hours")
-- **Audit steps**:
-  1. `/cxl:forms` — Audit all fields, propose reduced set
-  2. `/cxl:copy` — Rewrite field labels, CTA, confirmation copy
-  3. Implement changes
-  4. Write `docs/cxl-audits/session-request-audit.md`
+### Phase 3: Session Request Flow [COMPLETE]
+- **Status**: Done
+- **Skills used**: `/cxl:forms`, `/cxl:copy`
+- **Changes**: Pre-filled neighborhood from profile (smart default). Conversational labels ("When works for you?" not "Preferred Days"). Benefit-oriented CTA ("Find my table"). Positive trigger framing. Friction reducer near CTA. Removed asterisk form anxiety.
+- **Audit artifact**: `docs/cxl-audits/session-request-audit.md`
 
 ### Phase 4: Events Page
 - **Target files**: `src/pages/Events/index.tsx` and Events components
