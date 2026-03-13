@@ -10,6 +10,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:unit": "vitest run src/test/unit",
+    "test:integration": "vitest run src/test/integration",
+    "test:smoke": "vitest run src/test/smoke",
+    "test:edge": "vitest run src/test/edge",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
