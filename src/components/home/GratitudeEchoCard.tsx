@@ -21,7 +21,7 @@ interface EchoData {
   id: string;
   prop_type: string;
   from_user: string;
-  anonymous: boolean;
+  anonymous: boolean | null;
   event_id: string;
   from_display_name: string | null;
   from_avatar_url: string | null;

@@ -98,7 +98,7 @@ export function PartnerApplicationsTab() {
     try {
       const { error } = await supabase.rpc("reject_partner_application", {
         p_application_id: rejectDialog,
-        p_reason: rejectReason.trim() || null,
+        p_reason: rejectReason.trim() || undefined,
       });
       if (error) throw error;
       toast.success("Application rejected");

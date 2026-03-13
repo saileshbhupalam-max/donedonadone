@@ -12,7 +12,7 @@ interface Props {
 
 interface EarnedAchievement {
   achievement_type: string;
-  achieved_at: string;
+  achieved_at: string | null;
 }
 
 export function AchievementsSection({ userId, isOwnProfile = false }: Props) {

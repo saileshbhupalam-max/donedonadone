@@ -6,7 +6,7 @@ export function trackConversion(eventType: string, eventData?: Record<string, un
     if (!data.user) return;
     supabase
       .from("conversion_events")
-      .insert({ user_id: data.user.id, event_type: eventType, event_data: eventData || {} })
+      .insert({ user_id: data.user.id, event_type: eventType, event_data: (eventData || {}) as any })
       .then(() => {});
   });
 }

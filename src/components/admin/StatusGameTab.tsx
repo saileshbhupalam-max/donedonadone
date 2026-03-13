@@ -75,7 +75,7 @@ export function StatusGameTab() {
         .slice(0, 5)
         .map(([uid, sessions]) => {
           const p = profileMap.get(uid);
-          return { user_id: uid, display_name: p?.display_name || "Unknown", avatar_url: p?.avatar_url, focus_hours: Number(p?.focus_hours ?? 0), value: sessions * 2 };
+          return { user_id: uid, display_name: p?.display_name || "Unknown", avatar_url: p?.avatar_url ?? null, focus_hours: Number(p?.focus_hours ?? 0), value: sessions * 2 };
         });
 
       // Rising Star: biggest month-over-month improvement
@@ -90,7 +90,7 @@ export function StatusGameTab() {
         .slice(0, 5)
         .map(([uid, improvement]) => {
           const p = profileMap.get(uid);
-          return { user_id: uid, display_name: p?.display_name || "Unknown", avatar_url: p?.avatar_url, focus_hours: Number(p?.focus_hours ?? 0), value: improvement };
+          return { user_id: uid, display_name: p?.display_name || "Unknown", avatar_url: p?.avatar_url ?? null, focus_hours: Number(p?.focus_hours ?? 0), value: improvement };
         });
 
       // Community Voice: most fires on prompt answers this month
@@ -101,7 +101,7 @@ export function StatusGameTab() {
         .slice(0, 5)
         .map(([uid, fires]) => {
           const p = profileMap.get(uid);
-          return { user_id: uid, display_name: p?.display_name || "Unknown", avatar_url: p?.avatar_url, focus_hours: Number(p?.focus_hours ?? 0), value: fires };
+          return { user_id: uid, display_name: p?.display_name || "Unknown", avatar_url: p?.avatar_url ?? null, focus_hours: Number(p?.focus_hours ?? 0), value: fires };
         });
 
       // Connector: most referrals this month
@@ -114,7 +114,7 @@ export function StatusGameTab() {
         .slice(0, 5)
         .map(([uid, count]) => {
           const p = profileMap.get(uid);
-          return { user_id: uid, display_name: p?.display_name || "Unknown", avatar_url: p?.avatar_url, focus_hours: Number(p?.focus_hours ?? 0), value: count };
+          return { user_id: uid, display_name: p?.display_name || "Unknown", avatar_url: p?.avatar_url ?? null, focus_hours: Number(p?.focus_hours ?? 0), value: count };
         });
 
       setCandidates({

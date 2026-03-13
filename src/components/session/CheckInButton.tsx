@@ -56,7 +56,7 @@ export function CheckInButton({ eventId, userId, onCheckedIn, hasVenueCoords }: 
       } else {
         setCheckResult({
           success: false,
-          message: `You're ${Math.round(result.distance_meters)}m away. Need to be within ${result.radius}m of the venue.`,
+          message: `You're ${Math.round(result.distance_meters ?? 0)}m away. Need to be within ${result.radius ?? 0}m of the venue.`,
           distance: result.distance_meters,
         });
         setShowPinFallback(true);

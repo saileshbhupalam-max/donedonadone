@@ -136,8 +136,8 @@ export function SessionMap({ focusEventId }: Props) {
         end_time: e.end_time,
         venue_name: e.venue_name,
         venue_address: e.venue_address,
-        lat: e.venue_latitude,
-        lng: e.venue_longitude,
+        lat: e.venue_latitude!,
+        lng: e.venue_longitude!,
         max_spots: e.max_spots,
         rsvp_count: e.rsvp_count,
         going: rsvpCounts[e.id] || 0,
@@ -147,9 +147,9 @@ export function SessionMap({ focusEventId }: Props) {
       setVenues((venuesRes.data || []).filter(v => v.latitude && v.longitude).map(v => ({
         id: v.id,
         name: v.venue_name,
-        lat: v.latitude,
-        lng: v.longitude,
-        address: v.venue_address,
+        lat: v.latitude!,
+        lng: v.longitude!,
+        address: v.venue_address ?? undefined,
       })));
     })();
   }, []);

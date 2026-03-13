@@ -56,7 +56,7 @@ function AddItemDialog({ kind, companyId, onAdded }: { kind: "need" | "offer"; c
       [typeCol]: type,
       title: title.trim(),
       description: description.trim() || null,
-    });
+    } as any);
     setSubmitting(false);
     if (error) {
       toast.error(error.code === "23505" ? "Already exists" : "Failed to add");

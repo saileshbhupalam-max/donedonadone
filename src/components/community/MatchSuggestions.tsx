@@ -46,9 +46,9 @@ function MatchSuggestionsInner() {
       const mySkills = myTg?.skills || [];
 
       // Get who's here
-      const params: Record<string, string> = { p_user_id: user.id };
-      if (currentLocation?.id) params.p_location_id = currentLocation.id;
-      const { data: people } = await supabase.rpc("get_whos_here", params);
+      const rpcParams: Record<string, string> = { p_user_id: user.id };
+      if (currentLocation?.id) rpcParams.p_location_id = currentLocation.id;
+      const { data: people } = await supabase.rpc("get_whos_here", rpcParams as any);
 
       if (!people || people.length === 0) { setMatches([]); setLoading(false); return; }
 

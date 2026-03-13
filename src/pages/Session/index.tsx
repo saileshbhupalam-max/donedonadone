@@ -100,7 +100,7 @@ export default function SessionPage() {
           .eq("event_id", eventId)
           .eq("user_id", user.id)
           .maybeSingle();
-        if (rsvp?.checked_in) {
+        if ((rsvp as any)?.checked_in) {
           setCheckedIn(true);
         }
       }

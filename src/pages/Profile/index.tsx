@@ -65,7 +65,7 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [earnedBadges, setEarnedBadges] = useState<EarnedBadge[]>([]);
   const [propCounts, setPropCounts] = useState<Record<string, number>>({});
-  const [achievements, setAchievements] = useState<Array<{ achievement_type: string; achieved_at: string }>>([]);
+  const [achievements, setAchievements] = useState<Array<{ achievement_type: string; achieved_at: string | null }>>([]);
   const [monthlyTitles, setMonthlyTitles] = useState<Array<{ title_type: string; month: string }>>([]);
   const [scrapbookEntries, setScrapbookEntries] = useState<ScrapbookEntry[]>([]);
   const [journeyFilter, setJourneyFilter] = useState<"all" | "sessions" | "badges" | "achievements">("all");
@@ -147,7 +147,7 @@ export default function Profile() {
       setPropCounts(counts);
       setAchievements(achiev.data || []);
       setMonthlyTitles(titles.data || []);
-      setScrapbookEntries(scrapbook.data || []);
+      setScrapbookEntries((scrapbook.data || []) as unknown as ScrapbookEntry[]);
     });
   }, [user]);
 

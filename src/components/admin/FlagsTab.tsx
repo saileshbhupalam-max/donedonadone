@@ -17,7 +17,7 @@ interface FlagEntry {
   session_id: string;
   reason: string;
   notes: string | null;
-  created_at: string;
+  created_at: string | null;
   resolved_at: string | null;
   resolution: string | null;
   flagged_profile?: { display_name: string | null };

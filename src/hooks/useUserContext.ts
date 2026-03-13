@@ -72,8 +72,9 @@ export function useUserContext(): UserContextReturn {
         .eq("id", data.location_id)
         .single();
       if (loc) {
-        data.location_name = loc.name;
-        data.location_type = loc.location_type;
+        const enriched: ActiveCheckIn = { ...data, location_name: loc.name, location_type: loc.location_type };
+        setActiveCheckIn(enriched);
+        return;
       }
     }
     setActiveCheckIn(data || null);

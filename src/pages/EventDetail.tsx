@@ -184,9 +184,10 @@ export default function EventDetailPage() {
 
       setEvent({
         ...eventData,
+        checkin_pin: (eventData as any).checkin_pin ?? null,
         creator: eventData.created_by ? profileMap.get(eventData.created_by) : undefined,
         rsvps: (rsvps || []).map((r) => ({ ...r, profile: profileMap.get(r.user_id) })),
-      });
+      } as EventDetail);
 
       const { data: wl } = await supabase.from("session_waitlist").select("*").eq("event_id", id).is("promoted_at", null).order("position");
       setWaitlistCount((wl || []).length);

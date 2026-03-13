@@ -17,8 +17,8 @@ interface ConfigRow {
   category: string;
   key: string | null;
   value: string;
-  sort_order: number;
-  active: boolean;
+  sort_order: number | null;
+  active: boolean | null;
 }
 
 const CATEGORIES = [
@@ -78,7 +78,7 @@ export function ChaiSettingsTab() {
   };
 
   const handleAdd = async () => {
-    const maxOrder = catRows.length > 0 ? Math.max(...catRows.map(r => r.sort_order)) + 1 : 0;
+    const maxOrder = catRows.length > 0 ? Math.max(...catRows.map(r => r.sort_order ?? 0)) + 1 : 0;
     const { error } = await supabase.from("personality_config").insert({
       category: activeTab,
       key: catDef?.type === "kv" ? "new_key" : null,
@@ -169,7 +169,7 @@ export function ChaiSettingsTab() {
                     )}
                     <div className="flex items-center gap-2 ml-auto">
                       <Switch
-                        checked={row.active}
+                        checked={row.active ?? false}
                         onCheckedChange={v => { updateRow(row.id, { active: v }); }}
                       />
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleTest(row.value)}>
