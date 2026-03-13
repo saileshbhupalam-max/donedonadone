@@ -117,7 +117,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel("user_sub_changes")
+      .channel(`user_sub_changes:${user.id}`)
       .on(
         "postgres_changes",
         {
