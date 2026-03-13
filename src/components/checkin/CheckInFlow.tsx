@@ -13,7 +13,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { MapPin, Loader2, CheckCircle2, Building2, Coffee, Trees, Navigation } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, parseISO } from "date-fns";
 
 interface ResolvedLocation {
   location_id: string;
@@ -321,7 +321,7 @@ export function ActiveCheckInCard() {
   const statusLabel = activeCheckIn.status === "available" ? "Available" : activeCheckIn.status === "deep_work" ? "Deep Work" : "Busy";
 
   // Check-in age for expiry warning
-  const checkinAgeMs = Date.now() - new Date(activeCheckIn.checked_in_at).getTime();
+  const checkinAgeMs = Date.now() - parseISO(activeCheckIn.checked_in_at).getTime();
   const checkinAgeHours = checkinAgeMs / (1000 * 60 * 60);
   const expiryWarning = checkinAgeHours >= 7.5 ? "red" : checkinAgeHours >= 6 ? "yellow" : null;
 
@@ -347,7 +347,7 @@ export function ActiveCheckInCard() {
                 Checked in{currentLocation ? ` at ${currentLocation.name}` : ""}
               </p>
               <p className="text-[10px] text-muted-foreground">
-                {statusLabel} · {formatDistanceToNow(new Date(activeCheckIn.checked_in_at), { addSuffix: true })}
+                {statusLabel} · {formatDistanceToNow(parseISO(activeCheckIn.checked_in_at), { addSuffix: true })}
               </p>
               {expiryWarning === "red" && (
                 <Badge variant="destructive" className="text-[9px] h-4 px-1.5 mt-0.5">About to expire</Badge>

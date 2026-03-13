@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Search, Users, CreditCard, Zap, IndianRupee } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 // ─── Stats Cards ─────────────────────────────────────────
 function SubscriptionStats() {
@@ -203,7 +203,7 @@ function UserSubManagement() {
               <span>Current tier: <strong className="text-foreground">{userSub?.tier_id || "free"}</strong></span>
               <span>Status: <strong className="text-foreground">{userSub?.status || "none"}</strong></span>
               {userSub?.started_at && (
-                <span>Since: <strong className="text-foreground">{format(new Date(userSub.started_at), "MMM d, yyyy")}</strong></span>
+                <span>Since: <strong className="text-foreground">{format(parseISO(userSub.started_at), "MMM d, yyyy")}</strong></span>
               )}
             </div>
 

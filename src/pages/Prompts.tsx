@@ -10,7 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pencil, ChevronDown, Flame } from "lucide-react";
 import { Link } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -156,7 +156,7 @@ function ActivePromptAnswers({ promptId, promptQuestion }: { promptId: string; p
                           {p?.display_name ?? "Member"}
                         </Link>
                         <span className="text-[10px] text-muted-foreground shrink-0">
-                          {r.created_at ? formatDistanceToNow(new Date(r.created_at), { addSuffix: true }) : ""}
+                          {r.created_at ? formatDistanceToNow(parseISO(r.created_at), { addSuffix: true }) : ""}
                         </span>
                       </div>
                       <p className="text-sm text-foreground mt-1 whitespace-pre-line">{r.answer}</p>

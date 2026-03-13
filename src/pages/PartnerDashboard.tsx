@@ -12,7 +12,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { getInitials } from "@/lib/utils";
 import { MapPin, Users, Clock, Repeat, BarChart3, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { format, subDays } from "date-fns";
+import { format, parseISO, subDays } from "date-fns";
 
 interface PartnerStats {
   total_checkins: number;
@@ -227,7 +227,7 @@ export default function PartnerDashboard() {
                       className="w-full rounded-t bg-primary/80 transition-all"
                       style={{ height: `${(d.count / maxWeekly) * 100}%`, minHeight: d.count > 0 ? 4 : 1 }}
                     />
-                    <span className="text-[9px] text-muted-foreground">{format(new Date(d.date + "T00:00:00"), "EEE").slice(0, 2)}</span>
+                    <span className="text-[9px] text-muted-foreground">{format(parseISO(d.date + "T00:00:00"), "EEE").slice(0, 2)}</span>
                   </div>
                 ))}
               </div>

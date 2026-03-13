@@ -5,6 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Flag } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
+import { parseISO } from "date-fns";
 import { CaptainBadge } from "@/components/captain/CaptainCard";
 import { FlagMemberForm } from "@/components/session/FlagMemberForm";
 import { STATUS_CONFIG } from "./constants";
@@ -67,7 +68,7 @@ export function TrafficLightPanel({ myStatus, topic, groupStatuses, userId, even
                     {s.profile?.is_table_captain && <CaptainBadge />}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {s.status === "red" && `Deep focus${s.until_time ? ` until ${new Date(s.until_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}`}
+                    {s.status === "red" && `Deep focus${s.until_time ? ` until ${parseISO(s.until_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}`}
                     {s.status === "amber" && `\u{1F4AC} ${s.topic || "Open to chat"}`}
                     {s.status === "green" && "\u2615 Light work, come chat"}
                   </p>

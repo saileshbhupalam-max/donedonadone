@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { SuspensionNotice } from "@/components/SuspensionNotice";
+import { parseISO } from "date-fns";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading } = useAuth();
@@ -23,7 +24,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   // Check suspension
   if (profile && profile.suspended_until) {
-    const suspendedUntil = new Date(profile.suspended_until);
+    const suspendedUntil = parseISO(profile.suspended_until);
     if (suspendedUntil > new Date()) {
       return <SuspensionNotice suspendedUntil={profile.suspended_until} reason={profile.suspension_reason} />;
     }

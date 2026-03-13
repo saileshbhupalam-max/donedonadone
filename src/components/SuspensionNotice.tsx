@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ShieldAlert, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -8,8 +8,8 @@ interface SuspensionNoticeProps {
 }
 
 export function SuspensionNotice({ suspendedUntil, reason }: SuspensionNoticeProps) {
-  const isPermanent = new Date(suspendedUntil).getFullYear() >= 2099;
-  const endDate = new Date(suspendedUntil);
+  const isPermanent = parseISO(suspendedUntil).getFullYear() >= 2099;
+  const endDate = parseISO(suspendedUntil);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 text-center">

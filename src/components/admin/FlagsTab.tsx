@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AlertTriangle, Check, ShieldAlert, Ban, Clock } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 interface FlagEntry {
   id: string;
@@ -181,7 +181,7 @@ export function FlagsTab() {
                 <span>by {f.flagger_profile?.display_name || "anonymous"}</span>
                 <span>at {f.event?.title || "unknown session"}</span>
                 {f.notes && <span className="italic">"{f.notes}"</span>}
-                {f.resolved_at && <span className="text-[10px]">· {format(new Date(f.resolved_at), "MMM d, yyyy")}</span>}
+                {f.resolved_at && <span className="text-[10px]">· {format(parseISO(f.resolved_at), "MMM d, yyyy")}</span>}
               </div>
             ))}
           </div>

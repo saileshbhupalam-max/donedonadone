@@ -2,6 +2,7 @@
  * Pure functions extracted from useSubscription hook
  * for testability. Mirrors the hasFeature and getLimit logic.
  */
+import { parseISO } from "date-fns";
 
 export interface TierInfo {
   id: string;
@@ -50,7 +51,7 @@ export function resolveEffectiveTier(
   boostExpiresAt: string | null
 ): number {
   if (boostTierOrder !== null && boostExpiresAt) {
-    const expires = new Date(boostExpiresAt);
+    const expires = parseISO(boostExpiresAt);
     if (expires > new Date()) {
       return Math.max(subscriptionTierOrder, boostTierOrder);
     }

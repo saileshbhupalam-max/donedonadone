@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateMatch } from "@/lib/matchUtils";
+import { parseISO } from "date-fns";
 
 type Profile = Tables<"profiles">;
 
@@ -104,8 +105,8 @@ export function useProfiles() {
     const twoWeeksAgo = new Date();
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
     return otherProfiles
-      .filter(p => p.created_at && new Date(p.created_at) >= twoWeeksAgo)
-      .sort((a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime());
+      .filter(p => p.created_at && parseISO(p.created_at) >= twoWeeksAgo)
+      .sort((a, b) => parseISO(b.created_at!).getTime() - parseISO(a.created_at!).getTime());
   }, [otherProfiles]);
 
   // In Your Area
@@ -145,7 +146,7 @@ export function useProfiles() {
   const activeThisWeek = useMemo(() => {
     return matchedProfiles
       .filter(p => activeUserIds.has(p.id))
-      .sort((a, b) => new Date(b.last_active_at!).getTime() - new Date(a.last_active_at!).getTime())
+      .sort((a, b) => parseISO(b.last_active_at!).getTime() - parseISO(a.last_active_at!).getTime())
       .slice(0, 10);
   }, [matchedProfiles, activeUserIds]);
 
@@ -161,8 +162,8 @@ export function useProfiles() {
 
     const sorted = [...list];
     if (sort === "best-match") sorted.sort((a, b) => b.matchScore - a.matchScore);
-    else if (sort === "newest") sorted.sort((a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime());
-    else sorted.sort((a, b) => new Date(b.last_active_at!).getTime() - new Date(a.last_active_at!).getTime());
+    else if (sort === "newest") sorted.sort((a, b) => parseISO(b.created_at!).getTime() - parseISO(a.created_at!).getTime());
+    else sorted.sort((a, b) => parseISO(b.last_active_at!).getTime() - parseISO(a.last_active_at!).getTime());
 
     return sorted;
   }, [searchResults, matchedProfiles, vibeFilter, womenOnly, sort, search]);

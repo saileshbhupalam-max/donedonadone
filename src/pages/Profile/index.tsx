@@ -30,7 +30,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton as UISkeleton } from "@/components/ui/skeleton";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { ERROR_STATES, CONFIRMATIONS } from "@/lib/personality";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ShareProfileCard } from "@/components/sharing/ProfileCard";
 import { WhatsAppShareButton, CopyLinkButton } from "@/components/sharing/WhatsAppButton";
 import { getProfileShareMessage, getBadgeShareMessage } from "@/lib/sharing";
@@ -243,7 +243,7 @@ export default function Profile() {
       name: t.title_type.replace(/_/g, " "), date: t.month || "",
       scrapbook: null as ScrapbookEntry | null,
     })),
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  ].sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime());
 
   const filteredJourney = journeyFilter === "all" ? journeyItems
     : journeyFilter === "sessions" ? journeyItems.filter(i => i.type === "session")
@@ -394,7 +394,7 @@ export default function Profile() {
                       </div>
                       {item.date && (
                         <span className="text-[10px] text-muted-foreground shrink-0">
-                          {(() => { try { return format(new Date(item.date), "MMM d, yyyy"); } catch { return item.date; } })()}
+                          {(() => { try { return format(parseISO(item.date), "MMM d, yyyy"); } catch { return item.date; } })()}
                         </span>
                       )}
                     </div>

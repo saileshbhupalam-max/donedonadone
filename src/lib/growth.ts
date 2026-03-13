@@ -14,6 +14,7 @@
  * Side effects: checkReEngagement() reads/writes localStorage for throttling, updates profiles.last_active_at
  * Related: MilestoneCelebration.tsx (celebration UI), GrowthCards.tsx (progressive unlock cards), badges.ts (separate badge system)
  */
+import { parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 
 // ─── Analytics Tracking ──────────────────────────────────
@@ -180,7 +181,7 @@ export async function checkMilestones(userId: string): Promise<MilestoneDef | nu
   const propsTx = propsGiven || 0;
   const prompts = promptAnswers || 0;
   const refs = referrals || 0;
-  const createdAt = profile.created_at ? new Date(profile.created_at) : new Date();
+  const createdAt = profile.created_at ? parseISO(profile.created_at) : new Date();
   const monthsSince = Math.floor((Date.now() - createdAt.getTime()) / (30 * 24 * 60 * 60 * 1000));
 
   // Check milestones in priority order (newest first)
@@ -254,7 +255,7 @@ export async function checkReEngagement(userId: string) {
     .select("last_active_at, current_streak, neighborhood").eq("id", userId).single();
   if (!profile?.last_active_at) return;
 
-  const lastActive = new Date(profile.last_active_at);
+  const lastActive = parseISO(profile.last_active_at);
   const daysSinceActive = Math.floor((now - lastActive.getTime()) / (24 * 60 * 60 * 1000));
 
   // Update last_active_at

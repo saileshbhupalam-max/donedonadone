@@ -11,7 +11,7 @@
  * Side effects: downloadICSFile() creates a Blob and triggers a browser download
  * Related: AddToCalendarButton.tsx (UI component that calls these functions)
  */
-import { format, parse } from 'date-fns';
+import { format, parse, parseISO } from 'date-fns';
 
 export function getGoogleCalendarUrl(event: {
   title: string;
@@ -31,12 +31,12 @@ export function getGoogleCalendarUrl(event: {
         const parsed = parse(`${dateStr} ${timeStr}`, 'yyyy-MM-dd HH:mm', new Date());
         return format(parsed, "yyyyMMdd'T'HHmmss");
       } catch {
-        return format(new Date(dateStr), "yyyyMMdd'T'HHmmss");
+        return format(parseISO(dateStr), "yyyyMMdd'T'HHmmss");
       }
     }
   };
 
-  const start = event.startTime ? formatTime(event.date, event.startTime) : format(new Date(event.date), "yyyyMMdd");
+  const start = event.startTime ? formatTime(event.date, event.startTime) : format(parseISO(event.date), "yyyyMMdd");
   const end = event.endTime ? formatTime(event.date, event.endTime) : start;
 
   const location = [event.venueName, event.venueAddress].filter(Boolean).join(', ');
@@ -70,12 +70,12 @@ export function downloadICSFile(event: {
         const parsed = parse(`${dateStr} ${timeStr}`, 'yyyy-MM-dd HH:mm', new Date());
         return format(parsed, "yyyyMMdd'T'HHmmss");
       } catch {
-        return format(new Date(dateStr), "yyyyMMdd'T'HHmmss");
+        return format(parseISO(dateStr), "yyyyMMdd'T'HHmmss");
       }
     }
   };
 
-  const start = event.startTime ? formatTime(event.date, event.startTime) : format(new Date(event.date), "yyyyMMdd");
+  const start = event.startTime ? formatTime(event.date, event.startTime) : format(parseISO(event.date), "yyyyMMdd");
   const end = event.endTime ? formatTime(event.date, event.endTime) : start;
   const location = [event.venueName, event.venueAddress].filter(Boolean).join(', ');
 

@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ACHIEVEMENT_DEFS, getAchievementDef } from "@/lib/ranks";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 interface Props {
   userId: string;
@@ -81,7 +81,7 @@ export function AchievementsSection({ userId, isOwnProfile = false }: Props) {
                         </p>
                         {isEarned && e?.achieved_at ? (
                           <p className="text-[10px] text-muted-foreground">
-                            {format(new Date(e.achieved_at), "MMM d, yyyy")}
+                            {format(parseISO(e.achieved_at), "MMM d, yyyy")}
                           </p>
                         ) : (
                           <p className="text-[10px] text-muted-foreground truncate">{def.hint}</p>

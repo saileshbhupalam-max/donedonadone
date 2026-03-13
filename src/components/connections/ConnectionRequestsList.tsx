@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { getInitials } from "@/lib/utils";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import { UserPlus } from "lucide-react";
 
 interface ConnectionRequest {
@@ -122,7 +122,7 @@ export function ConnectionRequestsList({ onAccepted }: { onAccepted?: () => void
             <p className="text-sm font-medium text-foreground truncate">{r.profile?.display_name || "Someone"}</p>
             {r.message && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 italic">"{r.message}"</p>}
             <p className="text-[10px] text-muted-foreground mt-1">
-              {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+              {formatDistanceToNow(parseISO(r.created_at), { addSuffix: true })}
             </p>
             <div className="flex gap-2 mt-2">
               <Button size="sm" className="h-7 text-xs" onClick={() => handleAccept(r.id)} disabled={acting === r.id}>

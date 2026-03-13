@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Users } from "lucide-react";
 import { createSmartGroups } from "@/lib/antifragile";
 import { NOTIFICATION_COPY } from "@/lib/personality";
@@ -62,7 +62,7 @@ export function EventsTab() {
                 {isFlagged && <Badge variant="destructive" className="text-[10px]">⚠️ Low RSVPs</Badge>}
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {format(new Date(e.date), "MMM d")} · {e.neighborhood || "—"} · by {(e.profiles as { display_name: string } | null)?.display_name || "Unknown"}
+                {format(parseISO(e.date), "MMM d")} · {e.neighborhood || "—"} · by {(e.profiles as { display_name: string } | null)?.display_name || "Unknown"}
               </p>
             </div>
             <div className="text-right shrink-0">
@@ -142,7 +142,7 @@ export function EventsTab() {
                         return prof?.display_name || "a member";
                       });
                     if (teammateNames.length === 0) continue;
-                    const day = format(new Date(e.date), "EEEE");
+                    const day = format(parseISO(e.date), "EEEE");
                     const body = NOTIFICATION_COPY.groupAssigned(teammateNames, e.venue_name, day);
                     await supabase.rpc("create_system_notification", {
                       p_user_id: member.id,
@@ -178,7 +178,7 @@ export function EventsTab() {
                   <div className="min-w-0">
                     <p className="text-sm text-foreground">{(r.profiles as { display_name: string } | null)?.display_name || "Member"} · {r.request_type}</p>
                     <p className="text-[10px] text-muted-foreground">
-                      {r.neighborhood} · {r.preferred_time} · {(r.preferred_days || []).join(", ")} · {format(new Date(r.created_at), "MMM d")}
+                      {r.neighborhood} · {r.preferred_time} · {(r.preferred_days || []).join(", ")} · {format(parseISO(r.created_at), "MMM d")}
                     </p>
                   </div>
                   <Button size="sm" variant="outline" className="text-xs shrink-0" onClick={() => fulfillRequest(r.id)}>Fulfilled</Button>

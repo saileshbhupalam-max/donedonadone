@@ -8,7 +8,7 @@ import { ConnectionRequestsList, useConnectionRequests } from "@/components/conn
 import { Link, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { TierBadge } from "@/components/ui/TierBadge";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -123,7 +123,7 @@ export function TopBar() {
                           {n.body && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>}
                           {n.created_at && (
                             <p className="text-[10px] text-muted-foreground mt-1">
-                              {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                              {formatDistanceToNow(parseISO(n.created_at), { addSuffix: true })}
                             </p>
                           )}
                         </div>

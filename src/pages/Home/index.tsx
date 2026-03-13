@@ -500,7 +500,7 @@ export default function Home() {
               <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
                 <Shield className="w-4 h-4 text-yellow-600" /> Your {profile.current_streak}-week streak is at risk!
               </p>
-              {!profile.streak_insurance_used_at || (new Date().getTime() - new Date(profile.streak_insurance_used_at).getTime()) > 30 * 24 * 60 * 60 * 1000 ? (
+              {!profile.streak_insurance_used_at || (new Date().getTime() - parseISO(profile.streak_insurance_used_at).getTime()) > 30 * 24 * 60 * 60 * 1000 ? (
                 <>
                   <p className="text-xs text-muted-foreground">You have a streak save available, but booking a session is better!</p>
                   <div className="flex gap-2">
@@ -516,7 +516,7 @@ export default function Home() {
                     </Button>
                   </div>
                 </>
-              ) : profile.streak_insurance_used_at && (new Date().getTime() - new Date(profile.streak_insurance_used_at).getTime()) <= 7 * 24 * 60 * 60 * 1000 ? (
+              ) : profile.streak_insurance_used_at && (new Date().getTime() - parseISO(profile.streak_insurance_used_at).getTime()) <= 7 * 24 * 60 * 60 * 1000 ? (
                 <p className="text-xs text-green-600 font-medium">Streak protected until next week!</p>
               ) : (
                 <>

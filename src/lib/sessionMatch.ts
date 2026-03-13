@@ -10,6 +10,7 @@
  * Dependencies: None (pure function, no external imports)
  * Related: Events.tsx (sorts/filters sessions by score), Home PrimaryActionCard.tsx (recommends next session)
  */
+import { parseISO } from "date-fns";
 // Session match scoring for preference-based recommendations
 
 interface SessionInfo {
@@ -55,7 +56,7 @@ export function sessionMatchScore(session: SessionInfo, prefs: UserPrefs): numbe
 
   // +25 if on preferred day
   if (prefs.preferred_days && prefs.preferred_days.length > 0) {
-    const dayOfWeek = DAY_MAP[new Date(session.date).getDay()];
+    const dayOfWeek = DAY_MAP[parseISO(session.date).getDay()];
     if (prefs.preferred_days.includes(dayOfWeek)) score += 25;
   }
 

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Download, Search } from "lucide-react";
 
 export function MembersTab() {
@@ -101,15 +101,15 @@ export function MembersTab() {
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <p className="text-sm font-medium text-foreground truncate">{m.display_name || "—"}</p>
-                {m.suspended_until && new Date(m.suspended_until) > new Date() && (
+                {m.suspended_until && parseISO(m.suspended_until) > new Date() && (
                   <Badge variant="destructive" className="text-[9px] px-1.5 py-0">Suspended</Badge>
                 )}
               </div>
               <div className="flex items-center gap-1.5">
                 <p className="text-[10px] text-muted-foreground truncate">{m.email}</p>
-                {m.suspended_until && new Date(m.suspended_until) > new Date() && (
+                {m.suspended_until && parseISO(m.suspended_until) > new Date() && (
                   <span className="text-[9px] text-destructive">
-                    until {new Date(m.suspended_until).getFullYear() >= 2099 ? "permanent" : format(new Date(m.suspended_until), "MMM d")}
+                    until {parseISO(m.suspended_until).getFullYear() >= 2099 ? "permanent" : format(parseISO(m.suspended_until), "MMM d")}
                   </span>
                 )}
               </div>
@@ -119,7 +119,7 @@ export function MembersTab() {
             <span className="text-xs text-muted-foreground">{m.eventCount}</span>
             <span className="text-xs text-muted-foreground">{m.events_attended || 0}</span>
             <span className="text-xs text-muted-foreground">{m.events_no_show || 0}</span>
-            {m.suspended_until && new Date(m.suspended_until) > new Date() && (
+            {m.suspended_until && parseISO(m.suspended_until) > new Date() && (
               <Button size="sm" variant="outline" className="text-[10px] col-span-6 mt-1 h-6" onClick={async (e) => {
                 e.stopPropagation();
                 await supabase.from("profiles").update({ suspended_until: null, suspension_reason: null }).eq("id", m.id);

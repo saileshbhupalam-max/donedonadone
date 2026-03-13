@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { CheckCircle2, XCircle, MapPin } from "lucide-react";
 
 interface Application {
@@ -147,7 +147,7 @@ export function PartnerApplicationsTab() {
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
               <span>By {app.applicant_name}</span>
               <span>·</span>
-              <span>{format(new Date(app.created_at), "MMM d, yyyy")}</span>
+              <span>{format(parseISO(app.created_at), "MMM d, yyyy")}</span>
             </div>
 
             {app.description && <p className="text-xs text-muted-foreground line-clamp-2">{app.description}</p>}

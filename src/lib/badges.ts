@@ -12,6 +12,7 @@
  * Dependencies: Supabase client (queries prompt_responses, event_rsvps, peer_props, member_badges; RPCs award_badge, create_system_notification)
  * Related: Profile.tsx (displays badges), AchievementsSection.tsx (renders badge grid), growth.ts (milestones, separate system)
  */
+import { parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 
@@ -72,8 +73,8 @@ function checkEarnedBadges(
   const has = (t: string) => existingBadgeTypes.includes(t);
 
   if (!has("early_adopter") && profile.created_at) {
-    const launchDate = new Date("2026-03-01");
-    const joinDate = new Date(profile.created_at);
+    const launchDate = parseISO("2026-03-01");
+    const joinDate = parseISO(profile.created_at);
     const diffDays = (joinDate.getTime() - launchDate.getTime()) / (1000 * 60 * 60 * 24);
     if (diffDays <= 30) newBadges.push("early_adopter");
   }

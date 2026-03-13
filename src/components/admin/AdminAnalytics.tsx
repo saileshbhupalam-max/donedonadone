@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend,
@@ -107,7 +107,7 @@ export function AdminAnalyticsCharts() {
   ] : [];
 
   const chartData = daily.map(d => ({
-    date: format(new Date(d.date), "MMM d"),
+    date: format(parseISO(d.date), "MMM d"),
     "New Users": d.new_users,
     "Check-ins": d.checkins,
     "Connections": d.connections,

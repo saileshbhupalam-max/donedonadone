@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { format, subDays, subWeeks, startOfWeek, endOfWeek, eachWeekOfInterval } from "date-fns";
+import { format, parseISO, subDays, subWeeks, startOfWeek, endOfWeek, eachWeekOfInterval } from "date-fns";
 
 // ─── Funnel Card ──────────────────────────────────────
 function FunnelMetrics() {
@@ -217,7 +217,7 @@ function RetentionMetrics() {
         if (p.last_active_at >= thirtyDaysAgo) mau++;
         else churned++;
         
-        const daysSince = Math.floor((now.getTime() - new Date(p.last_active_at).getTime()) / (24 * 60 * 60 * 1000));
+        const daysSince = Math.floor((now.getTime() - parseISO(p.last_active_at).getTime()) / (24 * 60 * 60 * 1000));
         if (daysSince >= 3 && daysSince < 30) atRisk++;
       });
 

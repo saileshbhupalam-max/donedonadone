@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { RefreshCw, Users, AlertTriangle, BarChart3, TrendingDown, Eye } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 // ─── Engagement Overview ─────────────────────────────
 function EngagementOverview() {
@@ -107,7 +107,7 @@ function ChurnRiskTable() {
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground">Score: {u.score}</span>
               <span className="text-muted-foreground">{u.sessions_last_30d} sessions</span>
-              {u.last_active_at && <span className="text-muted-foreground">{format(new Date(u.last_active_at), "MMM d")}</span>}
+              {u.last_active_at && <span className="text-muted-foreground">{format(parseISO(u.last_active_at), "MMM d")}</span>}
               <Badge variant="outline" className="text-[9px]">{u.profiles?.subscription_tier || "free"}</Badge>
             </div>
           </div>

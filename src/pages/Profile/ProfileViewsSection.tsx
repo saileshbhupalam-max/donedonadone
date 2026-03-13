@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Eye, Lock } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { getInitials } from "@/lib/utils";
 
 // ─── Profile Views Section ──────────────────────────────
@@ -64,7 +64,7 @@ export function ProfileViewsSection({ userId }: { userId: string }) {
                   <AvatarFallback className="text-[8px]">{getInitials(v.display_name)}</AvatarFallback>
                 </Avatar>
                 <span className="text-xs text-foreground">{v.display_name || "Someone"}</span>
-                <span className="text-[10px] text-muted-foreground">· {format(new Date(v.viewed_at), "MMM d")}</span>
+                <span className="text-[10px] text-muted-foreground">· {format(parseISO(v.viewed_at), "MMM d")}</span>
               </div>
             ))}
           </div>

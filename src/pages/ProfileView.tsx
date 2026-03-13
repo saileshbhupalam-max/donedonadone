@@ -20,7 +20,7 @@ import { RankBadge } from "@/components/gamification/RankBadge";
 import { AchievementsSection } from "@/components/gamification/AchievementsSection";
 import { CurrentMonthTitleBanner } from "@/components/gamification/MonthlyTitlesSection";
 import { PropsReceived } from "@/components/session/GivePropsFlow";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { trackAnalyticsEvent } from "@/lib/growth";
 import { CaptainBadge } from "@/components/captain/CaptainCard";
@@ -211,7 +211,7 @@ export default function ProfileView() {
   }
 
   const rank = getRankForHours(focusHours);
-  const memberSince = profileData.member_since ? format(new Date(profileData.member_since), "MMMM yyyy") : null;
+  const memberSince = profileData.member_since ? format(parseISO(profileData.member_since), "MMMM yyyy") : null;
   const hasDna = !!(profileData.role_type || (profileData.skills && profileData.skills.length > 0) || (profileData.topics && profileData.topics.length > 0));
   const ws = profileData.work_style || {};
 
