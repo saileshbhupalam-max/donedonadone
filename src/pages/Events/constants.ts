@@ -9,6 +9,13 @@ export const NEIGHBORHOODS = [
   { value: "electronic_city", label: "Electronic City" },
 ];
 
+export const SESSION_FORMATS = [
+  { value: "all_formats", label: "All Formats" },
+  { value: "casual", label: "Casual" },
+  { value: "structured_2hr", label: "Structured 2hr" },
+  { value: "structured_4hr", label: "Structured 4hr" },
+];
+
 export const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 export const DAY_LABELS: Record<string, string> = { monday: "Mon", tuesday: "Tue", wednesday: "Wed", thursday: "Thu", friday: "Fri", saturday: "Sat", sunday: "Sun" };
 

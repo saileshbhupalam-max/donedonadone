@@ -75,7 +75,7 @@ export function TrafficLightPanel({ myStatus, topic, groupStatuses, userId, even
                 <span className="text-lg">{cfg.emoji}</span>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <button className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-destructive" title="Report">
+                    <button className="p-1.5 rounded-lg bg-muted/50 md:bg-transparent hover:bg-muted transition-colors text-muted-foreground hover:text-destructive" title="Report">
                       <Flag className="w-3.5 h-3.5" />
                     </button>
                   </DialogTrigger>

@@ -1,7 +1,7 @@
 import { ERROR_STATES, CONFIRMATIONS } from "@/lib/personality";
 import { PullToRefresh } from "@/components/ui/PullToRefresh";
 import { hapticLight } from "@/lib/haptics";
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { getInitials } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,7 +37,7 @@ import { GivePropsFlow } from "@/components/session/GivePropsFlow";
 import { VenueReviewCard } from "@/components/venue/VenueReviewCard";
 import { VenueVibeSummary } from "@/components/session/VenueVibeRating";
 import { motion } from "framer-motion";
-import { getNeighborhoodLabel } from "./constants";
+import { getNeighborhoodLabel, SESSION_FORMATS } from "./constants";
 import { EventCard } from "./EventCard";
 import { CreateEventButton } from "./CreateEventButton";
 import { FeedbackCard } from "./FeedbackCard";
@@ -50,6 +50,8 @@ export default function Events() {
   const { profile, user } = useAuth();
   const { upcoming, past, loading, toggleRsvp, getUserRsvp, fetchEvents } = useEvents();
   const [filter, setFilter] = useState<string>("all");
+  const [formatFilter, setFormatFilter] = useState<string>("all_formats");
+  const neighborhoodDefaultApplied = useRef(false);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [savedEvents, setSavedEvents] = useState<string[]>(() =>
     JSON.parse(localStorage.getItem("fc_saved_events") || "[]")
@@ -71,6 +73,15 @@ export default function Events() {
         if (data) setCircleUserIds(data.map((c: any) => c.circle_user_id));
       });
   }, [user]);
+
+  // Default neighborhood filter from profile on first load
+  useEffect(() => {
+    if (neighborhoodDefaultApplied.current) return;
+    if (profile?.neighborhood) {
+      setFilter(profile.neighborhood);
+      neighborhoodDefaultApplied.current = true;
+    }
+  }, [profile]);
 
   useEffect(() => {
     if (!user) return;
@@ -94,9 +105,11 @@ export default function Events() {
   const allNeighborhoods = [...new Set([...upcoming, ...past].map((e) => e.neighborhood).filter(Boolean))] as string[];
 
   const filterEvents = (list: EventType[]) => {
-    if (filter === "all") return list;
-    if (filter === "women_only") return list.filter((e) => e.women_only);
-    return list.filter((e) => e.neighborhood === filter);
+    let result = list;
+    if (filter === "women_only") result = result.filter((e) => e.women_only);
+    else if (filter !== "all") result = result.filter((e) => e.neighborhood === filter);
+    if (formatFilter !== "all_formats") result = result.filter((e) => e.session_format === formatFilter);
+    return result;
   };
 
   return (
@@ -148,6 +161,12 @@ export default function Events() {
           {profile?.gender === "woman" && (
             <Button size="sm" variant={filter === "women_only" ? "secondary" : "outline"} onClick={() => setFilter("women_only")}>👩 Women Only</Button>
           )}
+        </div>
+
+        <div className="flex gap-2 flex-wrap">
+          {SESSION_FORMATS.map((f) => (
+            <Button key={f.value} size="sm" variant={formatFilter === f.value ? "default" : "outline"} onClick={() => setFormatFilter(f.value)}>{f.label}</Button>
+          ))}
         </div>
 
         {viewMode === "map" ? (

@@ -222,6 +222,27 @@ export function FlagsTab() {
         <h2 className="font-serif text-lg text-foreground">Member Flags</h2>
       </div>
 
+      <div className="grid grid-cols-3 gap-2">
+        <Card>
+          <CardContent className="p-3 text-center">
+            <p className="text-xl font-bold text-foreground">{flags.length}</p>
+            <p className="text-[10px] text-muted-foreground">Total Flags</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 text-center">
+            <p className="text-xl font-bold text-orange-500">{activeFlags.length}</p>
+            <p className="text-[10px] text-muted-foreground">Pending Review</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 text-center">
+            <p className="text-xl font-bold text-foreground">{sortedUsers.length}</p>
+            <p className="text-[10px] text-muted-foreground">Flagged Members</p>
+          </CardContent>
+        </Card>
+      </div>
+
       <Tabs defaultValue="active">
         <TabsList>
           <TabsTrigger value="active" className="text-xs">Active ({activeFlags.length})</TabsTrigger>

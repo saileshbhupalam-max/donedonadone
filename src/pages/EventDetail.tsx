@@ -10,7 +10,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PersonalityLoader } from "@/components/ui/PersonalityLoader";
-import { ArrowLeft, CalendarIcon, MapPin, Clock, ExternalLink, Share2, MessageCircle, Hand, Timer, Copy, Bookmark } from "lucide-react";
+import { ArrowLeft, CalendarIcon, MapPin, Clock, ExternalLink, Share2, MessageCircle, Hand, Timer, Copy, Bookmark, ShieldAlert, KeyRound } from "lucide-react";
 import { AddToCalendarButton } from "@/components/session/AddToCalendarButton";
 import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,7 @@ import { trackAnalyticsEvent } from "@/lib/growth";
 import { GroupReveal } from "@/components/session/GroupReveal";
 import { VenueVibeSummary } from "@/components/session/VenueVibeRating";
 import { Input } from "@/components/ui/input";
+import { FirstSessionGuide } from "@/components/session/FirstSessionGuide";
 
 /* DESIGN: IntentionAtRsvp moves intention-setting to RSVP time.
    Users arrive with purpose already set, not fumbling during the session. */
@@ -140,7 +141,8 @@ interface EventDetail {
   end_time: string | null; venue_name: string | null; venue_address: string | null;
   neighborhood: string | null; whatsapp_group_link: string | null; max_spots: number | null;
   women_only: boolean | null; created_by: string | null; rsvp_count: number | null;
-  created_at: string | null; session_format: string | null; creator?: Profile; rsvps: EventRsvp[];
+  created_at: string | null; session_format: string | null; checkin_pin: string | null;
+  creator?: Profile; rsvps: EventRsvp[];
 }
 
 const NEIGHBORHOODS: Record<string, string> = {
@@ -204,8 +206,17 @@ export default function EventDetailPage() {
   const canJoinSession = isToday && userRsvp?.status === "going" && isStructured;
 
   /* DESIGN: Only "going" status — removed "interested" to reduce decision friction */
+  const isWomenOnly = !!event?.women_only;
+  const userGender = myProfile?.gender?.toLowerCase() || "";
+  const isWoman = userGender === "woman" || userGender === "female";
+  const blockedByWomenOnly = isWomenOnly && !isWoman;
+
   const handleRsvp = async (status: "going") => {
     if (!user || !event) return;
+    if (blockedByWomenOnly) {
+      toast.error("This is a women-only session. Only women can RSVP.");
+      return;
+    }
     const existing = userRsvp;
 
     setEvent((prev) => {
@@ -360,6 +371,12 @@ export default function EventDetailPage() {
 
               {userWaitlistPos && <Badge variant="outline" className="text-xs">You're #{userWaitlistPos} on the waitlist</Badge>}
 
+              {blockedByWomenOnly && userRsvp?.status !== "going" ? (
+                <div className="flex items-center gap-2 rounded-md bg-secondary/10 border border-secondary/20 px-3 py-2">
+                  <ShieldAlert className="w-4 h-4 text-secondary shrink-0" />
+                  <span className="text-sm text-muted-foreground">This is a women-only session</span>
+                </div>
+              ) : (
               <div className="flex gap-2">
                 {event.max_spots && goingList.length >= event.max_spots && userRsvp?.status !== "going" && !userWaitlistPos ? (
                   <Button className="flex-1" variant="outline" onClick={async () => {
@@ -381,6 +398,7 @@ export default function EventDetailPage() {
                   </Button>
                 )}
               </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -399,6 +417,10 @@ export default function EventDetailPage() {
 
         {userRsvp?.status === "going" && !isPast && (myProfile?.events_attended || 0) === 0 && (
           <BuddyCard eventId={event.id} userId={user?.id || ""} />
+        )}
+
+        {userRsvp?.status === "going" && !isPast && (myProfile?.events_attended || 0) === 0 && (
+          <FirstSessionGuide />
         )}
 
         {event.description && (
@@ -428,6 +450,12 @@ export default function EventDetailPage() {
         )}
 
         <EventMemories eventId={event.id} />
+
+        {isToday && userRsvp?.status === "going" && event.checkin_pin && (
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5 px-1">
+            <KeyRound className="w-3.5 h-3.5" /> Check-in PIN: <span className="font-mono font-medium text-foreground">{event.checkin_pin}</span> <span className="text-muted-foreground/70">(use if location check-in doesn't work)</span>
+          </p>
+        )}
 
         {canJoinSession && (
           <Button className="mx-0 w-full gap-2" onClick={() => navigate(`/session/${event.id}`)}>

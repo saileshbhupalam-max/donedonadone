@@ -1,4 +1,4 @@
-import { MapPin, Sparkles, MessageCircle, CalendarDays } from "lucide-react";
+import { MapPin, Sparkles, MessageCircle, CalendarDays, Shield, Lock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -35,6 +35,7 @@ const Index = () => {
   const [signingIn, setSigningIn] = useState(false);
   const [referrer, setReferrer] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
   const [venueInfo, setVenueInfo] = useState<{ venue_name: string; neighborhood: string | null } | null>(null);
+  const [stats, setStats] = useState<{ members: number; sessions: number; props: number }>({ members: 0, sessions: 0, props: 0 });
 
   // Store referral code and venue from URL
   useEffect(() => {
@@ -54,6 +55,21 @@ const Index = () => {
       supabase.from("venue_partners").select("venue_name, neighborhood").eq("id", venueId).single()
         .then(({ data }: any) => { if (data) setVenueInfo(data); });
     }
+  }, []);
+
+  // Fetch community stats
+  useEffect(() => {
+    Promise.all([
+      supabase.from("profiles").select("id", { count: "exact", head: true }).eq("onboarding_completed", true),
+      supabase.from("events").select("id", { count: "exact", head: true }),
+      supabase.from("peer_props").select("id", { count: "exact", head: true }),
+    ]).then(([profilesRes, eventsRes, propsRes]) => {
+      setStats({
+        members: profilesRes.count ?? 0,
+        sessions: eventsRes.count ?? 0,
+        props: propsRes.count ?? 0,
+      });
+    });
   }, []);
 
   // Redirect if already logged in
@@ -158,13 +174,63 @@ const Index = () => {
             <span className="text-sm text-muted-foreground">Invited by <span className="font-medium text-foreground">{referrer.display_name}</span></span>
           </div>
         )}
+        {/* Community Stats */}
+        {(stats.members > 0 || stats.sessions > 0 || stats.props > 0) && (
+          <div className="flex items-center gap-6 mb-10 animate-fade-up" style={{ animationDelay: "0.25s" }}>
+            {stats.members > 0 && (
+              <div className="text-center">
+                <span className="block text-lg font-semibold text-foreground">{stats.members}+</span>
+                <span className="text-xs text-muted-foreground">Members</span>
+              </div>
+            )}
+            {stats.sessions > 0 && (
+              <div className="text-center">
+                <span className="block text-lg font-semibold text-foreground">{stats.sessions}+</span>
+                <span className="text-xs text-muted-foreground">Sessions Hosted</span>
+              </div>
+            )}
+            {stats.props > 0 && (
+              <div className="text-center">
+                <span className="block text-lg font-semibold text-foreground">{stats.props}+</span>
+                <span className="text-xs text-muted-foreground">Props Given</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* How It Works */}
+        <div className="w-full max-w-md mb-10">
+          <h3 className="font-serif text-xl text-center mb-5 animate-fade-up" style={{ animationDelay: "0.3s" }}>How it works</h3>
+          <div className="space-y-3">
+            {[
+              { step: 1, title: "Book a session", desc: "Pick a cafe, pick a time. We handle the rest." },
+              { step: 2, title: "Meet your table", desc: "We match you with 3-5 compatible people." },
+              { step: 3, title: "Focus together", desc: "Work, connect, and come back." },
+            ].map((item, i) => (
+              <div
+                key={item.step}
+                className="bg-card rounded-lg p-4 shadow-sm flex items-start gap-4 animate-fade-up"
+                style={{ animationDelay: `${0.35 + i * 0.08}s` }}
+              >
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm font-semibold text-primary">{item.step}</span>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm mb-0.5">{item.title}</h4>
+                  <p className="text-muted-foreground text-sm">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Feature Cards */}
         <div className="w-full max-w-md space-y-4">
           {features.map((feature, i) => (
             <div
               key={feature.title}
               className="bg-card rounded-lg p-5 shadow-sm flex items-start gap-4 animate-fade-up"
-              style={{ animationDelay: `${0.3 + i * 0.1}s` }}
+              style={{ animationDelay: `${0.6 + i * 0.1}s` }}
             >
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <feature.icon className="w-5 h-5 text-primary" />
@@ -177,8 +243,23 @@ const Index = () => {
           ))}
         </div>
 
-        {/* Social Proof */}
-        <div className="mt-14 flex items-center gap-2 text-muted-foreground text-sm animate-fade-up" style={{ animationDelay: "0.6s" }}>
+        {/* Safety & Trust */}
+        <div className="mt-10 w-full max-w-md animate-fade-up" style={{ animationDelay: "0.9s" }}>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <span className="inline-flex items-center gap-1.5 bg-muted/60 rounded-full px-3 py-1.5 text-xs text-muted-foreground">
+              <Shield className="w-3.5 h-3.5" /> Women-only sessions available
+            </span>
+            <span className="inline-flex items-center gap-1.5 bg-muted/60 rounded-full px-3 py-1.5 text-xs text-muted-foreground">
+              <Users className="w-3.5 h-3.5" /> Verified community members
+            </span>
+            <span className="inline-flex items-center gap-1.5 bg-muted/60 rounded-full px-3 py-1.5 text-xs text-muted-foreground">
+              <Lock className="w-3.5 h-3.5" /> Private reporting system
+            </span>
+          </div>
+        </div>
+
+        {/* Location */}
+        <div className="mt-10 flex items-center gap-2 text-muted-foreground text-sm animate-fade-up" style={{ animationDelay: "1.0s" }}>
           <MapPin className="w-4 h-4 text-secondary" />
           <span>Starting in HSR Layout, Bangalore</span>
         </div>

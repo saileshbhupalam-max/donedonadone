@@ -64,7 +64,7 @@ import { PushOptInCard } from "./PushOptInCard";
 export default function Home() {
   const personality = usePersonality();
   usePageTitle("Home — FocusClub");
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { currentState, dnaComplete, refreshCheckIn } = useUserContext();
   const [checkInOpen, setCheckInOpen] = useState(false);
@@ -687,11 +687,29 @@ export default function Home() {
                 <Shield className="w-4 h-4 text-yellow-600" /> Your {profile.current_streak}-week streak is at risk! 🔥
               </p>
               {!profile.streak_insurance_used_at || (new Date().getTime() - new Date(profile.streak_insurance_used_at).getTime()) > 30 * 24 * 60 * 60 * 1000 ? (
-                <p className="text-xs text-muted-foreground">You have a streak save available, but booking a session is better!</p>
+                <>
+                  <p className="text-xs text-muted-foreground">You have a streak save available, but booking a session is better!</p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => navigate("/events")}>Book now</Button>
+                    <Button size="sm" variant="secondary" onClick={async () => {
+                      if (!user) return;
+                      const { error } = await supabase.from("profiles").update({ streak_insurance_used_at: new Date().toISOString() }).eq("id", user.id);
+                      if (error) { toast.error("Could not use streak save. Try again."); return; }
+                      toast.success("Streak saved! You have one save per month.");
+                      await refreshProfile();
+                    }}>
+                      <Shield className="w-3.5 h-3.5" /> Use Streak Save
+                    </Button>
+                  </div>
+                </>
+              ) : profile.streak_insurance_used_at && (new Date().getTime() - new Date(profile.streak_insurance_used_at).getTime()) <= 7 * 24 * 60 * 60 * 1000 ? (
+                <p className="text-xs text-green-600 font-medium">Streak protected until next week!</p>
               ) : (
-                <p className="text-xs text-muted-foreground">Book a session to keep your streak alive.</p>
+                <>
+                  <p className="text-xs text-muted-foreground">Book a session to keep your streak alive.</p>
+                  <Button size="sm" variant="outline" onClick={() => navigate("/events")}>Book now</Button>
+                </>
               )}
-              <Button size="sm" variant="outline" onClick={() => navigate("/events")}>Book now</Button>
             </CardContent>
           </Card>
         )}

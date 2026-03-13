@@ -31,6 +31,7 @@ import { CheckInButton } from "@/components/session/CheckInButton";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { CaptainBadge } from "@/components/captain/CaptainCard";
 import { ScrapbookPrompt } from "@/components/session/ScrapbookPrompt";
+import { QuickFeedback } from "@/components/session/QuickFeedback";
 
 import { Profile, Phase, MemberStatusRow } from "./types";
 import { PHASE_EMOJIS, STATUS_CONFIG } from "./constants";
@@ -73,6 +74,7 @@ export default function SessionPage() {
   const [photoMomentShown, setPhotoMomentShown] = useState(false);
   const [showProps, setShowProps] = useState(false);
   const [scrapbookGenerated, setScrapbookGenerated] = useState(false);
+  const [wrapUpMode, setWrapUpMode] = useState<"quick" | "detailed">("quick");
 
   // Load event + phases
   useEffect(() => {
@@ -449,56 +451,65 @@ export default function SessionPage() {
             {/* WRAP-UP PHASE */}
             {currentPhase.phase_type === "wrap_up" && eventId && (
               <>
-                <SessionWrapUp
-                  eventId={eventId}
-                  intention={intention}
-                  intentionSaved={intentionSaved}
-                  totalMinutes={totalDuration}
-                  groupSize={groupStatuses.length}
-                  onAccomplished={saveAccomplished}
-                  onPropsClick={() => setShowProps(true)}
-                  onFeedbackClick={() => navigate(`/events/${eventId}`)}
-                />
-                {user && (
-                  <CoworkAgainCard
+                {wrapUpMode === "quick" ? (
+                  <QuickFeedback
                     eventId={eventId}
-                    userId={user.id}
-                    groupMembers={groupStatuses.map(s => ({
-                      user_id: s.user_id,
-                      display_name: s.profile?.display_name || null,
-                      avatar_url: s.profile?.avatar_url || null,
-                    }))}
+                    onDetailedFeedback={() => setWrapUpMode("detailed")}
                   />
-                )}
+                ) : (
+                  <>
+                    <SessionWrapUp
+                      eventId={eventId}
+                      intention={intention}
+                      intentionSaved={intentionSaved}
+                      totalMinutes={totalDuration}
+                      groupSize={groupStatuses.length}
+                      onAccomplished={saveAccomplished}
+                      onPropsClick={() => setShowProps(true)}
+                      onFeedbackClick={() => navigate(`/events/${eventId}`)}
+                    />
+                    {user && (
+                      <CoworkAgainCard
+                        eventId={eventId}
+                        userId={user.id}
+                        groupMembers={groupStatuses.map(s => ({
+                          user_id: s.user_id,
+                          display_name: s.profile?.display_name || null,
+                          avatar_url: s.profile?.avatar_url || null,
+                        }))}
+                      />
+                    )}
 
-                {/* DESIGN: Venue vibes are crowdsourced — users trust peer data more than venue marketing.
-                   Quick 10-second rating after each session builds venue intelligence. */}
-                {user && event.venue_name && (
-                  <VenueVibeRating
-                    eventId={eventId}
-                    userId={user.id}
-                    venueName={event.venue_name}
-                    onDone={() => {}}
-                  />
-                )}
+                    {/* DESIGN: Venue vibes are crowdsourced — users trust peer data more than venue marketing.
+                       Quick 10-second rating after each session builds venue intelligence. */}
+                    {user && event.venue_name && (
+                      <VenueVibeRating
+                        eventId={eventId}
+                        userId={user.id}
+                        venueName={event.venue_name}
+                        onDone={() => {}}
+                      />
+                    )}
 
-                {/* DESIGN: Auto-generate scrapbook entry after wrap-up.
-                   Users won't manually create memories — we gather everything automatically. */}
-                {user && !scrapbookGenerated && (
-                  <ScrapbookPrompt
-                    eventId={eventId}
-                    userId={user.id}
-                    event={event}
-                    intention={intention}
-                    accomplished={accomplished}
-                    totalMinutes={totalDuration}
-                    groupMembers={groupStatuses.map(s => ({
-                      user_id: s.user_id,
-                      display_name: s.profile?.display_name || null,
-                      avatar_url: s.profile?.avatar_url || null,
-                    }))}
-                    onGenerated={() => setScrapbookGenerated(true)}
-                  />
+                    {/* DESIGN: Auto-generate scrapbook entry after wrap-up.
+                       Users won't manually create memories — we gather everything automatically. */}
+                    {user && !scrapbookGenerated && (
+                      <ScrapbookPrompt
+                        eventId={eventId}
+                        userId={user.id}
+                        event={event}
+                        intention={intention}
+                        accomplished={accomplished}
+                        totalMinutes={totalDuration}
+                        groupMembers={groupStatuses.map(s => ({
+                          user_id: s.user_id,
+                          display_name: s.profile?.display_name || null,
+                          avatar_url: s.profile?.avatar_url || null,
+                        }))}
+                        onGenerated={() => setScrapbookGenerated(true)}
+                      />
+                    )}
+                  </>
                 )}
               </>
             )}

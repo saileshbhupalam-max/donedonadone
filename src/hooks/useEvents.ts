@@ -21,6 +21,7 @@ export interface Event {
   neighborhood: string | null;
   whatsapp_group_link: string | null;
   max_spots: number | null;
+  session_format: string | null;
   women_only: boolean | null;
   created_by: string | null;
   rsvp_count: number | null;
