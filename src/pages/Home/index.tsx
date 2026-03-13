@@ -48,6 +48,7 @@ import { FeatureGate } from "@/components/FeatureGate";
 import { WhosHere } from "@/components/community/WhosHere";
 import { CompaniesHere } from "@/components/community/CompaniesHere";
 import { MatchSuggestions } from "@/components/community/MatchSuggestions";
+import { DnaCompletionNudge } from "@/components/home/DnaCompletionNudge";
 import { MicroRequestBoard } from "@/components/community/MicroRequestBoard";
 import { CoffeeRoulette } from "@/components/community/CoffeeRoulette";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -587,6 +588,9 @@ export default function Home() {
             </CardContent>
           </Card>
         )}
+
+        {/* DNA Completion Nudge — shows when < 50% complete */}
+        {user && <DnaCompletionNudge userId={user.id} />}
 
         {/* === TIER 3: Engagement (collapsible) === */}
         <Collapsible open={showMoreSections} onOpenChange={setShowMoreSections}>
