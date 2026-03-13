@@ -81,7 +81,7 @@ function MicroRequestBoardInner() {
         .in("status", ["open", "claimed"])
         .order("created_at", { ascending: false }),
     ]);
-    setRequests(othersRes.data || []);
+    setRequests((othersRes.data as unknown as MicroRequest[]) || []);
     setMyRequests(mineRes.data || []);
     setLoading(false);
   };

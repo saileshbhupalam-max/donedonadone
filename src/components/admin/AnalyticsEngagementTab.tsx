@@ -23,10 +23,10 @@ function EngagementOverview() {
 
     if (data) {
       const rows = data;
-      const active = rows.filter((r) => r.score > 0).length;
+      const active = rows.filter((r) => (r.score ?? 0) > 0).length;
       const highRisk = rows.filter((r) => r.churn_risk === "high").length;
       const avgScore = rows.length
-        ? Math.round(rows.reduce((s, r) => s + r.score, 0) / rows.length)
+        ? Math.round(rows.reduce((s, r) => s + (r.score ?? 0), 0) / rows.length)
         : 0;
       setStats({ active, highRisk, avgScore, total: count || rows.length });
     }

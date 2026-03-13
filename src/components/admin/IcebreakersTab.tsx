@@ -14,9 +14,9 @@ interface IcebreakerQ {
   question: string;
   category: string;
   depth: string;
-  emoji: string;
-  active: boolean;
-  times_used: number;
+  emoji: string | null;
+  active: boolean | null;
+  times_used: number | null;
 }
 
 const CATEGORIES = ["quick_fire", "pair_share", "group_challenge", "intention_set"];
@@ -63,7 +63,7 @@ export function IcebreakersTab() {
   };
 
   const sorted = useMemo(() => {
-    if (sortBy === "times_used") return [...questions].sort((a, b) => b.times_used - a.times_used);
+    if (sortBy === "times_used") return [...questions].sort((a, b) => (b.times_used ?? 0) - (a.times_used ?? 0));
     return questions;
   }, [questions, sortBy]);
 
@@ -117,7 +117,7 @@ export function IcebreakersTab() {
                   <span className="text-[10px] text-muted-foreground">Used {q.times_used}×</span>
                 </div>
               </div>
-              <Switch checked={q.active} onCheckedChange={() => toggleActive(q.id, q.active)} />
+              <Switch checked={q.active ?? false} onCheckedChange={() => toggleActive(q.id, q.active ?? false)} />
             </CardContent>
           </Card>
         ))}

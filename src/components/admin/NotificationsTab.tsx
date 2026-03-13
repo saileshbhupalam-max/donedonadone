@@ -87,7 +87,7 @@ export function NotificationsTab() {
       .select("id, display_name, email")
       .or(`display_name.ilike.%${query}%,email.ilike.%${query}%`)
       .limit(5);
-    setSearchResults(data || []);
+    setSearchResults((data || []) as { id: string; display_name: string; email: string }[]);
   };
 
   const sendCustomNotification = async () => {

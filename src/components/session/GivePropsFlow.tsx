@@ -120,7 +120,7 @@ export function GivePropsFlow({ eventId, onDone }: GivePropsFlowProps) {
         await supabase.rpc("create_system_notification", {
           p_user_id: toUser,
           p_title: notifTitle,
-          p_body: types.length > 1 ? `+${types.length - 1} more props` : null,
+          p_body: types.length > 1 ? `+${types.length - 1} more props` : "",
           p_type: "props_received",
           p_link: "/me",
         });

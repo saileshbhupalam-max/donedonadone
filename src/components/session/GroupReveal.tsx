@@ -19,7 +19,7 @@ interface GroupRevealProps {
 }
 
 function getClue(profile: Record<string, any> | null): string {
-  if (profile?.can_offer?.length > 0) return `Offers: ${profile.can_offer[0]}`;
+  if (profile?.can_offer?.length > 0) return `Offers: ${profile!.can_offer[0]}`;
   if (profile?.work_vibe) {
     const labels: Record<string, string> = { deep_focus: "Deep Focus", casual_social: "Social", balanced: "Balanced" };
     return `${labels[profile.work_vibe] || profile.work_vibe} worker`;

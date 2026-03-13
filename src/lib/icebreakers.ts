@@ -80,7 +80,7 @@ export async function selectIcebreakerRounds(groupExperience: "new" | "mixed" | 
   // Increment times_used for selected questions
   const selectedIds = [...quickFire, ...pairShare, ...groupChallenge, ...intentionSet].map(q => q.id);
   for (const id of selectedIds) {
-    await supabase.from("icebreaker_questions").update({ times_used: allQuestions.find((q: any) => q.id === id)?.times_used + 1 }).eq("id", id);
+    await supabase.from("icebreaker_questions").update({ times_used: (allQuestions.find((q: any) => q.id === id)?.times_used ?? 0) + 1 }).eq("id", id);
   }
 
   const rounds: IcebreakerRound[] = [];

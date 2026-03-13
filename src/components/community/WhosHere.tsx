@@ -42,14 +42,14 @@ function WhosHereInner() {
   const fetchPeople = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    const params: Record<string, string | number | null> = { p_user_id: user.id };
+    const rpcParams: Record<string, string | number | null> = { p_user_id: user.id };
     if (currentLocation?.id) {
-      params.p_location_id = currentLocation.id;
+      rpcParams.p_location_id = currentLocation.id;
     } else if (activeCheckIn) {
-      params.p_latitude = Number(activeCheckIn.latitude || 0) || null;
-      params.p_longitude = Number(activeCheckIn.longitude || 0) || null;
+      rpcParams.p_latitude = Number(activeCheckIn.latitude || 0) || null;
+      rpcParams.p_longitude = Number(activeCheckIn.longitude || 0) || null;
     }
-    const { data } = await supabase.rpc("get_whos_here", params);
+    const { data } = await supabase.rpc("get_whos_here", rpcParams as any);
     setPeople(data || []);
     setLoading(false);
   }, [user, currentLocation, activeCheckIn]);
