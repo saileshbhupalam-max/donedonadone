@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { captureSupabaseError } from "@/lib/sentry";
 
 export type TierId = "free" | "plus" | "pro" | "max";
 
@@ -91,6 +92,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       supabase.from("tier_features").select("*").eq("is_active", true).order("sort_order"),
       supabase.from("tier_limits").select("tier_id, limit_key, limit_value, label"),
     ]);
+
+    if (tierRes.error) captureSupabaseError("SubscriptionLoadTier", tierRes.error, { rpc: "get_effective_tier" });
+    if (tiersRes.error) captureSupabaseError("SubscriptionLoadTiers", tiersRes.error, { table: "subscription_tiers" });
+    if (featuresRes.error) captureSupabaseError("SubscriptionLoadFeatures", featuresRes.error, { table: "tier_features" });
+    if (limitsRes.error) captureSupabaseError("SubscriptionLoadLimits", limitsRes.error, { table: "tier_limits" });
 
     // Effective tier
     const effective = Array.isArray(tierRes.data) ? tierRes.data[0] : tierRes.data;

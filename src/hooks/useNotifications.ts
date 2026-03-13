@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { captureSupabaseError } from "@/lib/sentry";
 
 export interface Notification {
   id: string;
@@ -26,7 +27,7 @@ export function useNotifications() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(20);
-    if (error) console.error("[NotificationsLoad]", error);
+    if (error) captureSupabaseError("NotificationsLoad", error, { table: "notifications" });
     setNotifications(data || []);
     setLoading(false);
   }, [user]);

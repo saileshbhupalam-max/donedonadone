@@ -40,4 +40,33 @@ export function clearSentryUser() {
   Sentry.setUser(null);
 }
 
+/**
+ * Capture a Supabase operation error in Sentry with structured context.
+ * Also logs to console.error so local debugging still works.
+ */
+export function captureSupabaseError(
+  operation: string,
+  error: any,
+  context?: Record<string, any>,
+) {
+  console.error(`[${operation}]`, error);
+  Sentry.withScope((scope) => {
+    scope.setTag("source", "supabase");
+    scope.setTag("operation", operation);
+    if (context) {
+      scope.setContext("supabase_query", context);
+    }
+    if (error?.message) {
+      scope.setFingerprint([operation, error.message]);
+    }
+    Sentry.captureException(
+      error instanceof Error
+        ? error
+        : new Error(
+            `Supabase error: ${operation} - ${error?.message || JSON.stringify(error)}`,
+          ),
+    );
+  });
+}
+
 export { Sentry };
