@@ -46,6 +46,9 @@ const Settings = lazy(() => import("./pages/Settings"));
 const CompanyCreate = lazy(() => import("./pages/CompanyCreate"));
 const CompanyProfile = lazy(() => import("./pages/CompanyProfile"));
 const Pricing = lazy(() => import("./pages/Pricing"));
+const Companies = lazy(() => import("./pages/Companies"));
+const Needs = lazy(() => import("./pages/Needs"));
+const SpaceInsights = lazy(() => import("./pages/SpaceInsights"));
 const CrossSpaceNetwork = lazy(() => import("./pages/CrossSpaceNetwork"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -129,9 +132,18 @@ const App = () => (
             <Route path="/pricing" element={
               <ProtectedPage><Pricing /></ProtectedPage>
             } />
+            <Route path="/companies" element={
+              <ProtectedPage><Companies /></ProtectedPage>
+            } />
+            <Route path="/needs" element={
+              <ProtectedPage><Needs /></ProtectedPage>
+            } />
             <Route path="/network" element={
               <ProtectedPage><CrossSpaceNetwork /></ProtectedPage>
             } />
+
+            {/* Public routes (no auth required) */}
+            <Route path="/space/:id/insights" element={<SpaceInsights />} />
 
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />

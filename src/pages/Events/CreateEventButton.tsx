@@ -16,7 +16,8 @@ import { CalendarIcon, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { createSessionPhases, getFormatPhases } from "@/lib/sessionPhases";
+import { createSessionPhases, getFormatPhases, isCustomTemplateFormat, extractTemplateId } from "@/lib/sessionPhases";
+import { createPhasesFromTemplate, fetchTemplatesForVenue, fetchGlobalTemplates, type SessionTemplate } from "@/lib/sessionTemplates";
 import { ERROR_STATES } from "@/lib/personality";
 import { NEIGHBORHOODS } from "./constants";
 
@@ -42,12 +43,28 @@ export function CreateEventButton({ onCreated }: { onCreated: () => void }) {
   const [vibeSoundtrack, setVibeSoundtrack] = useState("");
   const [venuePartnerId, setVenuePartnerId] = useState("");
   const [venuePartners, setVenuePartners] = useState<any[]>([]);
+  const [customTemplates, setCustomTemplates] = useState<SessionTemplate[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     supabase.from("venue_partners").select("id, venue_name, venue_address, neighborhood, latitude, longitude").eq("status", "active")
       .then(({ data }) => setVenuePartners(data || []));
+    // Load global templates on mount
+    fetchGlobalTemplates().then(setCustomTemplates);
   }, []);
+
+  // When venue partner changes, load venue-specific + global templates
+  useEffect(() => {
+    (async () => {
+      const global = await fetchGlobalTemplates();
+      if (venuePartnerId && venuePartnerId !== "none") {
+        const venue = await fetchTemplatesForVenue(venuePartnerId);
+        setCustomTemplates([...venue, ...global]);
+      } else {
+        setCustomTemplates(global);
+      }
+    })();
+  }, [venuePartnerId]);
 
   const checkEligibility = async () => {
     if (!user) return;
@@ -77,7 +94,8 @@ export function CreateEventButton({ onCreated }: { onCreated: () => void }) {
     if (!error && data) {
       const updates: any = {};
       if (sessionFormat !== "casual") {
-        updates.session_format = sessionFormat;
+        // Store the format key (for built-in) or "custom" for template-based
+        updates.session_format = isCustomTemplateFormat(sessionFormat) ? "custom" : sessionFormat;
         updates.vibe_soundtrack = vibeSoundtrack || null;
       }
       if (venuePartnerId && venuePartnerId !== "none") {
@@ -92,7 +110,10 @@ export function CreateEventButton({ onCreated }: { onCreated: () => void }) {
       if (Object.keys(updates).length > 0) {
         await supabase.from("events").update(updates).eq("id", data.id);
       }
-      if (sessionFormat !== "casual") {
+      if (isCustomTemplateFormat(sessionFormat)) {
+        const templateId = extractTemplateId(sessionFormat);
+        if (templateId) await createPhasesFromTemplate(data.id, templateId);
+      } else if (sessionFormat !== "casual") {
         await createSessionPhases(data.id, sessionFormat);
       }
       toast.success("Session created! 🎉");
@@ -178,21 +199,37 @@ export function CreateEventButton({ onCreated }: { onCreated: () => void }) {
               <Select value={sessionFormat} onValueChange={setSessionFormat}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="casual">☕ Casual</SelectItem>
-                  <SelectItem value="structured_2hr">⏱️ Structured 2hr</SelectItem>
-                  <SelectItem value="structured_4hr">⏱️ Structured 4hr</SelectItem>
-                  <SelectItem value="focus_only_2hr">🎧 Focus Only 2hr</SelectItem>
-                  <SelectItem value="focus_only_4hr">🎧 Focus Only 4hr</SelectItem>
+                  <SelectItem value="casual">Casual</SelectItem>
+                  <SelectItem value="structured_2hr">Structured 2hr</SelectItem>
+                  <SelectItem value="structured_4hr">Structured 4hr</SelectItem>
+                  <SelectItem value="focus_only_2hr">Focus Only 2hr</SelectItem>
+                  <SelectItem value="focus_only_4hr">Focus Only 4hr</SelectItem>
+                  {customTemplates.length > 0 && customTemplates.map((ct) => (
+                    <SelectItem key={ct.id} value={`template:${ct.id}`}>
+                      {ct.name} ({ct.totalDurationMinutes}min)
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {sessionFormat !== "casual" && (
                 <div className="mt-2 space-y-1 bg-muted/50 rounded-lg p-3">
-                  {getFormatPhases(sessionFormat).map((p, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{p.phase_label}</span>
-                      <span className="text-[10px]">({p.duration_minutes}min)</span>
-                    </div>
-                  ))}
+                  {isCustomTemplateFormat(sessionFormat) ? (
+                    customTemplates
+                      .find((ct) => `template:${ct.id}` === sessionFormat)
+                      ?.phases.map((p, i) => (
+                        <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{p.label}</span>
+                          <span className="text-[10px]">({p.durationMinutes}min)</span>
+                        </div>
+                      ))
+                  ) : (
+                    getFormatPhases(sessionFormat).map((p, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{p.phase_label}</span>
+                        <span className="text-[10px]">({p.duration_minutes}min)</span>
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
             </div>

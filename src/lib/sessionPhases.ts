@@ -85,3 +85,20 @@ export function getFormatPhases(format: string): PhaseTemplate[] {
 export function isFocusOnlyFormat(format: string | null): boolean {
   return format?.startsWith("focus_only") ?? false;
 }
+
+/**
+ * Returns true when the format string refers to a custom template (UUID) rather
+ * than one of the built-in format keys.
+ */
+export function isCustomTemplateFormat(format: string | null): boolean {
+  if (!format) return false;
+  return format.startsWith("template:");
+}
+
+/**
+ * Extract the template UUID from a format string like "template:<uuid>".
+ */
+export function extractTemplateId(format: string): string | null {
+  if (!format.startsWith("template:")) return null;
+  return format.slice("template:".length);
+}

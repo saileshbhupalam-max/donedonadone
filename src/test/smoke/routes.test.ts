@@ -45,6 +45,9 @@ describe('Route modules load without errors', () => {
     { name: 'Admin', path: '../../pages/Admin' },
     { name: 'Partners', path: '../../pages/Partners' },
     { name: 'MapView', path: '../../pages/MapView' },
+    { name: 'Companies', path: '../../pages/Companies' },
+    { name: 'Needs', path: '../../pages/Needs' },
+    { name: 'SpaceInsights', path: '../../pages/SpaceInsights' },
     { name: 'NotFound', path: '../../pages/NotFound' },
   ];
 

@@ -24,7 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { calculateProfileCompletion } from "@/lib/matchUtils";
 import { checkAndAwardBadges, BADGE_DEFINITIONS, getBadgeDef } from "@/lib/badges";
 import { useTheme } from "@/hooks/useTheme";
-import { Camera, LogOut, Sun, Moon, Monitor, Lock, Download, Share2, MessageCircle, Copy, Navigation, Settings, Eye } from "lucide-react";
+import { Camera, LogOut, Sun, Moon, Monitor, Lock, Download, Share2, MessageCircle, Copy, Navigation, Settings, Eye, GraduationCap } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -625,6 +625,52 @@ export default function Profile() {
                     <Lock className="w-3 h-3 text-muted-foreground shrink-0 mt-0.5" />
                     <p className="text-[10px] text-muted-foreground">Never shown on your profile.</p>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Mentoring */}
+            <Card>
+              <CardContent className="pt-4 space-y-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <GraduationCap className="w-4 h-4 text-primary" />
+                  <h3 className="text-sm font-medium text-foreground">Mentoring</h3>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-foreground">Available as mentor</p>
+                    <p className="text-[10px] text-muted-foreground">Appear in the mentor directory</p>
+                  </div>
+                  <Switch
+                    checked={(profile.can_offer || []).includes("mentorship")}
+                    onCheckedChange={async (checked) => {
+                      const current = profile.can_offer || [];
+                      const updated = checked
+                        ? [...current.filter((t: string) => t !== "mentorship"), "mentorship"]
+                        : current.filter((t: string) => t !== "mentorship");
+                      await supabase.from("profiles").update({ can_offer: updated }).eq("id", user!.id);
+                      setProfile((p: any) => p ? { ...p, can_offer: updated } : p);
+                      sonnerToast.success(checked ? "You're now listed as a mentor" : "Removed from mentor directory");
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-foreground">Seeking a mentor</p>
+                    <p className="text-[10px] text-muted-foreground">Get matched with experienced members</p>
+                  </div>
+                  <Switch
+                    checked={(profile.looking_for || []).includes("mentorship")}
+                    onCheckedChange={async (checked) => {
+                      const current = profile.looking_for || [];
+                      const updated = checked
+                        ? [...current.filter((t: string) => t !== "mentorship"), "mentorship"]
+                        : current.filter((t: string) => t !== "mentorship");
+                      await supabase.from("profiles").update({ looking_for: updated }).eq("id", user!.id);
+                      setProfile((p: any) => p ? { ...p, looking_for: updated } : p);
+                      sonnerToast.success(checked ? "You'll be matched with mentors" : "Mentee mode off");
+                    }}
+                  />
                 </div>
               </CardContent>
             </Card>

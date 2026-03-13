@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Sparkles, Link2, ChevronDown, ChevronUp, Building2, Users, Search, Lock } from "lucide-react";
+import { MapPin, Sparkles, Link2, ChevronDown, ChevronUp, Building2, Users, Search, Lock, GraduationCap } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +20,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { getInitials } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MentorSection } from "@/components/discover/MentorSection";
 
 interface LocationActivity {
   location_id: string;
@@ -524,10 +525,16 @@ export default function Discover() {
             <TabsContent value="people" className="mt-0 -mx-4">
               <ActiveLocationsSection key={`locations-${refreshKey}`} />
               <SuggestedConnectionsSection key={`suggestions-${refreshKey}`} />
+              <MentorSection key={`mentors-${refreshKey}`} />
               <YourConnectionsSection key={`connections-${refreshKey}`} />
             </TabsContent>
 
             <TabsContent value="companies" className="mt-0 -mx-4">
+              <div className="px-4 py-2">
+                <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => navigate("/companies")}>
+                  <Building2 className="w-3 h-3 mr-1.5" /> View Full Company Directory
+                </Button>
+              </div>
               <CompanyDirectorySection key={`companies-${refreshKey}`} />
             </TabsContent>
           </Tabs>

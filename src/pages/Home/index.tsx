@@ -1,8 +1,8 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { calculateMatch, calculateProfileCompletion } from "@/lib/matchUtils";
+import { calculateProfileCompletion } from "@/lib/matchUtils";
 import { getInitials } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -58,6 +58,7 @@ import { ActivitySummary } from "@/components/streaks/ActivitySummary";
 import { UpgradeSessionPrompt } from "@/components/upgrade/UpgradeSessionPrompt";
 import { BoostMathBanner } from "@/components/upgrade/BoostMathBanner";
 import { WeeklyDigest } from "@/components/dashboard/WeeklyDigest";
+import { MatchNudgeCard } from "@/components/home/MatchNudgeCard";
 
 import type { Profile, ActivePrompt, NextMeetup, PendingFeedback, CommunityStats, PostSessionSummary, WeeklyDigestData } from "./types";
 import { getFirstName, getNextAction } from "./helpers";
@@ -397,16 +398,6 @@ export default function Home() {
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
-
-  // Top matches
-  const topMatches = useMemo(() => {
-    if (!profile) return [];
-    return allProfiles
-      .filter((p) => p.id !== profile.id)
-      .map((p) => ({ profile: p, ...calculateMatch(profile, p) }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 5);
-  }, [allProfiles, profile]);
 
   const completion = profile ? calculateProfileCompletion(profile) : 0;
   const nextAction = profile ? getNextAction(profile) : null;
@@ -1063,38 +1054,13 @@ export default function Home() {
           </Card>
         )}
 
-        {/* Card 4: Top Matches — only if looking_for tags exist */}
-        {loading ? <Skeleton className="h-36 rounded-lg" /> : (profile.looking_for?.length ?? 0) > 0 && topMatches.length > 0 && (
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-medium text-muted-foreground">Top Matches</p>
-                <button className="text-xs text-primary hover:underline" onClick={() => navigate("/discover")}>See all →</button>
-              </div>
-              <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-                {topMatches.map(({ profile: m, score, reasons }) => (
-                  <div
-                    key={m.id}
-                    className="shrink-0 w-32 rounded-lg border border-border bg-background p-3 cursor-pointer hover:shadow-sm transition-shadow"
-                    onClick={() => navigate(`/profile/${m.id}`)}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Avatar className="w-9 h-9">
-                        <AvatarImage src={m.avatar_url || ""} />
-                        <AvatarFallback className="text-xs bg-muted">{getInitials(m.display_name)}</AvatarFallback>
-                      </Avatar>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary font-medium">
-                        {score}%
-                      </Badge>
-                    </div>
-                    <p className="text-xs font-medium text-foreground truncate">{m.display_name}</p>
-                    {reasons[0] && <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{reasons[0]}</p>}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Card 4: Match Nudges — proactive contextual recommendations */}
+        <MatchNudgeCard
+          userId={user.id}
+          userProfile={profile}
+          allProfiles={allProfiles}
+          loading={loading}
+        />
 
         {/* Leaderboard Card — after 3+ sessions */}
         {!loading && (profile.events_attended || 0) >= 3 && <LeaderboardHomeCard />}

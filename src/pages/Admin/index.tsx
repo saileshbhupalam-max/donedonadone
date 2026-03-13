@@ -23,6 +23,7 @@ import { SubscriptionsTab } from "@/components/admin/SubscriptionsTab";
 import { AIConfigTab } from "@/components/admin/AIConfigTab";
 import { AnalyticsEngagementTab } from "@/components/admin/AnalyticsEngagementTab";
 import { NotificationsTab } from "@/components/admin/NotificationsTab";
+import { TemplatesTab } from "@/components/admin/TemplatesTab";
 import {
   Collapsible,
   CollapsibleContent,
@@ -72,6 +73,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Sessions",
     items: [
       { key: "events", label: "Sessions", component: <EventsTab /> },
+      { key: "templates", label: "Templates", component: <TemplatesTab /> },
       { key: "subscriptions", label: "Subscriptions", component: <SubscriptionsTab /> },
     ],
   },
