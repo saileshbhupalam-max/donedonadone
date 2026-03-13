@@ -9,6 +9,7 @@ import { CalendarIcon, MapPin, Hand, AlertTriangle, Map } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
 import { VenueVibeSummary } from "@/components/session/VenueVibeRating";
 import { VenueQuickBadges } from "@/components/venue/VenueQuickBadges";
+import type { VenueBadge } from "@/hooks/useVenueBadgesBatch";
 import { Event as EventType } from "@/hooks/useEvents";
 import { getNeighborhoodLabel, getTimingLabel, isWithin48Hours } from "./constants";
 
@@ -21,9 +22,11 @@ export interface EventCardProps {
   minThreshold: number;
   isRestricted?: boolean;
   circleUserIds?: string[];
+  /** Pre-fetched venue badges from batch hook — avoids per-card query */
+  preloadedBadges?: VenueBadge[];
 }
 
-export function EventCard({ event, onRsvp, userRsvp, isPast, allUpcoming, minThreshold, isRestricted, circleUserIds }: EventCardProps) {
+export function EventCard({ event, onRsvp, userRsvp, isPast, allUpcoming, minThreshold, isRestricted, circleUserIds, preloadedBadges }: EventCardProps) {
   const navigate = useNavigate();
   const goingCount = event.rsvps?.filter((r) => r.status === "going").length || 0;
   const goingAvatars = event.rsvps?.filter((r) => r.status === "going").slice(0, 5) || [];
@@ -66,7 +69,7 @@ export function EventCard({ event, onRsvp, userRsvp, isPast, allUpcoming, minThr
                 <span>{event.venue_name}{event.neighborhood ? ` · ${getNeighborhoodLabel(event.neighborhood)}` : ""}</span>
               </div>
             )}
-            {event.venue_name && <VenueQuickBadges venueName={event.venue_name} />}
+            {event.venue_name && <VenueQuickBadges venueName={event.venue_name} preloadedBadges={preloadedBadges} />}
           </div>
           {timingLabel && (
             <Badge variant="outline" className="text-xs shrink-0 border-primary/30 text-primary">{timingLabel}</Badge>

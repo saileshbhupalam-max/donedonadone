@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AppShell } from "@/components/layout/AppShell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { ADMIN_EMAILS } from "./constants";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { OverviewTab } from "./OverviewTab";
 import { MembersTab } from "./MembersTab";
 import { PromptsTab } from "./PromptsTab";
@@ -107,11 +107,9 @@ function groupForKey(key: string): string {
 
 export default function Admin() {
   usePageTitle("Mission Control -- FocusClub");
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-
-  const isAdmin =
-    profile?.user_type === "admin" || ADMIN_EMAILS.includes(user?.email || "");
+  const { isAdmin, loading: adminLoading } = useAdminCheck();
 
   const [activeKey, setActiveKey] = useState("analytics");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
@@ -127,12 +125,12 @@ export default function Admin() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && (!user || !isAdmin)) {
+    if (!authLoading && !adminLoading && (!user || !isAdmin)) {
       navigate("/home");
     }
-  }, [user, authLoading, navigate, isAdmin]);
+  }, [user, authLoading, adminLoading, navigate, isAdmin]);
 
-  if (authLoading || !user || !isAdmin) {
+  if (authLoading || adminLoading || !user || !isAdmin) {
     return (
       <AppShell>
         <div className="flex items-center justify-center h-[calc(100vh-8rem)]">
