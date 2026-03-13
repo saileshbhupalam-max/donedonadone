@@ -9,12 +9,17 @@ import { format, parseISO } from "date-fns";
 import { Users } from "lucide-react";
 import { createSmartGroups } from "@/lib/antifragile";
 import { NOTIFICATION_COPY } from "@/lib/personality";
+import { GroupPreviewModal, type GroupMember } from "@/components/admin/GroupPreviewModal";
 
 export function EventsTab() {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [minThreshold, setMinThreshold] = useState(3);
   const [requests, setRequests] = useState<any[]>([]);
+  const [showGroupPreview, setShowGroupPreview] = useState(false);
+  const [previewGroups, setPreviewGroups] = useState<GroupMember[][]>([]);
+  const [previewEvent, setPreviewEvent] = useState<any>(null);
+  const [previewProfiles, setPreviewProfiles] = useState<any[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -75,6 +80,70 @@ export function EventsTab() {
     );
   };
 
+  const handleShuffleGroups = () => {
+    if (!previewProfiles || previewProfiles.length === 0) return;
+    const members = previewProfiles.map((p: any) => ({
+      id: p.id,
+      display_name: p.display_name,
+      gender: p.gender,
+      events_attended: p.events_attended || 0,
+      is_table_captain: p.is_table_captain || false,
+      no_show_count: p.no_show_count || 0,
+      reliability_status: p.reliability_status || "good",
+    }));
+    const newGroups = createSmartGroups(members, 4);
+    setPreviewGroups(newGroups);
+  };
+
+  const handleSaveGroups = async () => {
+    if (!previewEvent || previewGroups.length === 0) return;
+    const e = previewEvent;
+    try {
+      for (let i = 0; i < previewGroups.length; i++) {
+        const { data: group } = await supabase.from("groups").insert({
+          event_id: e.id,
+          group_number: i + 1,
+          table_assignment: `Table ${i + 1}`,
+        }).select().single();
+        if (group) {
+          const memberInserts = previewGroups[i].map((m) => ({ group_id: group.id, user_id: m.id }));
+          await supabase.from("group_members").insert(memberInserts);
+        }
+      }
+      // Send buddy intro notifications to each group member
+      const profileMap = new Map(previewProfiles.map((p: any) => [p.id, p]));
+      for (let i = 0; i < previewGroups.length; i++) {
+        for (const member of previewGroups[i]) {
+          const teammateNames = previewGroups[i]
+            .filter((m) => m.id !== member.id)
+            .map((m) => {
+              const prof = profileMap.get(m.id);
+              return prof?.display_name || "a member";
+            });
+          if (teammateNames.length === 0) continue;
+          const day = format(parseISO(e.date), "EEEE");
+          const body = NOTIFICATION_COPY.groupAssigned(teammateNames, e.venue_name, day);
+          await supabase.rpc("create_system_notification", {
+            p_user_id: member.id,
+            p_title: `Meet your table for ${e.title}!`,
+            p_body: body,
+            p_type: "buddy_intro",
+            p_link: `/events/${e.id}`,
+          });
+        }
+      }
+      const totalMembers = previewGroups.reduce((sum, g) => sum + g.length, 0);
+      toast.success(`Created ${previewGroups.length} groups for ${totalMembers} attendees`);
+      setShowGroupPreview(false);
+      setPreviewGroups([]);
+      setPreviewEvent(null);
+      setPreviewProfiles([]);
+    } catch (err) {
+      console.error("[SaveGroups]", err);
+      toast.error("Failed to save groups");
+    }
+  };
+
   const fulfillRequest = async (id: string) => {
     try {
       const { error } = await supabase.from("session_requests").update({ status: "fulfilled" }).eq("id", id);
@@ -113,6 +182,7 @@ export function EventsTab() {
                 if (!profiles || profiles.length === 0) { toast.error("Could not load profiles"); return; }
                 const members = profiles.map((p: any) => ({
                   id: p.id,
+                  display_name: p.display_name,
                   gender: p.gender,
                   events_attended: p.events_attended || 0,
                   is_table_captain: p.is_table_captain || false,
@@ -120,43 +190,13 @@ export function EventsTab() {
                   reliability_status: p.reliability_status || "good",
                 }));
                 const groups = createSmartGroups(members, 4);
-                for (let i = 0; i < groups.length; i++) {
-                  const { data: group } = await supabase.from("groups").insert({
-                    event_id: e.id,
-                    group_number: i + 1,
-                    table_assignment: `Table ${i + 1}`,
-                  }).select().single();
-                  if (group) {
-                    const memberInserts = groups[i].map((m) => ({ group_id: group.id, user_id: m.id }));
-                    await supabase.from("group_members").insert(memberInserts);
-                  }
-                }
-                // Send buddy intro notifications to each group member
-                const profileMap = new Map(profiles.map((p: any) => [p.id, p]));
-                for (let i = 0; i < groups.length; i++) {
-                  for (const member of groups[i]) {
-                    const teammateNames = groups[i]
-                      .filter((m) => m.id !== member.id)
-                      .map((m) => {
-                        const prof = profileMap.get(m.id);
-                        return prof?.display_name || "a member";
-                      });
-                    if (teammateNames.length === 0) continue;
-                    const day = format(parseISO(e.date), "EEEE");
-                    const body = NOTIFICATION_COPY.groupAssigned(teammateNames, e.venue_name, day);
-                    await supabase.rpc("create_system_notification", {
-                      p_user_id: member.id,
-                      p_title: `Meet your table for ${e.title}!`,
-                      p_body: body,
-                      p_type: "buddy_intro",
-                      p_link: `/events/${e.id}`,
-                    });
-                  }
-                }
-                toast.success(`Created ${groups.length} groups for ${rsvps.length} attendees`);
+                setPreviewGroups(groups);
+                setPreviewEvent(e);
+                setPreviewProfiles(profiles);
+                setShowGroupPreview(true);
               } catch (err) {
                 console.error("[CreateGroups]", err);
-                toast.error("Failed to create groups");
+                toast.error("Failed to load members for grouping");
               }
             }}>
               <Users className="w-3 h-3 mr-1" /> Create Groups
@@ -168,6 +208,15 @@ export function EventsTab() {
         <div className="space-y-2">{past.map((e) => renderEvent(e, false))}</div>}
 
       {/* Session Requests */}
+      <GroupPreviewModal
+        open={showGroupPreview}
+        onOpenChange={setShowGroupPreview}
+        event={previewEvent}
+        groups={previewGroups}
+        onConfirm={handleSaveGroups}
+        onShuffle={handleShuffleGroups}
+      />
+
       {requests.length > 0 && (
         <>
           <p className="text-xs font-medium text-muted-foreground">Session Requests ({requests.length} pending)</p>
