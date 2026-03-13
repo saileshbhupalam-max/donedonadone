@@ -27,6 +27,7 @@ import { CAPTAIN_NUDGES, updateReliability } from "@/lib/antifragile";
 import { isFocusOnlyFormat } from "@/lib/sessionPhases";
 import { CONFIRMATIONS } from "@/lib/personality";
 import { trackAnalyticsEvent } from "@/lib/growth";
+import { captureSupabaseError } from "@/lib/sentry";
 import { FlagMemberForm } from "@/components/session/FlagMemberForm";
 import { CheckInButton } from "@/components/session/CheckInButton";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -238,7 +239,7 @@ export default function SessionPage() {
   const updateMyStatus = async (status: string, ut?: string, tp?: string) => {
     if (!user || !eventId) return;
     setMyStatus(status);
-    await supabase.from("member_status").upsert({
+    const { error } = await supabase.from("member_status").upsert({
       user_id: user.id,
       event_id: eventId,
       status,
@@ -246,6 +247,7 @@ export default function SessionPage() {
       topic: tp || null,
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id" });
+    if (error) captureSupabaseError("SessionUpdateStatus", error, { eventId, status });
   };
 
   const saveIntention = async (intentionText?: string) => {

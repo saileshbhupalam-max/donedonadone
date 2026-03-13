@@ -7,6 +7,8 @@ import { startOfMonth, endOfMonth } from "date-fns";
 import { ERROR_STATES, CONFIRMATIONS } from "@/lib/personality";
 import { updateReliability, promoteWaitlist } from "@/lib/antifragile";
 import { trackAnalyticsEvent } from "@/lib/growth";
+import { saveToCache, getFromCache } from "@/lib/offlineCache";
+import { captureSupabaseError } from "@/lib/sentry";
 
 type Profile = Tables<"profiles">;
 
@@ -59,7 +61,12 @@ export function useEvents() {
       .order("date", { ascending: true });
 
     if (error) {
-      console.error("[EventsLoad]", error);
+      captureSupabaseError("EventsLoad", error, { table: "events" });
+      // Offline fallback: serve cached events when the network request fails
+      const cached = await getFromCache<Event[]>("events");
+      if (cached) {
+        setEvents(cached);
+      }
       setLoading(false);
       return;
     }
@@ -97,6 +104,8 @@ export function useEvents() {
     }));
 
     setEvents(enriched);
+    // Persist to IndexedDB for offline fallback
+    saveToCache("events", enriched).catch(() => {});
     setLoading(false);
   }, []);
 
@@ -194,7 +203,7 @@ export function useEvents() {
           }
         }
       } catch (error) {
-        console.error("[ToggleRsvp]", error);
+        captureSupabaseError("ToggleRsvp", error, { eventId, status });
         toast.error(ERROR_STATES.generic);
         setEvents(snapshot); // Revert
       }
@@ -223,7 +232,7 @@ export function useEvents() {
     }).select().single();
 
     if (error) {
-      console.error("[CreateEvent]", error);
+      captureSupabaseError("CreateEvent", error, { table: "events" });
       toast.error(ERROR_STATES.generic);
     }
 
