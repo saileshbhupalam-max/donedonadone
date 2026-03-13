@@ -38,14 +38,14 @@ export function getLoadingMessage(): string {
 
 // ─── Empty States ──────────────────────────────────────
 export const EMPTY_STATES = {
-  noSessions: "No sessions on the board. But we're cooking. Check back — the menu changes daily.",
-  noMatches: "Your vibe is loading. Answer a prompt, show up to a session — the algorithm needs a little more you.",
-  noProps: "No props yet. But every regular started at zero. Keep showing up — they'll notice.",
-  noPromptAnswers: "This page is quiet. Too quiet. Answer a prompt — your words are how we find your people.",
-  noBookmarks: "No bookmarks? You're either very chill or very new. Either way — start collecting.",
-  noNotifications: "Inbox zero. Either you're popular and caught up, or the calm before the storm.",
-  noEventsAttended: "Zero sessions. The first one's the scariest. Also the best. Just pick one.",
-  profileIncomplete: "Your profile is... a work in progress. Like all great art. Let's finish it.",
+  noSessions: "No sessions near you yet. Request one — we'll match you when others want the same slot.",
+  noMatches: "We need a bit more to find your people. Answer a prompt or attend a session.",
+  noProps: "No props yet. Keep showing up — they'll notice.",
+  noPromptAnswers: "Answer a prompt — your words help us find your people.",
+  noBookmarks: "Nothing saved yet. Bookmark sessions you're interested in.",
+  noNotifications: "You're all caught up.",
+  noEventsAttended: "You haven't been to a session yet. Your first one is waiting.",
+  profileIncomplete: "Members with complete profiles get better matches. Finish yours.",
   noSearchResults: (q: string) => `No one matched "${q}". Try different words — your people are here somewhere.`,
   noFilterResults: "No members found with these filters. Broaden the search — great people come in all vibes.",
 };
