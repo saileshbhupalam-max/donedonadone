@@ -86,7 +86,7 @@ const workStyleLabels: Record<string, Record<string, string>> = {
   communication_style: { minimal: "Focused", moderate: "Goes with the flow", chatty: "Chatty" },
 };
 
-function ProfileActions({ isOwnProfile, profileData, navigate }: { isOwnProfile: boolean; profileData: PublicProfile; navigate: (path: string | number) => void }) {
+function ProfileActions({ isOwnProfile, profileData, navigate }: { isOwnProfile: boolean; profileData: PublicProfile; navigate: ReturnType<typeof import("react-router-dom").useNavigate> }) {
   const [connectOpen, setConnectOpen] = useState(false);
 
   if (isOwnProfile) {

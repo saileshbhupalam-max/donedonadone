@@ -23,6 +23,9 @@
     },
     "skipLibCheck": true,
     "strict": false,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "noImplicitThis": true,
     "target": "ES2020",
     "types": [
       "vitest/globals"
