@@ -9,9 +9,21 @@ import { PersonalityProvider } from "@/contexts/PersonalityContext";
 import { FeatureFlagsProvider } from "@/hooks/useFeatureFlags";
 import { SubscriptionProvider } from "@/hooks/useSubscription";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 import { InviteRedirect } from "@/components/InviteRedirect";
 import { PersonalityLoader } from "@/components/ui/PersonalityLoader";
 import { InstallPrompt } from "@/components/ui/InstallPrompt";
+
+/** Wraps a page in both auth protection and a route-level error boundary. */
+function ProtectedPage({ children }: { children: React.ReactNode }) {
+  return (
+    <ProtectedRoute>
+      <RouteErrorBoundary>
+        {children}
+      </RouteErrorBoundary>
+    </ProtectedRoute>
+  );
+}
 
 // Lazy-loaded page components for code splitting
 const Index = lazy(() => import("./pages/Index"));
@@ -59,107 +71,66 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/invite/:code" element={<InviteRedirect />} />
 
-            {/* Protected routes */}
+            {/* Protected routes — each wrapped in ProtectedPage (auth + error boundary) */}
             <Route path="/onboarding" element={
-              <ProtectedRoute>
-                <Onboarding />
-              </ProtectedRoute>
+              <ProtectedPage><Onboarding /></ProtectedPage>
             } />
             <Route path="/home" element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
+              <ProtectedPage><Home /></ProtectedPage>
             } />
             <Route path="/discover" element={
-              <ProtectedRoute>
-                <Discover />
-              </ProtectedRoute>
+              <ProtectedPage><Discover /></ProtectedPage>
             } />
             <Route path="/events" element={
-              <ProtectedRoute>
-                <Events />
-              </ProtectedRoute>
+              <ProtectedPage><Events /></ProtectedPage>
             } />
             <Route path="/events/:id" element={
-              <ProtectedRoute>
-                <EventDetail />
-              </ProtectedRoute>
+              <ProtectedPage><EventDetail /></ProtectedPage>
             } />
             <Route path="/session/:eventId" element={
-              <ProtectedRoute>
-                <Session />
-              </ProtectedRoute>
+              <ProtectedPage><Session /></ProtectedPage>
             } />
             <Route path="/prompts" element={
-              <ProtectedRoute>
-                <Prompts />
-              </ProtectedRoute>
+              <ProtectedPage><Prompts /></ProtectedPage>
             } />
             <Route path="/me" element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
+              <ProtectedPage><Profile /></ProtectedPage>
             } />
             <Route path="/profile/:id" element={
-              <ProtectedRoute>
-                <ProfileView />
-              </ProtectedRoute>
+              <ProtectedPage><ProfileView /></ProtectedPage>
             } />
-
             <Route path="/admin" element={
-              <ProtectedRoute>
-                <Admin />
-              </ProtectedRoute>
+              <ProtectedPage><Admin /></ProtectedPage>
             } />
             <Route path="/partners" element={
-              <ProtectedRoute>
-                <Partners />
-              </ProtectedRoute>
+              <ProtectedPage><Partners /></ProtectedPage>
             } />
             <Route path="/partner/apply" element={
-              <ProtectedRoute>
-                <PartnerApply />
-              </ProtectedRoute>
+              <ProtectedPage><PartnerApply /></ProtectedPage>
             } />
             <Route path="/partner" element={
-              <ProtectedRoute>
-                <PartnerDashboard />
-              </ProtectedRoute>
+              <ProtectedPage><PartnerDashboard /></ProtectedPage>
             } />
             <Route path="/map" element={
-              <ProtectedRoute>
-                <MapView />
-              </ProtectedRoute>
+              <ProtectedPage><MapView /></ProtectedPage>
             } />
             <Route path="/me/dna" element={
-              <ProtectedRoute>
-                <TasteGraphBuilder />
-              </ProtectedRoute>
+              <ProtectedPage><TasteGraphBuilder /></ProtectedPage>
             } />
             <Route path="/settings" element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
+              <ProtectedPage><Settings /></ProtectedPage>
             } />
             <Route path="/company/create" element={
-              <ProtectedRoute>
-                <CompanyCreate />
-              </ProtectedRoute>
+              <ProtectedPage><CompanyCreate /></ProtectedPage>
             } />
             <Route path="/company/:id" element={
-              <ProtectedRoute>
-                <CompanyProfile />
-              </ProtectedRoute>
+              <ProtectedPage><CompanyProfile /></ProtectedPage>
             } />
             <Route path="/pricing" element={
-              <ProtectedRoute>
-                <Pricing />
-              </ProtectedRoute>
+              <ProtectedPage><Pricing /></ProtectedPage>
             } />
             <Route path="/network" element={
-              <ProtectedRoute>
-                <CrossSpaceNetwork />
-              </ProtectedRoute>
+              <ProtectedPage><CrossSpaceNetwork /></ProtectedPage>
             } />
 
             {/* Catch-all */}
