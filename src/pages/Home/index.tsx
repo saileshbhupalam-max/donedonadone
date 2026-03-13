@@ -32,6 +32,9 @@ import { getPromptInviteMessage } from "@/lib/sharing";
 import { checkMilestones, checkReEngagement, trackAnalyticsEvent, MilestoneDef } from "@/lib/growth";
 import { MilestoneCelebration } from "@/components/growth/MilestoneCelebration";
 import { CommunityHighlight, EnhancedWeeklyDigest } from "@/components/growth/GrowthCards";
+import { CreditsBadge } from "@/components/growth/CreditsBadge";
+import { GrowthNudgeCard } from "@/components/growth/GrowthNudgeCard";
+import { ContributionMilestoneCard } from "@/components/growth/ContributionMilestoneCard";
 import { getContextualGreeting, EMPTY_STATES, ERROR_STATES, getLoadingMessage, CONFIRMATIONS } from "@/lib/personality";
 import { usePersonality } from "@/contexts/PersonalityContext";
 import { motion } from "framer-motion";
@@ -447,6 +450,16 @@ export default function Home() {
           </div>
           <StreakIndicator userId={user!.id} />
         </div>
+
+        {/* Credits Badge - full display */}
+        {/* TODO: wire to real FC balance from engine */}
+        <CreditsBadge balance={0} />
+
+        {/* Growth Nudge - context-aware */}
+        <GrowthNudgeCard userId={user!.id} />
+
+        {/* Contribution Milestone - premium earn path */}
+        <ContributionMilestoneCard userId={user!.id} />
 
         {/* Milestone Celebration */}
         {celebrateMilestone && (

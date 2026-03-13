@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Bell, Check, Sparkles, Hand, CheckCircle2, Heart, Coffee, Link2, UserPlus } from "lucide-react";
+import { CreditsBadge } from "@/components/growth/CreditsBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -73,6 +74,8 @@ export function TopBar() {
         </Link>
 
         <div className="flex items-center gap-3">
+          {/* TODO: wire to real FC balance from engine */}
+          <CreditsBadge balance={0} compact />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <button className="relative p-2 text-muted-foreground hover:text-foreground transition-colors">
