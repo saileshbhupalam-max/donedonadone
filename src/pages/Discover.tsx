@@ -491,6 +491,7 @@ function CompanyDirectorySection() {
 
 export default function Discover() {
   usePageTitle("Discover — FocusClub");
+  const navigate = useNavigate();
   // Incrementing refreshKey forces sub-components to remount and re-fetch their data
   const [refreshKey, incrementRefreshKey] = useReducer((c: number) => c + 1, 0);
 
@@ -527,6 +528,18 @@ export default function Discover() {
               <SuggestedConnectionsSection key={`suggestions-${refreshKey}`} />
               <MentorSection key={`mentors-${refreshKey}`} />
               <YourConnectionsSection key={`connections-${refreshKey}`} />
+              {/* Venue nomination CTA */}
+              <section className="mt-5 px-4">
+                <Card className="border-dashed border-primary/30">
+                  <CardContent className="p-4 text-center space-y-2">
+                    <MapPin className="w-5 h-5 text-primary mx-auto" />
+                    <p className="text-xs text-muted-foreground">Know a great work spot? Nominate it for the community.</p>
+                    <Button size="sm" variant="outline" onClick={() => navigate("/nominate")}>
+                      <MapPin className="w-3 h-3 mr-1.5" /> Nominate a Venue
+                    </Button>
+                  </CardContent>
+                </Card>
+              </section>
             </TabsContent>
 
             <TabsContent value="companies" className="mt-0 -mx-4">

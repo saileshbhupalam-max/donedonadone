@@ -30,6 +30,12 @@ const BENIGN_PATTERNS = [
   /AbortError/i,
   /service.worker/i,
   /workbox/i,
+  /manifest/i,
+  /JSON\.parse/i,
+  /unexpected token/i,
+  /invalid.*json/i,
+  /status of 4\d\d/i,
+  /Failed to load resource/i,
 ];
 
 function isBenign(msg: string): boolean {

@@ -7,12 +7,14 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ERROR_STATES } from "@/lib/personality";
-import { NEIGHBORHOODS, DAYS, DAY_LABELS } from "./constants";
+import { DAYS, DAY_LABELS } from "./constants";
+import { NeighborhoodInput } from "@/components/ui/NeighborhoodInput";
+import { normalizeNeighborhood } from "@/lib/neighborhoods";
+import { onNewSessionRequest } from "@/lib/autoSession";
 
 export function SessionRequestSheet() {
   const { user, profile } = useAuth();
@@ -29,13 +31,26 @@ export function SessionRequestSheet() {
   const handleSubmit = async () => {
     if (!user || !neighborhood) return;
     setSubmitting(true);
+    const normalizedNeighborhood = normalizeNeighborhood(neighborhood);
     try {
       const { error } = await supabase.from("session_requests").insert({
         user_id: user.id, request_type: requestType, preferred_days: selectedDays,
-        preferred_time: preferredTime || null, neighborhood, notes: notes || null,
+        preferred_time: preferredTime || null, neighborhood: normalizedNeighborhood, notes: notes || null,
       });
       if (error) throw error;
-      toast.success("Session request submitted! 🎉");
+
+      // Event-based trigger: check if this request completes a cluster
+      if (preferredTime) {
+        const eventId = await onNewSessionRequest(normalizedNeighborhood, preferredTime);
+        if (eventId) {
+          toast.success("Session auto-created! Enough people want to work together.");
+        } else {
+          toast.success("Request submitted! We'll create a session when more people join.");
+        }
+      } else {
+        toast.success("Session request submitted!");
+      }
+
       setOpen(false);
       setSelectedDays([]); setPreferredTime(""); setNeighborhood(""); setNotes(""); setRequestType("general");
     } catch (error) {
@@ -85,10 +100,12 @@ export function SessionRequestSheet() {
               </div>
               <div>
                 <Label className="text-sm">Neighborhood *</Label>
-                <Select value={neighborhood} onValueChange={setNeighborhood}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Select neighborhood" /></SelectTrigger>
-                  <SelectContent>{NEIGHBORHOODS.map((n) => <SelectItem key={n.value} value={n.value}>{n.label}</SelectItem>)}</SelectContent>
-                </Select>
+                <NeighborhoodInput
+                  value={neighborhood}
+                  onChange={(slug) => setNeighborhood(slug)}
+                  placeholder="Type your area..."
+                  className="mt-1"
+                />
               </div>
               <div>
                 <Label className="text-sm">Notes (optional)</Label>

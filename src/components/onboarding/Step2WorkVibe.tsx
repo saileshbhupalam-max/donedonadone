@@ -5,9 +5,9 @@
 import type { OnboardingData } from "@/lib/types";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
+import { NeighborhoodInput } from "@/components/ui/NeighborhoodInput";
 
 interface Props {
   data: OnboardingData;
@@ -27,10 +27,7 @@ const GENDERS = [
   { value: "prefer_not_to_say", label: "Prefer not to say" },
 ];
 
-const NEIGHBORHOODS = [
-  "HSR Layout", "Koramangala", "Indiranagar", "BTM Layout", "JP Nagar",
-  "Jayanagar", "Whitefield", "Electronic City", "Marathahalli", "Sarjapur Road", "Other",
-];
+// Neighborhoods now loaded dynamically via NeighborhoodInput
 
 export function Step2WorkVibe({ data, updateData }: Props) {
   return (
@@ -129,16 +126,12 @@ export function Step2WorkVibe({ data, updateData }: Props) {
       {/* Neighborhood */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">Neighborhood</label>
-        <Select value={data.neighborhood} onValueChange={(v) => updateData({ neighborhood: v })}>
-          <SelectTrigger className="rounded-xl">
-            <SelectValue placeholder="Select your area" />
-          </SelectTrigger>
-          <SelectContent>
-            {NEIGHBORHOODS.map((n) => (
-              <SelectItem key={n} value={n}>{n}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <NeighborhoodInput
+          value={data.neighborhood}
+          onChange={(slug) => updateData({ neighborhood: slug })}
+          placeholder="Type your area (e.g., Koramangala, Shoreditch...)"
+          className="rounded-xl"
+        />
       </div>
     </div>
   );

@@ -52,6 +52,7 @@ const Credits = lazy(() => import("./pages/Credits"));
 const SpaceInsights = lazy(() => import("./pages/SpaceInsights"));
 const SpaceLive = lazy(() => import("./pages/SpaceLive"));
 const CrossSpaceNetwork = lazy(() => import("./pages/CrossSpaceNetwork"));
+const NominateVenue = lazy(() => import("./pages/NominateVenue"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -145,6 +146,9 @@ const App = () => (
             } />
             <Route path="/network" element={
               <ProtectedPage><CrossSpaceNetwork /></ProtectedPage>
+            } />
+            <Route path="/nominate" element={
+              <ProtectedPage><NominateVenue /></ProtectedPage>
             } />
 
             {/* Public routes (no auth required) */}

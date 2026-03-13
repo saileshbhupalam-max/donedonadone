@@ -18,8 +18,8 @@ test.describe("App boots and serves pages", () => {
 
   test("/ shows FocusClub branding (loading or landing)", async ({ page }) => {
     await page.goto("/");
-    // Both loading state and landing page show "Focus" and "Club" text
-    await expect(page.locator("text=Focus")).toBeVisible({ timeout: 10000 });
+    // Both loading state and landing page show "FocusClub" heading
+    await expect(page.locator("h1")).toContainText("FocusClub", { timeout: 10000 });
   });
 
   test("/space/test-id/insights serves the app", async ({ page }) => {

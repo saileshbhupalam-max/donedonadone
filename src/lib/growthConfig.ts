@@ -173,7 +173,7 @@ export const DEFAULT_GROWTH_CONFIG: GrowthConfig = {
     nudgeWhenNoSlots: true,
     nudgeDelayAfterSession: 5,
     neighborhoodWaitlistEnabled: true,
-    neighborhoodLaunchThreshold: 100,
+    neighborhoodLaunchThreshold: 10,
     premiumDaysForContributions: 1,
     contributionMilestoneActions: 3,
   },

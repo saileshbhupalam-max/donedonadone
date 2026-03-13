@@ -16,8 +16,8 @@ test.describe("Landing page", () => {
 
   test("shows FocusClub branding immediately", async ({ page }) => {
     await page.goto("/");
-    // Both loading state and final render show FocusClub branding
-    await expect(page.locator("text=Focus")).toBeVisible({ timeout: 10000 });
+    // Both loading state and final render show FocusClub heading
+    await expect(page.locator("h1")).toContainText("FocusClub", { timeout: 10000 });
   });
 
   test("displays feature cards after auth resolves", async ({ page }) => {

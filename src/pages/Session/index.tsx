@@ -37,6 +37,7 @@ import { QuickFeedback } from "@/components/session/QuickFeedback";
 import { PostSessionDnaPrompt } from "@/components/session/PostSessionDnaPrompt";
 import { PostSessionContribution } from "@/components/growth/PostSessionContribution";
 import { VenueDataCollector } from "@/components/growth/VenueDataCollector";
+import { VenueHealthCheckPrompt } from "@/components/venue/VenueHealthCheckPrompt";
 import { useUserContext } from "@/hooks/useUserContext";
 
 import { Profile, Phase, MemberStatusRow } from "./types";
@@ -507,6 +508,18 @@ export default function SessionPage() {
                         eventId={eventId}
                         userId={user.id}
                         venueName={event.venue_name}
+                        onDone={() => {}}
+                      />
+                    )}
+
+                    {/* GROWTH: Venue health check — crowdsourced venue quality verification.
+                       3+ bad checks auto-deactivate venue. Keeps venue quality self-correcting. */}
+                    {user && event.venue_id && event.venue_name && (
+                      <VenueHealthCheckPrompt
+                        eventId={eventId!}
+                        userId={user.id}
+                        venueName={event.venue_name}
+                        locationId={event.venue_id}
                         onDone={() => {}}
                       />
                     )}

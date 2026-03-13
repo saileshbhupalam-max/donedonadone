@@ -32,6 +32,9 @@ src/
 │   ├── Onboarding.tsx   — 4-step onboarding wizard
 │   ├── SpaceInsights.tsx — Public venue analytics + conversion CTA (/space/:id/insights)
 │   ├── SpaceLive.tsx    — TV Mode always-on display for venues (/space/:id/live)
+│   ├── NominateVenue.tsx — Permissionless venue nomination + vouch UI (/nominate)
+│   ├── Credits.tsx      — Focus Credits balance, history, redemption (/credits)
+│   ├── CrossSpaceNetwork.tsx — Cross-venue network view (/network)
 │   └── NotFound.tsx     — 404 page
 │
 ├── components/          — Feature-grouped UI components
@@ -309,6 +312,67 @@ Questions stored in `icebreaker_questions` table with category (quick_fire, pair
 | `prompt_responses` | User answers to weekly prompts with fire_count |
 | `prompts` | Weekly community prompt questions |
 | `analytics_events` | Event tracking for admin analytics |
+| `venue_nominations` | Member-nominated venues (status: nominated→verified→active→deactivated) |
+| `venue_vouches` | Peer verification of nominated venues (3 vouches → verified) |
+| `venue_health_checks` | Monthly venue re-verification by random members |
+| `neighborhood_stats` | Cached member counts + unlock status per neighborhood |
+| `focus_credits` | Event-sourced FC ledger (balance = SUM(amount), negative = spend) |
+| `session_requests` | Demand signals for auto-session creation |
+
+---
+
+## Permissionless Growth System
+
+> **Design principle:** Self-reinforcing, self-correcting, self-growing, zero ops.
+> More members → more venues → more sessions → more members.
+
+### Subsystem Map
+
+```
+src/lib/
+  neighborhoods.ts      — Normalize + dynamic registry (international-ready)
+  autoSession.ts        — Demand clustering + auto-session creation
+  venueNomination.ts    — Nomination + vouch + activation lifecycle
+  venueHealthCheck.ts   — Health checks + auto-deactivation
+  focusCredits.ts       — FC economy (faucets, sinks, caps, diminishing returns)
+  growthConfig.ts       — Single source of truth for all thresholds/amounts
+
+src/pages/
+  NominateVenue.tsx     — 3-view page: list nominations / nominate / vouch
+
+src/components/growth/
+  NeighborhoodUnlock.tsx — Progress bar + referral CTA (locked) / nomination CTA (unlocked)
+  NeighborhoodLeaderboard.tsx — Top FC earners per neighborhood
+
+src/components/ui/
+  NeighborhoodInput.tsx — Autocomplete input (suggests from DB, allows free text)
+
+supabase/functions/
+  auto-sessions/        — Edge Function cron fallback (every 6h)
+
+supabase/migrations/
+  20260313_permissionless_growth.sql — Tables, RLS, SQL functions
+```
+
+### Flow: Neighborhood Unlock → Venue → Session
+
+1. Users sign up → `profiles.neighborhood` set via `NeighborhoodInput` (normalized slug)
+2. `neighborhood_stats.member_count` tracks count per area
+3. When count >= 10 → `is_unlocked = true` → members can nominate venues
+4. Member nominates → `venue_nominations` row (status: 'nominated'), earns 30 FC
+5. 3 different members vouch → `check_nomination_activation()` SQL function fires
+6. Status → 'verified' → `activateVenue()` creates `locations` entry → status 'active'
+7. Members submit session_requests → `onNewSessionRequest()` checks cluster instantly
+8. 3+ requests in same neighborhood+time → auto-creates event, RSVPs all, notifies
+9. After sessions → members submit health checks → bad venues auto-deactivate
+
+### Key Invariants
+
+- Neighborhoods always normalized via `normalizeNeighborhood()` before DB write
+- FC always awarded via `awardCredits()` (never raw INSERT) — enforces caps
+- Vouchers must have `events_attended >= 1` (quality gate)
+- Can't vouch your own nomination (RLS policy)
+- Auto-sessions set `events.auto_created = true` + `demand_cluster_key`
 
 ---
 

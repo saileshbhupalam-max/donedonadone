@@ -36,6 +36,7 @@ import { CreditsBadge } from "@/components/growth/CreditsBadge";
 import { GrowthNudgeCard } from "@/components/growth/GrowthNudgeCard";
 import { ContributionMilestoneCard } from "@/components/growth/ContributionMilestoneCard";
 import { NeighborhoodLeaderboard } from "@/components/growth/NeighborhoodLeaderboard";
+import { NeighborhoodUnlock } from "@/components/growth/NeighborhoodUnlock";
 import { useFocusCredits } from "@/hooks/useFocusCredits";
 import { getContextualGreeting, EMPTY_STATES, ERROR_STATES, getLoadingMessage, CONFIRMATIONS } from "@/lib/personality";
 import { usePersonality } from "@/contexts/PersonalityContext";
@@ -466,6 +467,15 @@ export default function Home() {
 
         {/* Company quick-glance card — matches, intros, profile link */}
         <CompanyHomeCard />
+
+        {/* Neighborhood Unlock / Nomination CTA */}
+        {profile.neighborhood && (
+          <NeighborhoodUnlock
+            neighborhood={profile.neighborhood}
+            userId={user!.id}
+            referralCode={profile.referral_code}
+          />
+        )}
 
         {/* Neighborhood Leaderboard — top contributors in user's area */}
         {profile.neighborhood && (
