@@ -1,7 +1,7 @@
 import { ERROR_STATES, CONFIRMATIONS } from "@/lib/personality";
 import { PullToRefresh } from "@/components/ui/PullToRefresh";
 import { hapticLight } from "@/lib/haptics";
-import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense, useMemo } from "react";
 import { getInitials } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,6 +39,7 @@ import { VenueVibeSummary } from "@/components/session/VenueVibeRating";
 import { motion } from "framer-motion";
 import { getNeighborhoodLabel, SESSION_FORMATS } from "./constants";
 import { EventCard } from "./EventCard";
+import { useVenueBadgesBatch } from "@/hooks/useVenueBadgesBatch";
 import { CreateEventButton } from "./CreateEventButton";
 import { FeedbackCard } from "./FeedbackCard";
 import { SessionRequestSheet } from "./SessionRequestSheet";
@@ -59,6 +60,13 @@ export default function Events() {
   const [minThreshold, setMinThreshold] = useState(3);
   const [pendingFeedback, setPendingFeedback] = useState<any[]>([]);
   const [circleUserIds, setCircleUserIds] = useState<string[]>([]);
+
+  // Batch-fetch venue badges for all visible events in a single query (TD-012)
+  const allVenueNames = useMemo(
+    () => [...upcoming, ...past].map((e) => e.venue_name).filter(Boolean) as string[],
+    [upcoming, past]
+  );
+  const { badgeMap: venueBadgeMap } = useVenueBadgesBatch(allVenueNames);
 
   useEffect(() => {
     supabase.from("app_settings").select("value").eq("key", "min_session_threshold").single()
@@ -190,7 +198,8 @@ export default function Events() {
                   <EventCard key={e.id} event={e} onRsvp={toggleRsvp} userRsvp={getUserRsvp(e.id)}
                     isPast={false} allUpcoming={upcoming} minThreshold={minThreshold}
                     isRestricted={profile?.reliability_status === 'restricted'}
-                    circleUserIds={circleUserIds} />
+                    circleUserIds={circleUserIds}
+                    preloadedBadges={e.venue_name ? venueBadgeMap.get(e.venue_name) : undefined} />
                 ))}
               <SessionRequestSheet />
             </TabsContent>
@@ -201,7 +210,8 @@ export default function Events() {
                 ) : filterEvents(past).map((e) => (
                   <EventCard key={e.id} event={e} onRsvp={toggleRsvp} userRsvp={getUserRsvp(e.id)}
                     isPast={true} allUpcoming={upcoming} minThreshold={minThreshold}
-                    circleUserIds={circleUserIds} />
+                    circleUserIds={circleUserIds}
+                    preloadedBadges={e.venue_name ? venueBadgeMap.get(e.venue_name) : undefined} />
                 ))}
             </TabsContent>
           </Tabs>

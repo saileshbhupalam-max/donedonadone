@@ -8,6 +8,8 @@ import { Wifi, Zap, Coffee, VolumeX, Maximize } from "lucide-react";
 
 interface VenueQuickBadgesProps {
   venueName: string;
+  /** Pre-fetched badges from useVenueBadgesBatch. When provided, skips the per-card fetch. */
+  preloadedBadges?: Array<{ key: string; label: string; icon: typeof Wifi; avg: number }>;
 }
 
 interface VenueRatingData {
@@ -30,11 +32,15 @@ const BADGE_CONFIG = [
 const badgeCache = new Map<string, { badges: Array<{ key: string; label: string; icon: typeof Wifi; avg: number }>; timestamp: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-export function VenueQuickBadges({ venueName }: VenueQuickBadgesProps) {
+export function VenueQuickBadges({ venueName, preloadedBadges }: VenueQuickBadgesProps) {
   const [badges, setBadges] = useState<Array<{ key: string; label: string; icon: typeof Wifi; avg: number }>>([]);
   const [loaded, setLoaded] = useState(false);
 
+  // If preloaded data is provided, use it directly and skip the fetch
+  const usePreloaded = preloadedBadges !== undefined;
+
   useEffect(() => {
+    if (usePreloaded) return; // Skip fetch when parent provides data
     if (!venueName) return;
 
     const cached = badgeCache.get(venueName);
@@ -79,13 +85,17 @@ export function VenueQuickBadges({ venueName }: VenueQuickBadgesProps) {
       setBadges(result);
       setLoaded(true);
     })();
-  }, [venueName]);
+  }, [venueName, usePreloaded]);
 
-  if (!loaded || badges.length === 0) return null;
+  // Resolve which badges to render
+  const displayBadges = usePreloaded ? (preloadedBadges || []) : badges;
+  const isReady = usePreloaded ? true : loaded;
+
+  if (!isReady || displayBadges.length === 0) return null;
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
-      {badges.map((badge) => {
+      {displayBadges.map((badge) => {
         const Icon = badge.icon;
         return (
           <span
