@@ -456,31 +456,12 @@ export default function Home() {
           <StreakIndicator userId={user!.id} />
         </div>
 
-        {/* Credits Badge - full display */}
-        <CreditsBadge balance={fcBalance} />
-
-        {/* Growth Nudge - context-aware */}
-        <GrowthNudgeCard userId={user!.id} />
-
-        {/* Contribution Milestone - premium earn path */}
-        <ContributionMilestoneCard userId={user!.id} />
-
-        {/* Company quick-glance card — matches, intros, profile link */}
-        <CompanyHomeCard />
-
-        {/* Neighborhood Unlock / Nomination CTA */}
-        {profile.neighborhood && (
-          <NeighborhoodUnlock
-            neighborhood={profile.neighborhood}
-            userId={user!.id}
-            referralCode={profile.referral_code}
-          />
-        )}
-
-        {/* Neighborhood Leaderboard — top contributors in user's area */}
-        {profile.neighborhood && (
-          <NeighborhoodLeaderboard neighborhood={profile.neighborhood} userId={user!.id} />
-        )}
+        {/* === TIER 1: Primary Action — what to do RIGHT NOW === */}
+        <PrimaryActionCard
+          nextMeetup={nextMeetup}
+          pendingFeedback={pendingFeedback}
+          upcomingEvent={upcomingEvent}
+        />
 
         {/* Milestone Celebration */}
         {celebrateMilestone && (
@@ -492,12 +473,31 @@ export default function Home() {
           />
         )}
 
-        {/* === TIER 1: Primary Action (most important card after greeting) === */}
-        <PrimaryActionCard
-          nextMeetup={nextMeetup}
-          pendingFeedback={pendingFeedback}
-          upcomingEvent={upcomingEvent}
-        />
+        {/* Credits Badge */}
+        <CreditsBadge balance={fcBalance} />
+
+        {/* Growth Nudge */}
+        <GrowthNudgeCard userId={user!.id} />
+
+        {/* Contribution Milestone */}
+        <ContributionMilestoneCard userId={user!.id} />
+
+        {/* Company quick-glance card */}
+        <CompanyHomeCard />
+
+        {/* Neighborhood Unlock / Nomination CTA */}
+        {profile.neighborhood && (
+          <NeighborhoodUnlock
+            neighborhood={profile.neighborhood}
+            userId={user!.id}
+            referralCode={profile.referral_code}
+          />
+        )}
+
+        {/* Neighborhood Leaderboard */}
+        {profile.neighborhood && (
+          <NeighborhoodLeaderboard neighborhood={profile.neighborhood} userId={user!.id} />
+        )}
 
         {/* === TIER 2: Contextual, show when relevant === */}
 
@@ -1048,7 +1048,7 @@ export default function Home() {
         ) : upcomingEvent ? (
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/events/${upcomingEvent.id}`)}>
             <CardContent className="p-4">
-              <p className="text-xs font-medium text-muted-foreground mb-1">Upcoming</p>
+              <p className="text-xs font-medium text-muted-foreground mb-1">Don't miss this</p>
               <h3 className="font-serif text-base text-foreground">{upcomingEvent.title}</h3>
               <div className="flex items-center justify-between mt-1.5">
                 <span className="text-xs text-muted-foreground">{upcomingEvent.goingCount} going</span>
@@ -1060,8 +1060,8 @@ export default function Home() {
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/events")}>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-0.5">No sessions on the board</p>
-                <p className="font-serif text-base text-foreground">Browse sessions →</p>
+                <p className="text-xs font-medium text-muted-foreground mb-0.5">You haven't booked yet this week</p>
+                <p className="font-serif text-base text-foreground">Find your table →</p>
               </div>
               <CalendarIcon className="w-5 h-5 text-muted-foreground" />
             </CardContent>
@@ -1103,7 +1103,7 @@ export default function Home() {
         {!loading && (profile.events_attended || 0) >= 2 && (
           <Card>
             <CardContent className="p-4">
-              <p className="text-xs font-medium text-muted-foreground mb-1">Community pulse</p>
+              <p className="text-xs font-medium text-muted-foreground mb-1">Your community</p>
               <div className="flex items-center gap-1.5 text-xs text-foreground flex-wrap">
                 <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5 text-muted-foreground" />{stats.totalMembers} members</span>
                 <span className="text-muted-foreground">·</span>
@@ -1120,7 +1120,7 @@ export default function Home() {
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/me")}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-medium text-muted-foreground">Your profile is... a work in progress. Like all great art.</p>
+                <p className="text-xs font-medium text-muted-foreground">Members with complete profiles get better matches</p>
                 <span className="text-xs font-medium text-primary">{completion}%</span>
               </div>
               <Progress value={completion} className="h-1.5 mb-2" />

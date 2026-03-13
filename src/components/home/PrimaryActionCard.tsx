@@ -149,7 +149,7 @@ export function PrimaryActionCard({ nextMeetup, pendingFeedback, upcomingEvent, 
       <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/events/${upcomingEvent.id}`)}>
         <CardContent className="p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-0.5">Find your next session</p>
+            <p className="text-xs font-medium text-muted-foreground mb-0.5">Don't miss out</p>
             <p className="font-serif text-base text-foreground">{upcomingEvent.title}</p>
             <p className="text-xs text-muted-foreground mt-0.5">{upcomingEvent.goingCount} going</p>
           </div>
@@ -163,8 +163,8 @@ export function PrimaryActionCard({ nextMeetup, pendingFeedback, upcomingEvent, 
     <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/events")}>
       <CardContent className="p-4 flex items-center justify-between">
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-0.5">No sessions on the board</p>
-          <p className="font-serif text-base text-foreground">Browse sessions →</p>
+          <p className="text-xs font-medium text-muted-foreground mb-0.5">You haven't booked yet this week</p>
+          <p className="font-serif text-base text-foreground">Find your table →</p>
         </div>
         <CalendarIcon className="w-5 h-5 text-muted-foreground" />
       </CardContent>

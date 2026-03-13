@@ -29,7 +29,7 @@ Ordered by conversion impact × traffic volume. Every user hits tiers 1-2. Tiers
 |---|-----------|-----------|-----------------|--------|
 | 1 | **Landing Page** (`Index.tsx`) | `/cxl:landing-page` | Visitor → Sign-up | DONE |
 | 2 | **Onboarding Flow** (4 steps) | `/cxl:onboarding` + `/cxl:forms` | Sign-up → Activated member | DONE |
-| 3 | **Home Dashboard** (`Home/index.tsx`) | `/cxl:optimize` + `/cxl:copy` | Activated → First session booked | HIGH |
+| 3 | **Home Dashboard** (`Home/index.tsx`) | `/cxl:optimize` + `/cxl:copy` | Activated → First session booked | DONE |
 
 ### Tier 2 — Core Loop (Session Booking → Attendance → Retention)
 
@@ -74,20 +74,11 @@ Ordered by conversion impact × traffic volume. Every user hits tiers 1-2. Tiers
 - **Changes**: Removed 2 premature fields (tagline, what_i_do) via progressive profiling. Reordered Step 2 (work_vibe→neighborhood→gender). Step-specific CTAs. Contextual progress labels. All copy rewritten for benefit-framing. De-slugified neighborhood in preview. 30% field reduction → expected +15-30% completion rate increase.
 - **Audit artifact**: `docs/cxl-audits/onboarding-audit.md`
 
-### Phase 2: Home Dashboard
-- **Target files**: `src/pages/Home/index.tsx` and Home components
-- **Skills**: `/cxl:optimize`, `/cxl:copy`
-- **Goals**:
-  - Single clear primary action (book a session)
-  - Hick's Law: reduce competing CTAs
-  - Social proof: show recent activity from community
-  - Loss aversion: "You haven't booked this week" nudge
-  - Serial position: strongest nudge first, CTA last
-- **Audit steps**:
-  1. `/cxl:optimize` — Full heuristic + psychology audit of Home page
-  2. `/cxl:copy` — Rewrite nudge copy, CTA text, empty states
-  3. Implement changes
-  4. Write `docs/cxl-audits/home-audit.md`
+### Phase 2: Home Dashboard [COMPLETE]
+- **Status**: Done
+- **Skills used**: `/cxl:optimize`, `/cxl:copy`
+- **Changes**: Moved PrimaryActionCard from position #9 to #2 (serial position). Loss-framed empty states ("You haven't booked yet this week"). Benefit-framed profile completion ("Members with complete profiles get better matches"). Urgency labels for suggested events. Pushed growth/gamification cards below primary action.
+- **Audit artifact**: `docs/cxl-audits/home-audit.md`
 
 ### Phase 3: Session Request Flow
 - **Target files**: `src/pages/Events/SessionRequestSheet.tsx`
