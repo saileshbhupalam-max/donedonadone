@@ -19,7 +19,8 @@ interface FeatureGateProps {
   fallback?: ReactNode;
 }
 
-function DefaultTeaser({ reason, cta, ctaLink }: { reason: string; cta?: string; ctaLink?: string }) {
+/** Reusable upgrade/lock card shown when a feature is gated. */
+export function FeatureGateUpgradeCard({ reason, cta, ctaLink }: { reason: string; cta?: string; ctaLink?: string }) {
   const navigate = useNavigate();
   return (
     <Card className="border-border/50 bg-muted/30">
@@ -98,7 +99,7 @@ export function FeatureGate({
     const requiredTierInfo = allTiers.find((t) => t.id === requiredTier);
     if (requiredTierInfo && tierOrder < requiredTierInfo.sort_order) {
       return teaser ? <>{teaser}</> : (
-        <DefaultTeaser
+        <FeatureGateUpgradeCard
           reason={`Upgrade to ${requiredTierInfo.name} to unlock this`}
           cta="See plans"
           ctaLink="/pricing"
@@ -111,7 +112,7 @@ export function FeatureGate({
   if (minLevel && LEVEL_ORDER[level] < LEVEL_ORDER[minLevel]) {
     const sessionsNeeded = LEVEL_SESSIONS[minLevel] - LEVEL_SESSIONS[level];
     return teaser ? <>{teaser}</> : (
-      <DefaultTeaser
+      <FeatureGateUpgradeCard
         reason={`Attend ${sessionsNeeded} more session${sessionsNeeded > 1 ? "s" : ""} to unlock this`}
         cta="Browse sessions"
         ctaLink="/events"
@@ -122,14 +123,14 @@ export function FeatureGate({
   // Check check-in
   if (requireCheckIn && currentState === "offline") {
     return teaser ? <>{teaser}</> : (
-      <DefaultTeaser reason="Check in to see this" cta="Check in" ctaLink="/home" />
+      <FeatureGateUpgradeCard reason="Check in to see this" cta="Check in" ctaLink="/home" />
     );
   }
 
   // Check DNA completion
   if (requireDnaComplete && dnaComplete < requireDnaComplete) {
     return teaser ? <>{teaser}</> : (
-      <DefaultTeaser
+      <FeatureGateUpgradeCard
         reason="Complete your DNA profile to unlock this"
         cta="Build your DNA"
         ctaLink="/me/dna"

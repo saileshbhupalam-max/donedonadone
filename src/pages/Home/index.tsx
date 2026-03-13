@@ -11,7 +11,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PersonalityLoader } from "@/components/ui/PersonalityLoader";
-import { ArrowRight, CalendarIcon, MapPin, Users, MessageSquare, Sparkles, CheckCircle2, Navigation, Dna, Bell } from "lucide-react";
+import { ArrowRight, CalendarIcon, MapPin, Users, MessageSquare, Sparkles, CheckCircle2, Navigation, Dna, Bell, ChevronDown } from "lucide-react";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { AddToCalendarButton } from "@/components/session/AddToCalendarButton";
 import { sessionMatchScore } from "@/lib/sessionMatch";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,6 +40,7 @@ import { PrimaryActionCard } from "@/components/home/PrimaryActionCard";
 import { ProfilePromptCard } from "@/components/home/ProfilePromptCard";
 import { GratitudeEchoCard } from "@/components/home/GratitudeEchoCard";
 import { CommunityRitualCard } from "@/components/home/CommunityRitualCard";
+import { CaptainDashboardCard } from "@/components/home/CaptainDashboardCard";
 import { Users as UsersIcon, Zap, Shield } from "lucide-react";
 import { ActiveCheckInCard, CheckInFlow } from "@/components/checkin/CheckInFlow";
 import { useUserContext } from "@/hooks/useUserContext";
@@ -89,6 +91,7 @@ export default function Home() {
   const [circle, setCircle] = useState<any[]>([]);
   const [crewEvents, setCrewEvents] = useState<any[]>([]);
   const [autopilotDismissed] = useState(() => localStorage.getItem("fc_autopilot_dismissed") === "true");
+  const [showMoreSections, setShowMoreSections] = useState(false);
 
   useEffect(() => {
     if (!user || !profile) return;
@@ -463,14 +466,14 @@ export default function Home() {
           />
         )}
 
-        {/* Post-session upgrade prompt */}
-        <UpgradeSessionPrompt />
+        {/* === TIER 1: Primary Action (most important card after greeting) === */}
+        <PrimaryActionCard
+          nextMeetup={nextMeetup}
+          pendingFeedback={pendingFeedback}
+          upcomingEvent={upcomingEvent}
+        />
 
-        {/* Boost math banner */}
-        <BoostMathBanner />
-
-        {/* Push Notification Opt-In */}
-        <PushOptInCard />
+        {/* === TIER 2: Contextual, show when relevant === */}
 
         {/* Check-In / Community Section */}
         <FeatureGate featureFlag="check_in">
@@ -490,29 +493,167 @@ export default function Home() {
           )}
         </FeatureGate>
 
-        {/* DNA Prompt Card */}
-        <FeatureGate featureFlag="taste_matching">
-          {dnaComplete < 50 && (
-            <Card className="border-secondary/20 bg-secondary/5">
-              <CardContent className="p-4 flex items-center gap-3">
-                <Dna className="w-5 h-5 text-secondary shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">Build your Work DNA</p>
-                  <p className="text-xs text-muted-foreground">Help us find your people — takes 3 minutes</p>
+        {/* Streak warning (Thursday+) — moved to Tier 2 for urgency */}
+        {(profile.events_attended || 0) >= 2 && (profile.current_streak || 0) >= 2 && new Date().getDay() >= 4 && (
+          <Card className="border-yellow-500/20 bg-yellow-50/50 dark:bg-yellow-950/10">
+            <CardContent className="p-4 space-y-2">
+              <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                <Shield className="w-4 h-4 text-yellow-600" /> Your {profile.current_streak}-week streak is at risk!
+              </p>
+              {!profile.streak_insurance_used_at || (new Date().getTime() - new Date(profile.streak_insurance_used_at).getTime()) > 30 * 24 * 60 * 60 * 1000 ? (
+                <>
+                  <p className="text-xs text-muted-foreground">You have a streak save available, but booking a session is better!</p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => navigate("/events")}>Book now</Button>
+                    <Button size="sm" variant="secondary" onClick={async () => {
+                      if (!user) return;
+                      const { error } = await supabase.from("profiles").update({ streak_insurance_used_at: new Date().toISOString() }).eq("id", user.id);
+                      if (error) { toast.error("Could not use streak save. Try again."); return; }
+                      toast.success("Streak saved! You have one save per month.");
+                      await refreshProfile();
+                    }}>
+                      <Shield className="w-3.5 h-3.5" /> Use Streak Save
+                    </Button>
+                  </div>
+                </>
+              ) : profile.streak_insurance_used_at && (new Date().getTime() - new Date(profile.streak_insurance_used_at).getTime()) <= 7 * 24 * 60 * 60 * 1000 ? (
+                <p className="text-xs text-green-600 font-medium">Streak protected until next week!</p>
+              ) : (
+                <>
+                  <p className="text-xs text-muted-foreground">Book a session to keep your streak alive.</p>
+                  <Button size="sm" variant="outline" onClick={() => navigate("/events")}>Book now</Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Gratitude Echo Card */}
+        {(profile.events_attended || 0) >= 1 && <GratitudeEchoCard />}
+
+        {/* Crew Events (circle FOMO) */}
+        {(profile.events_attended || 0) >= 2 && crewEvents.length > 0 && (
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="p-4 space-y-3">
+              {crewEvents.map((ev: any) => (
+                <div key={ev.id} className="flex items-center gap-3 cursor-pointer" onClick={() => navigate(`/events/${ev.id}`)}>
+                  <div className="flex -space-x-2">
+                    {ev.members?.slice(0, 3).map((m: any) => (
+                      <Avatar key={m.circle_user_id} className="w-7 h-7 border-2 border-background">
+                        <AvatarImage src={m.avatar_url || ""} />
+                        <AvatarFallback className="text-[9px] bg-muted">{m.display_name?.[0]}</AvatarFallback>
+                      </Avatar>
+                    ))}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-foreground font-medium truncate">
+                      {ev.members?.[0]?.display_name?.split(" ")[0]}{ev.members?.length > 1 ? ` + ${ev.members.length - 1} more` : ""} going to {ev.title}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">{ev.date ? format(parseISO(ev.date), "EEE, MMM d") : ""}</p>
+                  </div>
+                  <Button size="sm" variant="outline" className="shrink-0 text-xs h-7" onClick={e => { e.stopPropagation(); navigate(`/events/${ev.id}`); }}>Join</Button>
                 </div>
-                <Button size="sm" variant="outline" className="shrink-0 text-xs" onClick={() => navigate("/me/dna")}>Start</Button>
-              </CardContent>
-            </Card>
-          )}
-        </FeatureGate>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Streak Card */}
-        <StreakCard />
+        {/* Your Circle */}
+        {(profile.events_attended || 0) >= 2 && (
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-1">
+                <UsersIcon className="w-3.5 h-3.5" /> Your Circle
+              </p>
+              {circle.length > 0 ? (
+                <div className="flex gap-4 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+                  {circle.slice(0, 8).map((c: any) => (
+                    <div key={c.circle_user_id} className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer"
+                      onClick={() => navigate(`/profile/${c.circle_user_id}`)}>
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src={c.avatar_url || ""} />
+                        <AvatarFallback className="text-xs bg-muted">{c.display_name?.[0]}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-[11px] text-foreground text-center w-14 truncate">{c.display_name?.split(" ")[0]}</span>
+                      <span className="text-[9px] text-muted-foreground">{c.cowork_count} sessions</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-2">
+                  After your next session, tap "Cowork Again" on people you clicked with. Mutual picks appear here.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Activity Summary */}
-        <ActivitySummary />
+        {/* === TIER 3: Engagement (collapsible) === */}
+        <Collapsible open={showMoreSections} onOpenChange={setShowMoreSections}>
+          <CollapsibleTrigger asChild>
+            <button className="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <span>{showMoreSections ? "Show less" : "Show more"}</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showMoreSections ? "rotate-180" : ""}`} />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-5">
+            {/* Community Rituals (Monday/Friday) */}
+            {isMonday(new Date()) && (profile.events_attended || 0) >= 1 && (
+              <CommunityRitualCard type="monday_intention" />
+            )}
+            {isFriday(new Date()) && (profile.events_attended || 0) >= 1 && (
+              <CommunityRitualCard type="friday_win" />
+            )}
 
-        {/* Community — Who's Here + Match Suggestions */}
+            {/* Enhanced Weekly Digest */}
+            {enhancedDigest ? (
+              <EnhancedWeeklyDigest {...enhancedDigest} />
+            ) : weeklyDigest && (
+              <Card className="border-secondary/20 bg-secondary/5">
+                <CardContent className="p-4 space-y-2">
+                  <p className="font-serif text-sm text-foreground">Your Week in FocusClub</p>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <span className="text-muted-foreground">Sessions: <span className="font-medium text-foreground">{weeklyDigest.sessions}</span></span>
+                    <span className="text-muted-foreground">Deep work: <span className="font-medium text-foreground">{weeklyDigest.hours}h</span></span>
+                    <span className="text-muted-foreground">Props given: <span className="font-medium text-foreground">{weeklyDigest.propsGiven}</span></span>
+                    <span className="text-muted-foreground">Props received: <span className="font-medium text-foreground">{weeklyDigest.propsReceived}</span></span>
+                  </div>
+                  {weeklyDigest.streak > 0 && (
+                    <p className="text-xs text-foreground">{weeklyDigest.streak} session streak!</p>
+                  )}
+                  {weeklyDigest.topPercent && weeklyDigest.topPercent <= 30 && (
+                    <p className="text-xs text-secondary font-medium">You're in the top {weeklyDigest.topPercent}% of active members!</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Push Notification Opt-In */}
+            <PushOptInCard />
+
+            {/* DNA Prompt Card */}
+            <FeatureGate featureFlag="taste_matching">
+              {dnaComplete < 50 && (
+                <Card className="border-secondary/20 bg-secondary/5">
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <Dna className="w-5 h-5 text-secondary shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">Build your Work DNA</p>
+                      <p className="text-xs text-muted-foreground">Help us find your people -- takes 3 minutes</p>
+                    </div>
+                    <Button size="sm" variant="outline" className="shrink-0 text-xs" onClick={() => navigate("/me/dna")}>Start</Button>
+                  </CardContent>
+                </Card>
+              )}
+            </FeatureGate>
+
+            {/* Streak Card + Activity Summary */}
+            <StreakCard />
+            <ActivitySummary />
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Community -- Who's Here + Match Suggestions */}
         {currentState !== "offline" ? (
           <>
             <WhosHere />
@@ -578,141 +719,8 @@ export default function Home() {
           </SheetContent>
         </Sheet>
 
-        {/* DESIGN: Gratitude Echoes — delayed props create warm between-session moments.
-           High priority because it's a time-sensitive emotional moment. */}
-        {(profile.events_attended || 0) >= 1 && <GratitudeEchoCard />}
-
-        {/* Primary Action Card */}
-        <PrimaryActionCard
-          nextMeetup={nextMeetup}
-          pendingFeedback={pendingFeedback}
-          upcomingEvent={upcomingEvent}
-        />
-
-        {/* DESIGN: Community Rituals — Monday Focus + Friday Wins.
-           Consistent rhythm (not constant noise) creates belonging between sessions. */}
-        {isMonday(new Date()) && (profile.events_attended || 0) >= 1 && (
-          <CommunityRitualCard type="monday_intention" />
-        )}
-        {isFriday(new Date()) && (profile.events_attended || 0) >= 1 && (
-          <CommunityRitualCard type="friday_win" />
-        )}
-
-        {/* Enhanced Weekly Digest (Mondays) */}
-        {enhancedDigest ? (
-          <EnhancedWeeklyDigest {...enhancedDigest} />
-        ) : weeklyDigest && (
-          <Card className="border-secondary/20 bg-secondary/5">
-            <CardContent className="p-4 space-y-2">
-              <p className="font-serif text-sm text-foreground">Your Week in FocusClub 📊</p>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <span className="text-muted-foreground">Sessions: <span className="font-medium text-foreground">{weeklyDigest.sessions}</span></span>
-                <span className="text-muted-foreground">Deep work: <span className="font-medium text-foreground">{weeklyDigest.hours}h</span></span>
-                <span className="text-muted-foreground">Props given: <span className="font-medium text-foreground">{weeklyDigest.propsGiven}</span></span>
-                <span className="text-muted-foreground">Props received: <span className="font-medium text-foreground">{weeklyDigest.propsReceived}</span></span>
-              </div>
-              {weeklyDigest.streak > 0 && (
-                <p className="text-xs text-foreground">🔥 {weeklyDigest.streak} session streak!</p>
-              )}
-              {weeklyDigest.topPercent && weeklyDigest.topPercent <= 30 && (
-                <p className="text-xs text-secondary font-medium">You're in the top {weeklyDigest.topPercent}% of active members!</p>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* DESIGN: Social loss framing is warm, not guilt-trippy.
-           FOMO should feel like belonging, not pressure. */}
-        {(profile.events_attended || 0) >= 2 && crewEvents.length > 0 && (
-          <Card className="border-primary/20 bg-primary/5">
-            <CardContent className="p-4 space-y-3">
-              {crewEvents.map((ev: any) => (
-                <div key={ev.id} className="flex items-center gap-3 cursor-pointer" onClick={() => navigate(`/events/${ev.id}`)}>
-                  <div className="flex -space-x-2">
-                    {ev.members?.slice(0, 3).map((m: any) => (
-                      <Avatar key={m.circle_user_id} className="w-7 h-7 border-2 border-background">
-                        <AvatarImage src={m.avatar_url || ""} />
-                        <AvatarFallback className="text-[9px] bg-muted">{m.display_name?.[0]}</AvatarFallback>
-                      </Avatar>
-                    ))}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-foreground font-medium truncate">
-                      {ev.members?.[0]?.display_name?.split(" ")[0]}{ev.members?.length > 1 ? ` + ${ev.members.length - 1} more` : ""} going to {ev.title}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">{ev.date ? format(parseISO(ev.date), "EEE, MMM d") : ""}</p>
-                  </div>
-                  <Button size="sm" variant="outline" className="shrink-0 text-xs h-7" onClick={e => { e.stopPropagation(); navigate(`/events/${ev.id}`); }}>Join</Button>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* DESIGN: Your Circle appears at 2+ sessions — need at least 1 completed session for mutual picks */}
-        {(profile.events_attended || 0) >= 2 && (
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-1">
-                <UsersIcon className="w-3.5 h-3.5" /> Your Circle
-              </p>
-              {circle.length > 0 ? (
-                <div className="flex gap-4 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-                  {circle.slice(0, 8).map((c: any) => (
-                    <div key={c.circle_user_id} className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer"
-                      onClick={() => navigate(`/profile/${c.circle_user_id}`)}>
-                      <Avatar className="w-12 h-12">
-                        <AvatarImage src={c.avatar_url || ""} />
-                        <AvatarFallback className="text-xs bg-muted">{c.display_name?.[0]}</AvatarFallback>
-                      </Avatar>
-                      <span className="text-[11px] text-foreground text-center w-14 truncate">{c.display_name?.split(" ")[0]}</span>
-                      <span className="text-[9px] text-muted-foreground">{c.cowork_count} sessions</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-muted-foreground text-center py-2">
-                  After your next session, tap "Cowork Again" on people you clicked with. Mutual picks appear here.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* DESIGN: Streak warning — streak insurance exists because punishing life events kills retention */}
-        {(profile.events_attended || 0) >= 2 && (profile.current_streak || 0) >= 2 && new Date().getDay() >= 4 && (
-          <Card className="border-yellow-500/20 bg-yellow-50/50 dark:bg-yellow-950/10">
-            <CardContent className="p-4 space-y-2">
-              <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                <Shield className="w-4 h-4 text-yellow-600" /> Your {profile.current_streak}-week streak is at risk! 🔥
-              </p>
-              {!profile.streak_insurance_used_at || (new Date().getTime() - new Date(profile.streak_insurance_used_at).getTime()) > 30 * 24 * 60 * 60 * 1000 ? (
-                <>
-                  <p className="text-xs text-muted-foreground">You have a streak save available, but booking a session is better!</p>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => navigate("/events")}>Book now</Button>
-                    <Button size="sm" variant="secondary" onClick={async () => {
-                      if (!user) return;
-                      const { error } = await supabase.from("profiles").update({ streak_insurance_used_at: new Date().toISOString() }).eq("id", user.id);
-                      if (error) { toast.error("Could not use streak save. Try again."); return; }
-                      toast.success("Streak saved! You have one save per month.");
-                      await refreshProfile();
-                    }}>
-                      <Shield className="w-3.5 h-3.5" /> Use Streak Save
-                    </Button>
-                  </div>
-                </>
-              ) : profile.streak_insurance_used_at && (new Date().getTime() - new Date(profile.streak_insurance_used_at).getTime()) <= 7 * 24 * 60 * 60 * 1000 ? (
-                <p className="text-xs text-green-600 font-medium">Streak protected until next week!</p>
-              ) : (
-                <>
-                  <p className="text-xs text-muted-foreground">Book a session to keep your streak alive.</p>
-                  <Button size="sm" variant="outline" onClick={() => navigate("/events")}>Book now</Button>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        )}
+        {/* Captain Dashboard — only visible to table captains */}
+        {profile?.is_table_captain && <CaptainDashboardCard />}
 
         {/* DESIGN: Autopilot gated to 3+ sessions — must prove the habit before automating it */}
         {(profile.events_attended || 0) >= 3 && !profile.autopilot_enabled && !autopilotDismissed && (
@@ -1118,6 +1126,10 @@ export default function Home() {
             </CardContent>
           </Card>
         )}
+
+        {/* === TIER 4: Promotional (bottom of page) === */}
+        <UpgradeSessionPrompt />
+        <BoostMathBanner />
       </motion.div>
       </PullToRefresh>
     </AppShell>
