@@ -14,11 +14,8 @@
 - **Impact:** Zero revenue. All tier gating is theoretical — every user is permanently free tier.
 - **Fix:** Integrate Razorpay (or UPI QR via `upiqr` npm package for MVP). Wire up subscription creation, webhook handling, tier activation.
 
-### TD-002: Women-only enforcement is client-side only
-- **Location:** `src/pages/EventDetail.tsx` (handleRsvp function)
-- **Description:** Women-only RSVP check happens in React component: `if (event.women_only && profile.gender !== "woman") toast.error(...)`. No Row Level Security policy on `event_rsvps` table prevents direct API insertion.
-- **Impact:** Safety-critical. A determined user can bypass via Supabase client or API.
-- **Fix:** Add RLS policy on `event_rsvps`: `CREATE POLICY women_only_check ON event_rsvps FOR INSERT USING (NOT EXISTS (SELECT 1 FROM events WHERE id = event_id AND women_only = true) OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND gender = 'woman'))`.
+### TD-002: Women-only enforcement is client-side only — RESOLVED
+- **Status:** RESOLVED — RLS migration at `supabase/migrations/20260313_women_only_rls.sql`. Replaces INSERT policy to enforce women-only check at DB level. Apply via Supabase dashboard or CLI.
 
 ### TD-003: No outbound notification channel
 - **Location:** `src/lib/notificationLogic.ts`, `src/lib/growth.ts`
@@ -45,17 +42,11 @@
 ### TD-007: Admin email allowlist is hardcoded — RESOLVED
 - **Status:** RESOLVED — `useAdminCheck` hook checks profile role, hardcoded fallback, then `app_settings` DB table for `admin_emails`.
 
-### TD-008: Smart group formation has no admin trigger UI
-- **Location:** `src/pages/Admin/EventsTab.tsx:106-138`
-- **Description:** "Create Groups" button exists inline in the EventsTab event list, but it's small and easy to miss. No preview of groups before saving. No undo. No scheduled auto-formation.
-- **Impact:** Admin must manually click per event. No way to preview or adjust groups.
-- **Fix:** Add group preview modal before saving. Add auto-formation option (e.g., form groups 24hrs before session).
+### TD-008: Smart group formation has no admin trigger UI — RESOLVED
+- **Status:** RESOLVED — GroupPreviewModal shows proposed groups with stats (size, gender, captains) before saving. Shuffle button re-runs algorithm.
 
-### TD-009: `taste_graph` completion gates features but builder is buried
-- **Location:** `src/pages/TasteGraphBuilder.tsx`, `src/components/FeatureGate.tsx`
-- **Description:** Several features require `requireDnaComplete >= N%` but the TasteGraphBuilder is only accessible via `/me/dna` or a small CTA on the Home page. Most users don't know it exists.
-- **Impact:** Users get locked out of features (Coffee Roulette, etc.) without understanding why or how to unlock them.
-- **Fix:** Progressive profiling — ask taste graph questions post-session, in-context, or during natural pauses. Don't make users go to a separate 7-step form.
+### TD-009: `taste_graph` completion gates features but builder is buried — RESOLVED
+- **Status:** RESOLVED — PostSessionDnaPrompt asks one question during wrap-up. DnaCompletionNudge on Home page when DNA < 50%. Shared dnaCompletion.ts utility.
 
 ### TD-010: PullToRefresh calls window.location.reload() — RESOLVED
 - **Status:** RESOLVED — Home page now calls `refreshProfile()` + `fetchAll()`. Discover page uses `refreshKey` counter to remount sub-components.
@@ -64,11 +55,8 @@
 
 ## MEDIUM — Quality and performance
 
-### TD-011: No data caching layer for offline
-- **Location:** `vite.config.ts` (Workbox config)
-- **Description:** Service worker caches app shell (HTML/JS/CSS) and map tiles, but no API response caching. Supabase queries use NetworkFirst with 5s timeout but no IndexedDB fallback. If network fails, all data pages show empty/error states.
-- **Impact:** Users on spotty WiFi (common in Indian cafes) get broken experiences during sessions.
-- **Fix:** Add Supabase query result caching via React Query's `persistQueryClient` with IndexedDB adapter, or manual SWR cache for critical data (current session, event details, profile).
+### TD-011: No data caching layer for offline — RESOLVED
+- **Status:** RESOLVED — `offlineCache.ts` (IndexedDB, 24hr TTL), `useOfflineQuery` hook, applied to Events page. Cached data served on network failure.
 
 ### TD-012: EventCard fetches VenueQuickBadges per card — RESOLVED
 - **Status:** RESOLVED — `useVenueBadgesBatch` hook fetches all venue vibes in one `.in()` query. Events page passes `preloadedBadges` prop to each EventCard.
@@ -82,8 +70,8 @@
 ### TD-015: Realtime subscriptions not cleaned up consistently — RESOLVED
 - **Status:** RESOLVED — All 5 channel call sites audited. `useSubscription` channel name fixed to include user ID. All have proper cleanup.
 
-### TD-016: No TypeScript strict mode — PARTIALLY RESOLVED
-- **Status:** IN-PROGRESS — Enabled `strictFunctionTypes`, `strictBindCallApply`, `noImplicitThis` in tsconfig.app.json. Full `strict: true` and `strictNullChecks` deferred to avoid hundreds of errors.
+### TD-016: No TypeScript strict mode — RESOLVED
+- **Status:** RESOLVED — `strictNullChecks: true` enabled. 33 type errors fixed across 24 files. Plus `strictFunctionTypes`, `strictBindCallApply`, `noImplicitThis`.
 
 ---
 
@@ -104,11 +92,8 @@
 ### TD-020: Inconsistent date handling — RESOLVED
 - **Status:** RESOLVED — Replaced `new Date(isoString)` with `parseISO(isoString)` across 27 files. `new Date()` (current time) left as-is.
 
-### TD-021: No API error tracking granularity
-- **Location:** `src/lib/sentry.ts`
-- **Description:** Sentry is initialized but Supabase errors are caught with `console.error` or `toast.error`. No structured error reporting to Sentry with context (which query failed, what parameters, user state).
-- **Impact:** Hard to debug production issues. Errors are logged client-side but not tracked centrally.
-- **Fix:** Wrap Supabase queries with error reporter that sends to Sentry with context.
+### TD-021: No API error tracking granularity — RESOLVED
+- **Status:** RESOLVED — `captureSupabaseError()` in sentry.ts with operation tags and query context. Applied to useEvents, useNotifications, useSubscription, Session page.
 
 ---
 
@@ -140,3 +125,9 @@
 | TD-R22 | Lovable branding (TD-017) | Removed tagger, cloud-auth, fixed OG/Twitter meta |
 | TD-R23 | Bundle size (TD-018) | Verified already lazy-loaded via code splitting |
 | TD-R24 | Inconsistent date parsing (TD-020) | `parseISO` across 27 files |
+| TD-R25 | Women-only RLS policy (TD-002) | `supabase/migrations/20260313_women_only_rls.sql` |
+| TD-R26 | Group preview modal (TD-008) | `GroupPreviewModal` + shuffle before save |
+| TD-R27 | DNA builder buried (TD-009) | `PostSessionDnaPrompt` + `DnaCompletionNudge` |
+| TD-R28 | No offline data cache (TD-011) | `offlineCache.ts` + `useOfflineQuery` hook |
+| TD-R29 | strictNullChecks (TD-016) | Enabled, 33 errors fixed across 24 files |
+| TD-R30 | Sentry error tracking (TD-021) | `captureSupabaseError()` on critical paths |
