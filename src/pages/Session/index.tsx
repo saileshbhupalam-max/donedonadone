@@ -146,6 +146,7 @@ export default function SessionPage() {
         if (rounds.length > 0) setIcebreakerActive(true);
       })();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionStarted, currentPhaseIdx, phases, icebreakerDone]);
 
   // Load group statuses + realtime
@@ -221,6 +222,7 @@ export default function SessionPage() {
     if (!isFocusOnlyFormat(event?.session_format) && profile?.is_table_captain && CAPTAIN_NUDGES[phase.phase_type]) {
       toast(CAPTAIN_NUDGES[phase.phase_type], { duration: 6000 });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPhaseIdx, sessionStarted]);
 
   // Energy check timing (2 min into social break)
@@ -234,6 +236,7 @@ export default function SessionPage() {
     if (phase?.phase_type === "social_break" && !photoMomentShown) {
       if (timeLeft <= 120 && timeLeft > 0) setPhotoMomentShown(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, currentPhaseIdx, phases]);
 
   const updateMyStatus = async (status: string, ut?: string, tp?: string) => {

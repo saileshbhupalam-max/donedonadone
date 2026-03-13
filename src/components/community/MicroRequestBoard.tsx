@@ -86,6 +86,7 @@ function MicroRequestBoardInner() {
     setLoading(false);
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchRequests(); }, [user?.id]);
 
   const handleClaim = async (requestId: string) => {

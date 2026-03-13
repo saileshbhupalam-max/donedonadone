@@ -72,6 +72,7 @@ export function CheckInFlow({ open, onClose, onCheckIn }: CheckInFlowProps) {
       return;
     }
     detectLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const detectLocation = async () => {

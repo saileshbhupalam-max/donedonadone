@@ -35,7 +35,7 @@ CREATE POLICY "Admins can view all credits"
     EXISTS (
       SELECT 1 FROM profiles
       WHERE profiles.id = auth.uid()
-      AND profiles.role = 'admin'
+      AND profiles.user_type = 'Admin'
     )
   );
 
@@ -82,7 +82,7 @@ CREATE POLICY "Admins can view all contributions"
     EXISTS (
       SELECT 1 FROM profiles
       WHERE profiles.id = auth.uid()
-      AND profiles.role = 'admin'
+      AND profiles.user_type = 'Admin'
     )
   );
 
@@ -130,6 +130,6 @@ CREATE POLICY "Admins can view all referral rewards"
     EXISTS (
       SELECT 1 FROM profiles
       WHERE profiles.id = auth.uid()
-      AND profiles.role = 'admin'
+      AND profiles.user_type = 'Admin'
     )
   );

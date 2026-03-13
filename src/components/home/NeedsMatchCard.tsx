@@ -58,6 +58,7 @@ export function NeedsMatchCard() {
     };
 
     fetchAndScore();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, profile?.id]);
 
   // Don't render if loading or no matches

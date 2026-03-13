@@ -241,6 +241,7 @@ export function CompanyMatches({ companyId }: { companyId: string }) {
     setLoading(false);
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchMatches(); }, [companyId]);
 
   const monthlyLimit = getLimit("company_intros_per_month");

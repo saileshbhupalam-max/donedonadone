@@ -1,21 +1,73 @@
-import { useState } from "react";
-import { Coins, Camera, Star, Upload, Zap, Gift, Clock } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Coins, Camera, Star, Upload, Zap, Gift, Clock, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { getGrowthConfig } from "@/lib/growthConfig";
 
-// TODO: wire to engine
-function getMilestoneProgress(_userId: string) {
+interface MilestoneProgress {
+  actionsCompleted: number;
+  actionsRequired: number;
+  premiumDaysEarned: number;
+  streakDaysRemaining: number;
+  availableActions: Array<{
+    type: "photo" | "rating" | "review";
+    label: string;
+    fc: number;
+    icon: "camera" | "star" | "upload";
+  }>;
+}
+
+async function fetchMilestoneProgress(userId: string): Promise<MilestoneProgress> {
+  const config = getGrowthConfig();
+  const actionsRequired = config.growth.contributionMilestoneActions;
+
+  // Query venue_contributions for the user in the last 30 days
+  const thirtyDaysAgo = new Date(
+    Date.now() - 30 * 24 * 60 * 60 * 1000
+  ).toISOString();
+
+  const { data: contributions } = await supabase
+    .from("venue_contributions")
+    .select("id, contribution_type, created_at")
+    .eq("user_id", userId)
+    .gte("created_at", thirtyDaysAgo)
+    .order("created_at", { ascending: false });
+
+  const actionsCompleted = contributions?.length || 0;
+
+  // Get premium days earned from focus_credits where action = 'contribution_milestone'
+  const { data: milestoneCredits } = await supabase
+    .from("focus_credits")
+    .select("amount")
+    .eq("user_id", userId)
+    .eq("action", "contribution_milestone");
+
+  const premiumDaysEarned = milestoneCredits?.length || 0;
+
+  // Calculate streak days remaining: 7 days from last contribution
+  let streakDaysRemaining = 0;
+  if (contributions && contributions.length > 0) {
+    const lastContribDate = new Date(contributions[0].created_at!);
+    const expiresAt = new Date(lastContribDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const msRemaining = expiresAt.getTime() - Date.now();
+    streakDaysRemaining = Math.max(0, Math.ceil(msRemaining / (24 * 60 * 60 * 1000)));
+  }
+
+  // Available actions with rewards from config
+  const availableActions: MilestoneProgress["availableActions"] = [
+    { type: "photo", label: "Upload a venue photo", fc: config.credits.uploadPhoto, icon: "camera" },
+    { type: "rating", label: "Rate noise level", fc: config.credits.rateVenue, icon: "star" },
+    { type: "review", label: "Write a mini review", fc: config.credits.writeReview, icon: "upload" },
+  ];
+
   return {
-    actionsCompleted: 2,
-    actionsRequired: 3,
-    premiumDaysEarned: 0,
-    streakDaysRemaining: 2,
-    availableActions: [
-      { type: "photo" as const, label: "Upload a venue photo", fc: 5, icon: "camera" as const },
-      { type: "rating" as const, label: "Rate noise level", fc: 5, icon: "star" as const },
-      { type: "review" as const, label: "Write a mini review", fc: 10, icon: "upload" as const },
-    ],
+    actionsCompleted,
+    actionsRequired,
+    premiumDaysEarned,
+    streakDaysRemaining,
+    availableActions,
   };
 }
 
@@ -32,7 +84,30 @@ const ACTION_ICONS: Record<string, React.ElementType> = {
 
 export function ContributionMilestoneCard({ userId, onActionSelect }: ContributionMilestoneCardProps) {
   const [celebrated, setCelebrated] = useState(false);
-  const data = getMilestoneProgress(userId);
+  const [data, setData] = useState<MilestoneProgress | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetchMilestoneProgress(userId).then((result) => {
+      if (!cancelled) {
+        setData(result);
+        setLoading(false);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [userId]);
+
+  if (loading || !data) {
+    return (
+      <Card className="border border-amber-200 dark:border-amber-800/50 overflow-hidden">
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Endowed progress: start at 20%, map real progress across remaining 80%
   const rawProgress = (data.actionsCompleted / data.actionsRequired) * 100;
@@ -61,7 +136,7 @@ export function ContributionMilestoneCard({ userId, onActionSelect }: Contributi
           {isComplete ? (
             <>
               <Gift className="w-5 h-5 text-green-500" />
-              Premium activated for 1 day!
+              Premium activated for {data.premiumDaysEarned || 1} day{data.premiumDaysEarned !== 1 ? "s" : ""}!
             </>
           ) : (
             <>
@@ -78,7 +153,7 @@ export function ContributionMilestoneCard({ userId, onActionSelect }: Contributi
           <div className="text-center py-4 space-y-2">
             <div className="text-4xl">*</div>
             <p className="text-sm text-green-700 dark:text-green-400 font-medium">
-              You've unlocked 1 day of Premium through contributions!
+              You've unlocked {data.premiumDaysEarned || 1} day{data.premiumDaysEarned !== 1 ? "s" : ""} of Premium through contributions!
             </p>
             <p className="text-xs text-muted-foreground">Keep contributing for more Premium days</p>
           </div>

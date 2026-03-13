@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Bell, Check, Sparkles, Hand, CheckCircle2, Heart, Coffee, Link2, UserPlus } from "lucide-react";
 import { CreditsBadge } from "@/components/growth/CreditsBadge";
+import { useFocusCredits } from "@/hooks/useFocusCredits";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -47,6 +48,7 @@ export function TopBar() {
   const { notifications, unreadCount, markAsRead, markAllRead } = useNotifications();
   const { pendingCount } = useConnectionRequests();
   const { tier } = useSubscription();
+  const { balance: fcBalance } = useFocusCredits();
   const totalBadge = unreadCount + pendingCount;
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -74,8 +76,7 @@ export function TopBar() {
         </Link>
 
         <div className="flex items-center gap-3">
-          {/* TODO: wire to real FC balance from engine */}
-          <CreditsBadge balance={0} compact />
+          <CreditsBadge balance={fcBalance} compact />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <button className="relative p-2 text-muted-foreground hover:text-foreground transition-colors">

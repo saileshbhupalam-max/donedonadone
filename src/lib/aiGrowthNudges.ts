@@ -86,7 +86,7 @@ export function trackNudgeDismissal(userId: string, nudgeType: NudgeType): void 
   localStorage.setItem(DISMISSAL_STORAGE_KEY, JSON.stringify(dismissals));
 
   // Also track in analytics (fire-and-forget)
-  supabase.from('analytics_events' as any).insert({
+  supabase.from('analytics_events').insert({
     event_type: 'nudge_dismissed',
     user_id: userId,
     metadata: { nudge_type: nudgeType },
@@ -243,7 +243,7 @@ export async function getNeighborhoodGrowthStats(
   const threshold = config.growth.neighborhoodLaunchThreshold;
 
   const { count } = await supabase
-    .from('profiles' as any)
+    .from('profiles')
     .select('id', { count: 'exact', head: true })
     .eq('neighborhood', neighborhood);
 

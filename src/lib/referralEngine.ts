@@ -48,7 +48,7 @@ export async function trackReferralSignup(
   // Check max referral rewards cap
   if (config.maxReferralRewards > 0) {
     const { data: existing } = await supabase
-      .from('referral_rewards' as any)
+      .from('referral_rewards')
       .select('id')
       .eq('referrer_id', referrerId);
 
@@ -59,7 +59,7 @@ export async function trackReferralSignup(
 
   // Record the referral reward entry
   const { error } = await supabase
-    .from('referral_rewards' as any)
+    .from('referral_rewards')
     .insert({
       referrer_id: referrerId,
       referee_id: newUserId,
@@ -87,7 +87,7 @@ export async function checkReferralMilestones(
 
   // Check if this milestone was already awarded
   const { data: existing } = await supabase
-    .from('referral_rewards' as any)
+    .from('referral_rewards')
     .select('id')
     .eq('referrer_id', referrerId)
     .eq('referee_id', refereeId)
@@ -112,7 +112,7 @@ export async function checkReferralMilestones(
 
   // Record the milestone
   await supabase
-    .from('referral_rewards' as any)
+    .from('referral_rewards')
     .insert({
       referrer_id: referrerId,
       referee_id: refereeId,
@@ -128,7 +128,7 @@ export async function checkReferralMilestones(
  */
 export async function getReferralStats(userId: string): Promise<ReferralStats> {
   const { data: rewards } = await supabase
-    .from('referral_rewards' as any)
+    .from('referral_rewards')
     .select('milestone, credits_awarded')
     .eq('referrer_id', userId);
 
@@ -167,7 +167,7 @@ export async function generateSmartReferralNudge(
 
   // Get user's referral code
   const { data: profile } = await supabase
-    .from('profiles' as any)
+    .from('profiles')
     .select('referral_code')
     .eq('id', userId)
     .single();

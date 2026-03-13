@@ -208,7 +208,7 @@ export async function loadGrowthConfig(): Promise<GrowthConfig> {
   if (runtimeConfig) return runtimeConfig;
   try {
     const { data } = await supabase
-      .from('app_settings' as any)
+      .from('app_settings')
       .select('value')
       .eq('key', 'growth_config')
       .single();

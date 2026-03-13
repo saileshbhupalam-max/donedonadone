@@ -145,6 +145,7 @@ export function CompanyNeedsOffers({ companyId, isAdmin }: { companyId: string; 
     if (offersRes.data) setOffers(offersRes.data as NeedOffer[]);
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchAll(); }, [companyId]);
 
   const hasContent = needs.length > 0 || offers.length > 0 || isAdmin;

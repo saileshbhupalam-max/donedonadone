@@ -42,6 +42,7 @@ export function EnergyCheck({ eventId, phase }: Props) {
         loadGroupAvg();
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, eventId, phase]);
 
   const loadGroupAvg = async () => {

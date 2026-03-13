@@ -54,6 +54,7 @@ export function CompanyIntros({ companyId, isAdmin }: { companyId: string; isAdm
     })));
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchIntros(); }, [companyId]);
 
   const handleRespond = async (introId: string, status: "accepted" | "declined") => {

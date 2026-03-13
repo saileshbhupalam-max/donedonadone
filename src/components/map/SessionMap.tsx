@@ -105,6 +105,7 @@ export function SessionMap({ focusEventId }: Props) {
 
   useEffect(() => {
     requestPosition();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

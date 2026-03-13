@@ -136,7 +136,7 @@ export async function submitVenueContribution(
 
   // Record the contribution regardless of credit outcome
   const { error } = await supabase
-    .from('venue_contributions' as any)
+    .from('venue_contributions')
     .insert({
       user_id: userId,
       venue_id: venueId,
@@ -158,7 +158,7 @@ export async function submitVenueContribution(
  */
 export async function getContributionStats(userId: string): Promise<ContributionStats> {
   const { data, error } = await supabase
-    .from('venue_contributions' as any)
+    .from('venue_contributions')
     .select('contribution_type, credits_awarded')
     .eq('user_id', userId);
 
@@ -188,7 +188,7 @@ export async function getContributionStats(userId: string): Promise<Contribution
  */
 export async function getVenueDataCompleteness(venueId: string): Promise<VenueCompleteness> {
   const { data, error } = await supabase
-    .from('venue_contributions' as any)
+    .from('venue_contributions')
     .select('contribution_type')
     .eq('venue_id', venueId);
 
@@ -233,7 +233,7 @@ export async function checkContributionMilestone(userId: string): Promise<boolea
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
   const { data: recent } = await supabase
-    .from('venue_contributions' as any)
+    .from('venue_contributions')
     .select('id')
     .eq('user_id', userId)
     .gte('created_at', thirtyDaysAgo.toISOString());
@@ -243,7 +243,7 @@ export async function checkContributionMilestone(userId: string): Promise<boolea
 
   // Check if milestone already awarded in this period
   const { data: existing } = await supabase
-    .from('focus_credits' as any)
+    .from('focus_credits')
     .select('id')
     .eq('user_id', userId)
     .eq('action', 'contribution_milestone' as any)
@@ -254,7 +254,7 @@ export async function checkContributionMilestone(userId: string): Promise<boolea
 
   // Award milestone (recorded as a credit entry for tracking)
   await supabase
-    .from('focus_credits' as any)
+    .from('focus_credits')
     .insert({
       user_id: userId,
       amount: 0,

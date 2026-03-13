@@ -63,6 +63,7 @@ function CoffeeRouletteInner() {
         setWeeklyUsed(count || 0);
         setLimitChecked(true);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const atLimit = weeklyLimit > 0 && weeklyUsed >= weeklyLimit;
@@ -98,6 +99,7 @@ function CoffeeRouletteInner() {
     };
     check();
     return () => clearTimers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const fetchMatchedUser = async (matchedUserId: string) => {

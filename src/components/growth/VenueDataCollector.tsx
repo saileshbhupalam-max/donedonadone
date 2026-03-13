@@ -4,11 +4,52 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { submitVenueContribution, type ContributionType, type ContributionData } from "@/lib/venueContributions";
+import { awardCredits } from "@/lib/focusCredits";
 
-// TODO: wire to engine
-function submitVenueData(_data: Record<string, unknown>): Promise<{ creditsEarned: number; bonusMultiplier: number }> {
+type SectionContribution = {
+  type: ContributionType;
+  data: ContributionData;
+};
+
+const SECTION_KEY_MAP: Record<string, ContributionType[]> = {
+  photos: ['photo'],
+  basic: ['seating_report', 'floor_count', 'parking'],
+  amenities: ['amenities'],
+  food: ['food_options'],
+  companies: ['company_presence'],
+  wifi: ['wifi_report'],
+  noise: ['noise_report'],
+};
+
+async function submitSectionData(
+  userId: string,
+  venueId: string,
+  sectionKey: string,
+  contributions: SectionContribution[]
+): Promise<{ creditsEarned: number; bonusMultiplier: number }> {
+  let totalCredits = 0;
+
+  for (const { type, data } of contributions) {
+    const result = await submitVenueContribution(userId, venueId, type, data);
+    if (result.success) {
+      totalCredits += result.creditsAwarded;
+    }
+  }
+
+  // Variable reward: 12% chance of 2x or 3x bonus (behavioral design)
   const bonus = Math.random() < 0.12 ? (Math.random() < 0.5 ? 2 : 3) : 1;
-  return Promise.resolve({ creditsEarned: 5 * bonus, bonusMultiplier: bonus });
+  if (bonus > 1) {
+    const bonusAmount = totalCredits * (bonus - 1);
+    await awardCredits(userId, 'report_venue_info', bonusAmount, {
+      venue_id: venueId,
+      bonus_multiplier: bonus,
+      section: sectionKey,
+    });
+    totalCredits *= bonus;
+  }
+
+  return { creditsEarned: totalCredits, bonusMultiplier: bonus };
 }
 
 interface VenueDataCollectorProps {
@@ -68,7 +109,84 @@ export function VenueDataCollector({ venueId, venueName, userId, trigger, onComp
   const totalPossible = SECTIONS.reduce((a, b) => a + b.reward, 0);
 
   const completeSection = useCallback(async (key: string) => {
-    const result = await submitVenueData({ venueId, userId, section: key });
+    const contributions: SectionContribution[] = [];
+
+    switch (key) {
+      case 'photos':
+        for (const photo of photos) {
+          contributions.push({
+            type: 'photo',
+            data: { photo_url: photo.name, photo_size_kb: Math.round(photo.size / 1024) },
+          });
+        }
+        break;
+      case 'basic':
+        if (seatingCapacity) {
+          contributions.push({
+            type: 'seating_report',
+            data: { seating_count: parseInt(seatingCapacity, 10) },
+          });
+        }
+        if (floors) {
+          contributions.push({
+            type: 'floor_count',
+            data: { floor_count: parseInt(floors, 10) },
+          });
+        }
+        if (parking) {
+          contributions.push({
+            type: 'parking',
+            data: { parking_type: parking },
+          });
+        }
+        break;
+      case 'amenities':
+        contributions.push({
+          type: 'amenities',
+          data: { amenities: Array.from(amenities) },
+        });
+        break;
+      case 'food':
+        contributions.push({
+          type: 'food_options',
+          data: {
+            food_options: [hasMenu, priceRange, specialtyCoffee].filter(Boolean) as string[],
+            has_menu: hasMenu,
+            price_range: priceRange,
+            specialty_coffee: specialtyCoffee,
+          },
+        });
+        break;
+      case 'companies':
+        for (const company of companies) {
+          contributions.push({
+            type: 'company_presence',
+            data: { company_name: company },
+          });
+        }
+        break;
+      case 'wifi':
+        contributions.push({
+          type: 'wifi_report',
+          data: {
+            wifi_speed: wifiSpeed,
+            wifi_password_required: wifiPassword,
+            wifi_reliable: wifiReliable,
+          },
+        });
+        break;
+      case 'noise':
+        contributions.push({
+          type: 'noise_report',
+          data: {
+            noise_level: noiseLevel,
+            noise_time: noiseTime,
+          },
+        });
+        break;
+    }
+
+    const result = await submitSectionData(userId, venueId, key, contributions);
     setCompletedSections((prev) => new Set(prev).add(key));
     setEarnedFC((prev) => prev + result.creditsEarned);
     if (result.bonusMultiplier > 1) {
@@ -76,7 +194,7 @@ export function VenueDataCollector({ venueId, venueName, userId, trigger, onComp
       setTimeout(() => setLastBonus(null), 3000);
     }
     setActiveSection(null);
-  }, [venueId, userId]);
+  }, [venueId, userId, photos, seatingCapacity, floors, parking, amenities, hasMenu, priceRange, specialtyCoffee, companies, wifiSpeed, wifiPassword, wifiReliable, noiseLevel, noiseTime]);
 
   const Pills = ({ options, value, onChange }: { options: string[]; value: string | null; onChange: (v: string) => void }) => (
     <div className="flex gap-2 flex-wrap">

@@ -1,23 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Users, Copy, Check, Gift, Trophy, Medal, Share2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-// TODO: wire to engine
-function getReferralStats(_userId: string) {
-  return {
-    referralCode: "FOCUS-ABC123",
-    referralLink: "https://focusclub.in/join/FOCUS-ABC123",
-    invited: 7,
-    firstSession: 4,
-    threeOrMore: 2,
-    totalFCEarned: 120,
-    hasCommunityBuilder: false,
-  };
-}
+import { getReferralStats as fetchReferralStats } from "@/lib/referralEngine";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ReferralDashboardProps {
   userId: string;
@@ -31,7 +19,61 @@ const MILESTONES = [
 
 export function ReferralDashboard({ userId }: ReferralDashboardProps) {
   const [copied, setCopied] = useState(false);
-  const stats = getReferralStats(userId);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    referralCode: "",
+    referralLink: "",
+    invited: 0,
+    firstSession: 0,
+    threeOrMore: 0,
+    totalFCEarned: 0,
+    hasCommunityBuilder: false,
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      try {
+        const [engineStats, profileResult] = await Promise.all([
+          fetchReferralStats(userId),
+          supabase
+            .from("profiles")
+            .select("referral_code")
+            .eq("id", userId)
+            .single(),
+        ]);
+
+        if (cancelled) return;
+
+        const referralCode =
+          (profileResult.data as any)?.referral_code || "";
+        const referralLink = referralCode
+          ? `${window.location.origin}/invite/${referralCode}`
+          : "";
+
+        setStats({
+          referralCode,
+          referralLink,
+          invited: engineStats.totalReferred,
+          firstSession: engineStats.completedFirstSession,
+          threeOrMore: engineStats.completed3Sessions,
+          totalFCEarned: engineStats.totalCreditsEarned,
+          hasCommunityBuilder: engineStats.completed3Sessions >= 10,
+        });
+      } catch (err) {
+        console.error("Failed to load referral stats", err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
   const nextMilestone = MILESTONES.find((m) => m.count > stats.threeOrMore) || MILESTONES[MILESTONES.length - 1];
   const prevMilestoneCount = MILESTONES.findIndex((m) => m.count === nextMilestone.count) > 0
@@ -71,6 +113,11 @@ export function ReferralDashboard({ userId }: ReferralDashboardProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {loading ? (
+          <div className="py-8 text-center text-sm text-muted-foreground animate-pulse">
+            Loading referral data...
+          </div>
+        ) : <>
         {/* Community Builder badge */}
         {stats.hasCommunityBuilder && (
           <div className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
@@ -136,6 +183,7 @@ export function ReferralDashboard({ userId }: ReferralDashboardProps) {
         <p className="text-xs text-center text-muted-foreground">
           Members who refer friends report 40% better group matches
         </p>
+        </>}
       </CardContent>
     </Card>
   );

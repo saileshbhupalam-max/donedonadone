@@ -35,6 +35,7 @@ import { CommunityHighlight, EnhancedWeeklyDigest } from "@/components/growth/Gr
 import { CreditsBadge } from "@/components/growth/CreditsBadge";
 import { GrowthNudgeCard } from "@/components/growth/GrowthNudgeCard";
 import { ContributionMilestoneCard } from "@/components/growth/ContributionMilestoneCard";
+import { useFocusCredits } from "@/hooks/useFocusCredits";
 import { getContextualGreeting, EMPTY_STATES, ERROR_STATES, getLoadingMessage, CONFIRMATIONS } from "@/lib/personality";
 import { usePersonality } from "@/contexts/PersonalityContext";
 import { motion } from "framer-motion";
@@ -74,6 +75,7 @@ export default function Home() {
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { currentState, dnaComplete, refreshCheckIn } = useUserContext();
+  const { balance: fcBalance, refresh: refreshCredits } = useFocusCredits();
   const [checkInOpen, setCheckInOpen] = useState(false);
   const [microRequestsOpen, setMicroRequestsOpen] = useState(false);
   const [coffeeRouletteOpen, setCoffeeRouletteOpen] = useState(false);
@@ -452,8 +454,7 @@ export default function Home() {
         </div>
 
         {/* Credits Badge - full display */}
-        {/* TODO: wire to real FC balance from engine */}
-        <CreditsBadge balance={0} />
+        <CreditsBadge balance={fcBalance} />
 
         {/* Growth Nudge - context-aware */}
         <GrowthNudgeCard userId={user!.id} />

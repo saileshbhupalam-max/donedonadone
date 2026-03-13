@@ -3,18 +3,33 @@ import { Zap, Users, MapPin, X, Share2, Camera, Gift } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { shouldShowReferralNudge, trackNudgeDismissal, type NudgeType, type NudgeConfig } from "@/lib/aiGrowthNudges";
 
-// TODO: wire to engine
-function getActiveNudge(_userId: string): NudgeData | null {
+const NUDGE_TYPE_MAP: Record<NudgeType, { type: NudgeData["type"]; actionType: NudgeData["action"]["type"] }> = {
+  referral_post_session: { type: "post-good-session", actionType: "share" },
+  referral_milestone: { type: "milestone", actionType: "share" },
+  referral_no_slots: { type: "no-slots", actionType: "invite" },
+  referral_onboarding: { type: "post-good-session", actionType: "share" },
+  neighborhood_launch: { type: "neighborhood", actionType: "invite" },
+  contribution_prompt: { type: "post-good-session", actionType: "contribute" },
+  streak_reminder: { type: "post-good-session", actionType: "share" },
+};
+
+function getActiveNudge(userId: string, sessionCount?: number, neighborhood?: string): NudgeData | null {
+  const result: NudgeConfig | null = shouldShowReferralNudge(userId, {
+    sessionCount,
+    neighborhood,
+  });
+  if (!result) return null;
+
+  const mapping = NUDGE_TYPE_MAP[result.type];
   return {
-    type: "post-good-session",
-    headline: "Great session! Know someone who'd love FocusClub?",
-    body: "They get their first session free, and you earn 20 FC.",
-    action: { label: "Invite a friend", type: "share" as const },
-    socialProof: "47 members invited friends this week",
+    type: mapping.type,
+    headline: result.message,
+    body: result.message,
+    action: { label: result.cta, type: mapping.actionType },
   };
 }
-function dismissNudge(_userId: string, _type: string): void { /* cooldown tracked */ }
 
 interface NudgeData {
   type: "post-good-session" | "milestone" | "no-slots" | "neighborhood";
@@ -52,12 +67,18 @@ const ACTION_ICONS: Record<string, React.ElementType> = {
   contribute: Camera,
 };
 
-export function GrowthNudgeCard({ userId, onAction }: GrowthNudgeCardProps) {
+export function GrowthNudgeCard({ userId, sessionCount, neighborhood, onAction }: GrowthNudgeCardProps) {
   const [dismissed, setDismissed] = useState(false);
-  const nudge = getActiveNudge(userId);
+  const nudge = getActiveNudge(userId, sessionCount, neighborhood);
 
   const handleDismiss = useCallback(() => {
-    if (nudge) dismissNudge(userId, nudge.type);
+    if (nudge) {
+      // Reverse-lookup the engine NudgeType from the component's display type
+      const engineType = Object.entries(NUDGE_TYPE_MAP).find(
+        ([, v]) => v.type === nudge.type && v.actionType === nudge.action.type
+      )?.[0] as NudgeType | undefined;
+      if (engineType) trackNudgeDismissal(userId, engineType);
+    }
     setDismissed(true);
   }, [userId, nudge]);
 

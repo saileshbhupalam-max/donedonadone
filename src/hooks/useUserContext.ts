@@ -116,6 +116,7 @@ export function useUserContext(): UserContextReturn {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const level = useMemo(() => getLevel(profile?.events_attended || 0), [profile?.events_attended]);

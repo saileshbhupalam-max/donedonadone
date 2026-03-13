@@ -102,7 +102,7 @@ export async function getBalance(userId: string): Promise<number> {
 
   // Sum non-expired entries
   const { data, error } = await supabase
-    .from('focus_credits' as any)
+    .from('focus_credits')
     .select('amount, expires_at')
     .eq('user_id', userId);
 
@@ -123,7 +123,7 @@ export async function getBalance(userId: string): Promise<number> {
  */
 export async function getTodayEarnings(userId: string): Promise<number> {
   const { data, error } = await supabase
-    .from('focus_credits' as any)
+    .from('focus_credits')
     .select('amount')
     .eq('user_id', userId)
     .gt('amount', 0)
@@ -152,7 +152,7 @@ export async function getDiminishingAmount(
   // Check daily action caps for reviews and photos
   if (action === 'write_review') {
     const { data: todayReviews } = await supabase
-      .from('focus_credits' as any)
+      .from('focus_credits')
       .select('id')
       .eq('user_id', userId)
       .eq('action', 'write_review')
@@ -165,7 +165,7 @@ export async function getDiminishingAmount(
     // Same-venue review cap
     if (venueId) {
       const { data: venueReviews } = await supabase
-        .from('focus_credits' as any)
+        .from('focus_credits')
         .select('id')
         .eq('user_id', userId)
         .eq('action', 'write_review')
@@ -179,7 +179,7 @@ export async function getDiminishingAmount(
 
   if (action === 'upload_photo' || action === 'check_in_photo') {
     const { data: todayPhotos } = await supabase
-      .from('focus_credits' as any)
+      .from('focus_credits')
       .select('id')
       .eq('user_id', userId)
       .in('action', ['upload_photo', 'check_in_photo'])
@@ -192,7 +192,7 @@ export async function getDiminishingAmount(
     // Same-venue photo cap
     if (venueId) {
       const { data: venuePhotos } = await supabase
-        .from('focus_credits' as any)
+        .from('focus_credits')
         .select('id')
         .eq('user_id', userId)
         .in('action', ['upload_photo', 'check_in_photo'])
@@ -249,7 +249,7 @@ export async function awardCredits(
 
   // Insert ledger entry
   const { error } = await supabase
-    .from('focus_credits' as any)
+    .from('focus_credits')
     .insert({
       user_id: userId,
       amount: adjustedAmount,
@@ -281,7 +281,7 @@ export async function spendCredits(
   }
 
   const { error } = await supabase
-    .from('focus_credits' as any)
+    .from('focus_credits')
     .insert({
       user_id: userId,
       amount: -amount,
@@ -307,7 +307,7 @@ export async function checkAndAwardStreak(userId: string): Promise<AwardResult> 
 
   // Check if streak bonus already awarded this month
   const { data: existingBonus } = await supabase
-    .from('focus_credits' as any)
+    .from('focus_credits')
     .select('id')
     .eq('user_id', userId)
     .eq('action', 'streak_bonus')
@@ -320,7 +320,7 @@ export async function checkAndAwardStreak(userId: string): Promise<AwardResult> 
 
   // Count sessions completed this month
   const { data: monthSessions } = await supabase
-    .from('focus_credits' as any)
+    .from('focus_credits')
     .select('id')
     .eq('user_id', userId)
     .eq('action', 'session_complete')

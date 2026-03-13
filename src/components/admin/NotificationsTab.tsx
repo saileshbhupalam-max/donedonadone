@@ -74,6 +74,7 @@ export function NotificationsTab() {
 
   useEffect(() => {
     fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange]);
 
   const searchUsers = async (query: string) => {

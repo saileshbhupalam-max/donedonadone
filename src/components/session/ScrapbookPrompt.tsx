@@ -37,6 +37,7 @@ export function ScrapbookPrompt({
 
   useEffect(() => {
     generateScrapbook();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const generateScrapbook = async () => {

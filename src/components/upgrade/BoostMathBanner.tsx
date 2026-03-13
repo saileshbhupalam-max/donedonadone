@@ -25,7 +25,7 @@ export function BoostMathBanner() {
         setBoostCount(data.length);
         setTotalSpent(data.reduce((sum, b) => sum + (b.amount_paise || 0), 0));
       });
-  }, [user?.id, dismissed]);
+  }, [user, dismissed]);
 
   if (dismissed || boostCount < 2) return null;
 

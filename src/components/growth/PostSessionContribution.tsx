@@ -1,13 +1,46 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Star, Camera, Upload, Coins, ChevronDown, ChevronUp, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { submitVenueContribution, ContributionType } from "@/lib/venueContributions";
+import { awardCredits } from "@/lib/focusCredits";
+import { getGrowthConfig } from "@/lib/growthConfig";
 
-// TODO: wire to engine
-function submitContribution(_data: Record<string, unknown>): Promise<{ creditsEarned: number; bonusMultiplier: number }> {
-  const bonus = Math.random() < 0.15 ? (Math.random() < 0.5 ? 2 : 3) : 1;
-  return Promise.resolve({ creditsEarned: 5 * bonus, bonusMultiplier: bonus });
+const SECTION_CONTRIBUTION_MAP: Record<string, ContributionType | null> = {
+  groupRating: null, // uses awardCredits directly
+  noise: 'noise_report',
+  wifi: 'wifi_report',
+  seating: 'seating_report',
+  photo: 'photo',
+};
+
+async function submitContribution(
+  userId: string,
+  venueId: string,
+  sectionKey: string,
+  sectionData: Record<string, unknown>
+): Promise<{ creditsEarned: number; bonusMultiplier: number }> {
+  const config = getGrowthConfig();
+  let creditsEarned = 0;
+
+  const contributionType = SECTION_CONTRIBUTION_MAP[sectionKey];
+  if (contributionType) {
+    const result = await submitVenueContribution(userId, venueId, contributionType, sectionData as any);
+    creditsEarned = result.creditsAwarded;
+  } else if (sectionKey === 'groupRating') {
+    const result = await awardCredits(userId, 'rate_group', config.credits.rateGroup, { venue_id: venueId });
+    creditsEarned = result.awarded;
+  }
+
+  // Variable reward schedule: 15% chance of 2x or 3x bonus (behavioral design feature)
+  const bonusMultiplier = Math.random() < 0.15 ? (Math.random() < 0.5 ? 2 : 3) : 1;
+  if (bonusMultiplier > 1 && creditsEarned > 0) {
+    await awardCredits(userId, 'great_groupmate', creditsEarned * (bonusMultiplier - 1), { venue_id: venueId, bonus: true });
+    creditsEarned *= bonusMultiplier;
+  }
+
+  return { creditsEarned, bonusMultiplier };
 }
 
 interface PostSessionContributionProps {
@@ -48,18 +81,25 @@ export function PostSessionContribution({ sessionId, venueId, userId, onComplete
   const [submitting, setSubmitting] = useState(false);
 
   // Commitment escalation: sections ordered from easiest to hardest
-  const sections = [
+  const sections = useMemo(() => [
     { key: "groupRating", label: "Rate your group", reward: SECTION_REWARDS.groupRating },
     { key: "noise", label: "Noise level", reward: SECTION_REWARDS.noise },
     { key: "wifi", label: "WiFi quality", reward: SECTION_REWARDS.wifi },
     { key: "seating", label: "Seating comfort", reward: SECTION_REWARDS.seating },
     { key: "photo", label: "Snap a photo", reward: SECTION_REWARDS.photo },
-  ];
+  ], []);
 
   const totalPossible = Object.values(SECTION_REWARDS).reduce((a, b) => a + b, 0);
 
   const completeSection = useCallback(async (key: string) => {
-    const result = await submitContribution({ sessionId, venueId, userId, section: key, data: state });
+    const sectionDataMap: Record<string, Record<string, unknown>> = {
+      groupRating: { rating: state.groupRating },
+      noise: { noise_level: state.noise },
+      wifi: { wifi_speed: state.wifi },
+      seating: { seating_count: 0 },
+      photo: { photo_url: 'pending_upload' },
+    };
+    const result = await submitContribution(userId, venueId, key, sectionDataMap[key] ?? {});
     const newCompleted = new Set(completed);
     newCompleted.add(key);
     setCompleted(newCompleted);
@@ -72,7 +112,7 @@ export function PostSessionContribution({ sessionId, venueId, userId, onComplete
     if (currentIdx < sections.length - 1) {
       setExpandedSection(currentIdx + 1);
     }
-  }, [completed, state, sessionId, venueId, userId, sections]);
+  }, [completed, state, venueId, userId, sections]);
 
   const handleFinish = useCallback(async () => {
     setSubmitting(true);
