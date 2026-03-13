@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getInitials } from "@/lib/utils";
+import { sanitizeProfileData } from "@/lib/profileValidation";
 import { AppShell } from "@/components/layout/AppShell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -183,7 +184,7 @@ export default function Profile() {
       preferred_neighborhoods: prefNeighborhoods, preferred_days: prefDays, preferred_times: prefTimes,
       preferred_session_duration: prefDuration,
     };
-    const { error } = await supabase.from("profiles").update(profileData).eq("id", user.id);
+    const { error } = await supabase.from("profiles").update(sanitizeProfileData(profileData)).eq("id", user.id);
     setSaving(false);
     if (error) {
       toast({ title: ERROR_STATES.generic, variant: "destructive" });

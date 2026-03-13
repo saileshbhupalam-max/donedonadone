@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeProfileData } from "@/lib/profileValidation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -103,10 +104,10 @@ export default function Settings() {
   const handleSaveProfile = async () => {
     if (!user || !displayName.trim()) return;
     setSaving(true);
-    const { error } = await supabase.from("profiles").update({
+    const { error } = await supabase.from("profiles").update(sanitizeProfileData({
       display_name: displayName.trim(),
       bio: bio.trim() || null,
-    }).eq("id", user.id);
+    })).eq("id", user.id);
     setSaving(false);
     if (error) { toast.error(ERROR_STATES.generic); return; }
     toast.success(CONFIRMATIONS.profileSaved);

@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { TagInput } from "@/components/onboarding/TagInput";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeProfileData } from "@/lib/profileValidation";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -108,7 +109,7 @@ export function ProfilePromptCard({ profile }: { profile: Profile }) {
 
   const save = async (data: Record<string, any>) => {
     setSaving(true);
-    await supabase.from("profiles").update(data).eq("id", user.id);
+    await supabase.from("profiles").update(sanitizeProfileData(data)).eq("id", user.id);
     await refreshProfile();
     setSaving(false);
     toast.success(CONFIRMATIONS.profileSaved);
