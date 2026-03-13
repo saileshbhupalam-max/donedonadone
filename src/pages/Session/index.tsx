@@ -33,6 +33,8 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { CaptainBadge } from "@/components/captain/CaptainCard";
 import { ScrapbookPrompt } from "@/components/session/ScrapbookPrompt";
 import { QuickFeedback } from "@/components/session/QuickFeedback";
+import { PostSessionDnaPrompt } from "@/components/session/PostSessionDnaPrompt";
+import { useUserContext } from "@/hooks/useUserContext";
 
 import { Profile, Phase, MemberStatusRow } from "./types";
 import { PHASE_EMOJIS, STATUS_CONFIG } from "./constants";
@@ -76,6 +78,8 @@ export default function SessionPage() {
   const [showProps, setShowProps] = useState(false);
   const [scrapbookGenerated, setScrapbookGenerated] = useState(false);
   const [wrapUpMode, setWrapUpMode] = useState<"quick" | "detailed">("quick");
+  const [dnaPromptDismissed, setDnaPromptDismissed] = useState(false);
+  const { dnaComplete } = useUserContext();
 
   // Load event + phases
   useEffect(() => {
@@ -516,6 +520,15 @@ export default function SessionPage() {
                           avatar_url: s.profile?.avatar_url || null,
                         }))}
                         onGenerated={() => setScrapbookGenerated(true)}
+                      />
+                    )}
+
+                    {/* Progressive DNA profiling — ask one question after session */}
+                    {user && dnaComplete < 60 && !dnaPromptDismissed && (
+                      <PostSessionDnaPrompt
+                        userId={user.id}
+                        onComplete={() => {}}
+                        onSkip={() => setDnaPromptDismissed(true)}
                       />
                     )}
                   </>
