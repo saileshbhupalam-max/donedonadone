@@ -35,6 +35,8 @@ import { CaptainBadge } from "@/components/captain/CaptainCard";
 import { ScrapbookPrompt } from "@/components/session/ScrapbookPrompt";
 import { QuickFeedback } from "@/components/session/QuickFeedback";
 import { PostSessionDnaPrompt } from "@/components/session/PostSessionDnaPrompt";
+import { PostSessionContribution } from "@/components/growth/PostSessionContribution";
+import { VenueDataCollector } from "@/components/growth/VenueDataCollector";
 import { useUserContext } from "@/hooks/useUserContext";
 
 import { Profile, Phase, MemberStatusRow } from "./types";
@@ -506,6 +508,29 @@ export default function SessionPage() {
                         userId={user.id}
                         venueName={event.venue_name}
                         onDone={() => {}}
+                      />
+                    )}
+
+                    {/* GROWTH: Award Focus Credits for post-session contributions.
+                       Variable reward (15% chance of 2x/3x) drives repeated engagement. */}
+                    {user && event.venue_id && (
+                      <PostSessionContribution
+                        sessionId={eventId!}
+                        venueId={event.venue_id}
+                        userId={user.id}
+                        onComplete={() => {}}
+                      />
+                    )}
+
+                    {/* GROWTH: Crowdsource venue data (wifi, noise, photos, amenities).
+                       Each section earns FC with 12% variable reward chance. */}
+                    {user && event.venue_id && event.venue_name && (
+                      <VenueDataCollector
+                        venueId={event.venue_id}
+                        venueName={event.venue_name}
+                        userId={user.id}
+                        trigger="post_session"
+                        onComplete={() => {}}
                       />
                     )}
 

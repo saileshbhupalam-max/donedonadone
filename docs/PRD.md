@@ -354,3 +354,178 @@ Two separate systems — intentionally:
 | Weekly active rate | 40%+ | Engagement |
 | Profile completion (taste graph) | 60%+ at 30 days | Matching quality |
 | Company needs fulfilled per company/month | 3+ | B2B value delivery |
+
+---
+
+## 8. Venue Growth System — Feature Specifications
+
+### 8.1 Enhanced Space Insights Page (QR Destination)
+**Route:** `/space/:id/insights` (public, no auth)
+**Status:** Enhancing existing page
+**Priority:** P0
+
+**Current state:** Analytics-focused (attendance trends, peak times, ratings, community health)
+
+**Add above-the-fold conversion section:**
+- Live count: "X people focused here right now" (query active check_ins for this location)
+- Next session CTA: "Next session: [date] at [time] — [X spots left]" with "Join" button
+- If no upcoming sessions: "Be the first to book a session here"
+- Community faces: 5 most recent member avatars who attended this venue
+- "Download FocusClub" / "Open in app" CTA
+- Preserve existing analytics sections below the fold
+
+**Data sources:**
+- Active check-ins: `check_ins` table WHERE location_id = :id AND checked_out_at IS NULL
+- Next session: `events` table WHERE venue_id = location_id AND date >= today ORDER BY date ASC LIMIT 1
+- Recent members: `event_rsvps` JOIN `profiles` WHERE event.venue_id = :id, last 5 unique users
+
+### 8.2 TV Mode Display
+**Route:** `/space/:id/live` (public, no auth)
+**Status:** New page
+**Priority:** P1
+
+**Design:**
+- Full-screen, landscape-optimized, dark/light theme auto
+- Large venue name + "Powered by FocusClub"
+- Centered QR code (links to /space/:id/insights)
+- Live stats that rotate every 8 seconds:
+  - "X people focused right now"
+  - "Y focused hours this month at [venue]"
+  - "Z unique coworkers this week"
+  - "Next session: [date] at [time]"
+- Bottom ticker: recent milestones, props given, new members
+- Auto-refresh data every 60 seconds
+- No scroll, no interaction needed — designed for wall-mounted TV
+
+**Data sources:**
+- Same as SpaceInsights, plus:
+- Monthly hours: SUM(focus_hours) from events at this venue in current month
+- Weekly unique: COUNT(DISTINCT user_id) from event_rsvps at this venue in last 7 days
+
+### 8.3 Partner Dashboard Enhancements
+**Route:** `/partner` (auth required, partner role)
+**Status:** Enhancing existing page
+**Priority:** P1
+
+**Add to existing dashboard:**
+1. **New Customer Attribution Card:**
+   - "FocusClub brought you X new faces this month"
+   - Query: COUNT(DISTINCT user_id) from check_ins WHERE location_id = partner's venue AND user's first check_in at this location was this month
+   - Trend vs last month
+
+2. **Self-serve Marketing Materials:**
+   - "Download QR Code" button (generates QR pointing to /space/:id/insights)
+   - "Download Table Tent" button (PDF with venue name + QR)
+   - "Download Poster" button (A4 PDF)
+   - "Copy TV Mode URL" button (copies /space/:id/live URL)
+   - Move existing admin-only QR generation to partner-accessible
+
+3. **Venue Streak Badge:**
+   - "12 consecutive weeks hosting sessions!"
+   - Calculated from events table — consecutive weeks with at least 1 event
+
+### 8.4 Post-Session Contribution Flow (Wiring)
+**Component:** `PostSessionContribution.tsx` (exists, needs wiring)
+**Location in flow:** Session wrap-up, after venue rating, before scrapbook
+**Status:** Wire into Session/index.tsx
+**Priority:** P0
+
+Awards Focus Credits for:
+- Rating group (5 FC)
+- Rating venue (5 FC)
+- Submitting noise report (10 FC)
+- Submitting WiFi report (10 FC)
+- Uploading session photo (5 FC)
+
+Variable reward: 15% chance of 2x/3x bonus per section (behavioral design)
+
+### 8.5 Venue Data Collector (Wiring)
+**Component:** `VenueDataCollector.tsx` (exists, needs wiring)
+**Location in flow:** Post-session, optional after PostSessionContribution
+**Status:** Wire into Session/index.tsx
+**Priority:** P1
+
+7 sections: photos, basic info, amenities, food, companies, wifi, noise
+Each section awards FC with 12% variable reward chance
+Endowed progress bar (starts at 20%)
+
+### 8.6 Referral Dashboard (Wiring)
+**Component:** `ReferralDashboard.tsx` (exists, needs wiring)
+**Location:** Profile page, Journey tab
+**Status:** Wire into Profile/index.tsx
+**Priority:** P0
+
+Shows: invited count, first session count, 3+ sessions count, total FC earned
+Milestone progress toward Community Builder (10 referrals with 3+ sessions)
+Copy/share referral link buttons (WhatsApp green button)
+
+### 8.7 Neighborhood Leaderboard (Wiring)
+**Component:** `NeighborhoodLeaderboard.tsx` (exists, needs wiring)
+**Location:** Home page, below existing leaderboard section
+**Status:** Wire into Home/index.tsx
+**Priority:** P1
+
+Shows top contributors by focus hours in user's neighborhood
+Only renders when user has a neighborhood set on their profile
+
+### 8.8 Focus Credits Redemption (New)
+**Status:** Not built — engine exists but no spending UI
+**Priority:** P2
+
+**Redemption options** (defined in growthConfig.ts):
+| Option | Cost | Description |
+|---|---|---|
+| Free session | 100 FC | Waive session fee |
+| Priority matching | 30 FC | Get matched with your preferred people |
+| Venue upgrade | 50 FC | Book premium venue slot |
+| Pick your seat | 20 FC | Choose your group |
+| Gift session | 100 FC | Send a friend a free session |
+| Exclusive session | 40 FC | Access limited sessions |
+
+**UI:** Dialog/sheet triggered from CreditsBadge tap. Shows balance, earning history, redemption options with "Redeem" buttons.
+
+### 8.9 Post-Session WhatsApp Story Card (New)
+**Status:** Not built
+**Priority:** P2
+
+One-tap generates Instagram/WhatsApp story-sized image (1080x1920):
+- "I did [X]hrs of focused work at [Venue]"
+- "with [N] amazing people"
+- Session scrapbook photo if available
+- FocusClub branding + referral QR code
+- Venue name prominently displayed
+- Share via native share API (WhatsApp, Instagram, download)
+
+Leverages existing html2canvas + sharing.ts infrastructure.
+
+---
+
+## 9. System Connectivity Requirements
+
+All subsystems must connect. No dangling components.
+
+### Growth System Wiring Map
+
+```
+Session Wrap-up Flow (Session/index.tsx):
+  → Intention Check (SessionWrapUp)
+  → Give Props (GivePropsFlow)
+  → Cowork Again (CoworkAgainCard)
+  → Venue Rating (VenueVibeRating)
+  → Post-Session Contribution (PostSessionContribution)  ← WIRE
+  → Venue Data Collector (VenueDataCollector)             ← WIRE
+  → Scrapbook (ScrapbookPrompt)
+  → Quick Feedback (QuickFeedback)
+  → DNA Prompt (PostSessionDnaPrompt)
+
+Home Page (Home/index.tsx):
+  → Growth Nudge Card (GrowthNudgeCard)                  ✓ wired
+  → Contribution Milestone Card (ContributionMilestoneCard) ✓ wired
+  → Neighborhood Leaderboard (NeighborhoodLeaderboard)    ← WIRE
+  → Credits Badge (CreditsBadge via useFocusCredits)      ✓ wired
+
+Profile Page (Profile/index.tsx):
+  → Referral Dashboard (ReferralDashboard)                ← WIRE
+  → Badges (AchievementsSection)                          ✓ wired
+  → Stats (StatsGrid)                                     ✓ wired
+```

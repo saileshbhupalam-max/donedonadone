@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import {
   BarChart3,
@@ -18,11 +20,13 @@ import {
   TrendingUp,
   UserPlus,
   RefreshCw,
+  ArrowRight,
 } from "lucide-react";
 import {
   fetchSpaceInsights,
   type SpaceInsightsData,
 } from "@/lib/spaceInsights";
+import { supabase } from "@/integrations/supabase/client";
 
 type DateRange = "month" | "quarter" | "all";
 
@@ -259,6 +263,148 @@ function EmptyInsights({ venueName }: { venueName?: string }) {
   );
 }
 
+// --- Live Conversion Hero ---
+
+type CheckInProfile = {
+  user_id: string;
+  profiles: { display_name: string | null; avatar_url: string | null };
+};
+
+type NextEvent = {
+  id: string;
+  date: string;
+  start_time: string;
+  spots_filled: number | null;
+  max_spots: number | null;
+  session_format: string | null;
+};
+
+function LiveConversionHero({ locationId }: { locationId: string }) {
+  const [checkedIn, setCheckedIn] = useState<CheckInProfile[]>([]);
+  const [nextEvent, setNextEvent] = useState<NextEvent | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      const [checkInsRes, eventsRes] = await Promise.all([
+        supabase
+          .from("check_ins")
+          .select("user_id, profiles!inner(display_name, avatar_url)")
+          .eq("location_id", locationId)
+          .is("checked_out_at", null),
+        supabase
+          .from("events")
+          .select("id, date, start_time, spots_filled, max_spots, session_format")
+          .eq("venue_id", locationId)
+          .gte("date", new Date().toISOString().split("T")[0])
+          .order("date")
+          .order("start_time")
+          .limit(1),
+      ]);
+      if (cancelled) return;
+      setCheckedIn((checkInsRes.data as CheckInProfile[] | null) ?? []);
+      setNextEvent(eventsRes.data?.[0] as NextEvent | undefined ?? null);
+      setLoaded(true);
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [locationId]);
+
+  if (!loaded) {
+    return (
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="pt-6 pb-5 space-y-3">
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-4 w-64" />
+          <Skeleton className="h-9 w-32" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const spotsLeft =
+    nextEvent && nextEvent.max_spots != null && nextEvent.spots_filled != null
+      ? nextEvent.max_spots - nextEvent.spots_filled
+      : null;
+
+  function formatEventTime(evt: NextEvent) {
+    const d = new Date(`${evt.date}T${evt.start_time}`);
+    return d.toLocaleDateString("en-IN", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    }) + " at " + d.toLocaleTimeString("en-IN", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
+
+  return (
+    <Card className="border-primary/20 bg-primary/5">
+      <CardContent className="pt-6 pb-5 space-y-4">
+        {/* Active check-ins */}
+        {checkedIn.length > 0 && (
+          <div className="flex items-center gap-3">
+            <div className="flex -space-x-2">
+              {checkedIn.slice(0, 5).map((c) => (
+                <Avatar key={c.user_id} className="w-8 h-8 border-2 border-background">
+                  {c.profiles.avatar_url ? (
+                    <AvatarImage src={c.profiles.avatar_url} alt={c.profiles.display_name ?? ""} />
+                  ) : null}
+                  <AvatarFallback className="text-xs">
+                    {(c.profiles.display_name ?? "?")[0].toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              ))}
+            </div>
+            <span className="text-sm font-medium text-foreground">
+              {checkedIn.length} {checkedIn.length === 1 ? "person" : "people"} focused here right now
+            </span>
+          </div>
+        )}
+
+        {/* Next event or fallback */}
+        {nextEvent ? (
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <p className="text-sm text-muted-foreground">
+              Next session: <span className="text-foreground font-medium">{formatEventTime(nextEvent)}</span>
+              {spotsLeft != null && (
+                <> — <Badge variant="secondary" className="ml-1 text-xs">{spotsLeft} {spotsLeft === 1 ? "spot" : "spots"} left</Badge></>
+              )}
+            </p>
+            <Button asChild size="sm" className="w-fit">
+              <Link to={`/events/${nextEvent.id}`}>
+                Join Session <ArrowRight className="w-4 h-4 ml-1" />
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <p className="text-sm text-muted-foreground">Be the first to book a session here</p>
+            <Button asChild size="sm" variant="outline" className="w-fit">
+              <Link to="/events">Browse Events</Link>
+            </Button>
+          </div>
+        )}
+
+        {/* CTA + branding */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
+          <Button asChild size="sm" variant="default" className="w-fit">
+            <Link to="/">
+              Join FocusClub <ArrowRight className="w-4 h-4 ml-1" />
+            </Link>
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            Powered by <span className="font-semibold text-foreground">FocusClub</span>
+          </span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 // --- Main page ---
 
 export default function SpaceInsights() {
@@ -360,6 +506,9 @@ export default function SpaceInsights() {
                 ))}
               </div>
             </header>
+
+            {/* Live Conversion Hero -- above the fold */}
+            <LiveConversionHero locationId={id} />
 
             {data.stats.totalSessions === 0 ? (
               <EmptyInsights venueName={data.venue.name} />

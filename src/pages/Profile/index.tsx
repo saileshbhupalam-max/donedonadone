@@ -46,6 +46,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { motion } from "framer-motion";
+import { ReferralDashboard } from "@/components/growth/ReferralDashboard";
 
 import { vibeOptions, genderOptions, noiseOptions, commOptions, neighborhoods, lookingSuggestions, offerSuggestions, interestSuggestions, VIBE_LABELS, PROP_EMOJIS, type EarnedBadge } from "./constants";
 import { AutopilotSettingsCard } from "./AutopilotSettingsCard";
@@ -371,6 +372,11 @@ export default function Profile() {
             <p className="text-xs text-muted-foreground">
               Your Journey — {profile.events_attended || 0} sessions and counting
             </p>
+
+            {/* Referral Dashboard — track invites, earn FC, progress toward Community Builder */}
+            {user && (
+              <ReferralDashboard userId={user.id} />
+            )}
 
             {/* Filter chips */}
             <div className="flex gap-2 flex-wrap">

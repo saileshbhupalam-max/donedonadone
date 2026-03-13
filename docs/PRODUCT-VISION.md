@@ -395,6 +395,128 @@ Structured sessions become a revenue stream, not just a community feature:
 
 ---
 
+## The Venue Growth Flywheel
+
+### Why Venues Are the Growth Multiplier
+Every venue is a physical distribution channel. A cafe in HSR Layout sees 200+ people/day walk through its doors. If even 5% of walk-ins scan a QR code and try a session, that's 10 new users/day per venue — with zero digital ad spend. The venue IS the acquisition channel.
+
+### The Light Board Play
+Partner venues display a branded 3x4 foot light board (or acrylic standee) with a QR code at their entrance. Every person who walks in sees "FocusClub Partner Venue" with a QR code. The QR leads to the venue's public insight page (/space/:id/insights) — which shows live social proof ("8 people focused here right now"), upcoming sessions, community health stats, and a "Join the next session" CTA.
+
+The venue pays for the board (₹2000-4000 for production, negligible for any coworking space). We provide the design and the digital infrastructure. The board becomes our physical advertising at zero marginal cost to us.
+
+### Tiered Physical Touchpoints (Zero Marginal Cost)
+All of these cost us nothing to produce — venues handle printing/installation:
+
+| Touchpoint | Cost to Us | Cost to Venue | Impact |
+|---|---|---|---|
+| Table tent cards | ₹0 (PDF download) | ₹50 each | Medium — on every table |
+| A4 poster with QR | ₹0 (PDF download) | ₹20 to print | Medium — near entrance |
+| WiFi splash page integration | ₹0 (code snippet) | ₹0 | HIGH — every WiFi user sees it |
+| TV Mode display URL | ₹0 (web page) | ₹0 (use existing TV) | HIGH — ambient social proof |
+| NFC tag at reception | ₹0 (setup instructions) | ₹100 per tag | Medium — modern, memorable |
+| Branded light board | ₹0 (design file) | ₹2000-4000 | HIGHEST — street-level visibility |
+
+### TV Mode: The Ambient Growth Engine
+Every coworking space has a TV or display. We give them a URL (/space/:id/live) that renders a beautiful always-on dashboard:
+- "12 people focused right now" with live count
+- Current session phase (Deep Work Block 2)
+- QR code to join the next session
+- Rotating stats: "847 focused hours this month", "34 unique coworkers this week"
+- Community highlights: top contributors, recent milestones
+
+This turns dead screen real estate into a continuous acquisition and engagement channel.
+
+### WiFi Splash Page: The Frictionless Funnel
+Many coworking spaces have WiFi captive portals. We provide a one-line embed:
+"Get instant WiFi access at all FocusClub venues — Join free."
+Every non-member who connects to WiFi sees this. Tap → signup → pre-select this venue. The conversion happens at the exact moment they're sitting in the space, connected, and ready to work.
+
+---
+
+## The Irresistible Partner Offer
+
+### Free Tier (Year 1)
+Every partner venue gets:
+1. **Real-time analytics dashboard** — traffic, trends, peak hours, who's here now
+2. **New customer attribution** — "FocusClub sent you 47 new faces this month"
+3. **Community insights** — What professionals visit, what industries, what they're working on
+4. **Public venue profile page** — SEO-optimized, ranks for "coworking [neighborhood]"
+5. **Marketing materials** — QR codes, table tents, posters, digital display URL (all self-serve downloads)
+6. **Crowdsourced venue data** — Noise, WiFi, coffee, seating ratings from FocusClub members
+7. **"Powered by FocusClub" badge** — Social proof that they're part of the network
+
+### Why They Can't Refuse
+- **Data they don't have.** Most HSR Layout cafes don't know their repeat rate, peak hours by segment, or competitive positioning. We give them this for free.
+- **Customers they can't get.** Solo workers don't walk into a space for group sessions. FocusClub creates the demand.
+- **Zero operational burden.** We handle group formation, icebreakers, session flow. The venue just provides the space.
+- **Risk-free.** Free for a year. If it doesn't work, they lose nothing.
+
+### Premium Tier (₹5,000/month after Year 1)
+- Everything above PLUS:
+- Revenue analytics — actual ₹ earned from FocusClub sessions
+- Priority session scheduling — their venue gets featured more in session matching
+- Custom branding on the public venue page
+- Competitive benchmarking — how they rank vs other venues on all metrics
+- Dedicated account support
+
+### The Lock-In
+By month 6, the venue has:
+- 6 months of historical data they don't want to lose
+- A steady stream of FocusClub regulars who expect sessions there
+- A public venue page ranking on Google for "coworking in [neighborhood]"
+- Community-contributed data (noise, WiFi, reviews) that enriches their listing
+
+Switching cost is HIGH. ₹5,000/month when FocusClub brings them ₹30,000-100,000/month in new customers is a no-brainer.
+
+---
+
+## Zero-Friction Viral Touchpoints
+
+Every touchpoint costs ~₹0 marginal and multiplies virality:
+
+### Built-in (Already Exists, Just Needs Wiring)
+1. **Table tent card generator** — Admin can generate; moving to partner self-serve
+2. **Scrapbook sharing** — Auto-generated post-session cards with venue name + referral link, converts to PNG
+3. **Milestone sharing** — 22 milestones, each has a shareable message with referral code embedded
+4. **Referral dashboard** — Copy/share referral link to WhatsApp with stats tracking
+
+### Building Now
+5. **TV Mode URL** — Always-on display for venue TVs with QR code and live stats
+6. **Enhanced venue public page** — Live social proof + "Join next session" CTA (QR destination)
+7. **Post-session WhatsApp story card** — One-tap: generates story-sized image "I did 2hrs of focused work at [Venue] with 4 amazing people"
+8. **Google review nudge** — Post session: "Leave [Venue] a Google review?" with pre-filled link
+
+### Behavioral Loops
+9. **"Your group is waiting" notification** — When 2/4 people checked in, push to remaining 2 (social obligation)
+10. **"Your regular slot is filling up"** — If someone attends 3+ Tuesdays, notify when Tuesday slots fill (loss aversion)
+11. **Props echo delivery** — 30% of props delivered 4-20 hours later (re-engagement touchpoint)
+12. **"X sessions from next rank"** — Endowed progress nudge
+13. **Venue streak for partners** — "Your venue has hosted sessions for 12 consecutive weeks!" (partner pride + social content)
+14. **Cross-pollination** — "3 people from your last session are going to [New Venue] Thursday" (drives multi-venue discovery)
+
+---
+
+## The Complete Growth Loop
+
+```
+Physical Presence (QR/Board/TV) → Scan → Public Venue Page (social proof)
+    ↓
+    Join Session → Great Experience → Post-Session
+    ↓                                     ↓
+    Scrapbook Card → Share WhatsApp    →  Rate Venue on Google
+    ↓                Status (200+ views)     ↓
+    Friends see it                     Organic search traffic
+    ↓                                     ↓
+    Friends scan QR at venue  ←←←←←  Find venue page via Google
+    ↓
+    More members → Better sessions → More sharing → More venues want in
+```
+
+Each loop iteration costs us ₹0. The venue pays for the physical touchpoint. Members share organically. Google indexes our public pages. The flywheel spins on its own.
+
+---
+
 ## The Manifesto
 
 We believe the future of work is not remote or in-office. It's **together, in great spaces, with the right people.**

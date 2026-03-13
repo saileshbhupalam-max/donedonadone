@@ -30,6 +30,8 @@ src/
 │   ├── Partners.tsx     — Venue partner management
 │   ├── MapView.tsx      — Leaflet map showing sessions
 │   ├── Onboarding.tsx   — 4-step onboarding wizard
+│   ├── SpaceInsights.tsx — Public venue analytics + conversion CTA (/space/:id/insights)
+│   ├── SpaceLive.tsx    — TV Mode always-on display for venues (/space/:id/live)
 │   └── NotFound.tsx     — 404 page
 │
 ├── components/          — Feature-grouped UI components
@@ -59,9 +61,16 @@ src/
 │   │   ├── RankBadge.tsx            — Rank tier badge
 │   │   └── StatsGrid.tsx            — Stats summary grid
 │   │
-│   ├── growth/          — Milestone celebrations, growth cards
+│   ├── growth/          — Growth engine UI, credits, contributions, referrals
+│   │   ├── ContributionMilestoneCard.tsx — Contribution milestone progress (wired: Home)
+│   │   ├── CreditsBadge.tsx          — Focus Credits display (wired: TopBar, Home)
 │   │   ├── GrowthCards.tsx           — Progressive feature unlock cards
-│   │   └── MilestoneCelebration.tsx  — Confetti + celebration modal
+│   │   ├── GrowthNudgeCard.tsx       — Context-aware growth nudges (wired: Home)
+│   │   ├── MilestoneCelebration.tsx  — Confetti + celebration modal
+│   │   ├── NeighborhoodLeaderboard.tsx — Top contributors by area (wired: Home)
+│   │   ├── PostSessionContribution.tsx — Post-session FC awards (wired: Session wrap-up)
+│   │   ├── ReferralDashboard.tsx     — Referral stats + invite link (wired: Profile Journey)
+│   │   └── VenueDataCollector.tsx    — 7-section venue data form (wired: Session wrap-up)
 │   │
 │   ├── home/            — Home page feature cards
 │   │   ├── PrimaryActionCard.tsx     — Next session CTA or RSVP prompt

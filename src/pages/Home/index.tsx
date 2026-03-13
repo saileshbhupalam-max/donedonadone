@@ -35,6 +35,7 @@ import { CommunityHighlight, EnhancedWeeklyDigest } from "@/components/growth/Gr
 import { CreditsBadge } from "@/components/growth/CreditsBadge";
 import { GrowthNudgeCard } from "@/components/growth/GrowthNudgeCard";
 import { ContributionMilestoneCard } from "@/components/growth/ContributionMilestoneCard";
+import { NeighborhoodLeaderboard } from "@/components/growth/NeighborhoodLeaderboard";
 import { useFocusCredits } from "@/hooks/useFocusCredits";
 import { getContextualGreeting, EMPTY_STATES, ERROR_STATES, getLoadingMessage, CONFIRMATIONS } from "@/lib/personality";
 import { usePersonality } from "@/contexts/PersonalityContext";
@@ -461,6 +462,11 @@ export default function Home() {
 
         {/* Contribution Milestone - premium earn path */}
         <ContributionMilestoneCard userId={user!.id} />
+
+        {/* Neighborhood Leaderboard — top contributors in user's area */}
+        {profile.neighborhood && (
+          <NeighborhoodLeaderboard neighborhood={profile.neighborhood} userId={user!.id} />
+        )}
 
         {/* Milestone Celebration */}
         {celebrateMilestone && (
