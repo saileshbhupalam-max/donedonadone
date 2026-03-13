@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import { registerSW } from "virtual:pwa-register";
 import { initSentry } from "./lib/sentry";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import App from "./App.tsx";
@@ -10,14 +11,15 @@ window.addEventListener("vite:preloadError", (event) => {
   window.location.reload();
 });
 
-// Nudge existing service worker to check for updates immediately
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.getRegistrations().then((registrations) => {
-      registrations.forEach((registration) => registration.update());
-    });
-  });
-}
+// Register VitePWA service worker for offline caching + auto-update
+const updateSW = registerSW({
+  onNeedRefresh() {
+    updateSW(true);
+  },
+  onOfflineReady() {
+    console.log("[SW] App ready to work offline");
+  },
+});
 
 initSentry();
 

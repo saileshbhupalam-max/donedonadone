@@ -18,16 +18,16 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png"],
+      includeAssets: ["favicon.ico", "apple-touch-icon.png", "offline.html"],
       manifest: {
-        name: "FocusClub — Find Your People",
+        name: "FocusClub",
         short_name: "FocusClub",
-        description: "Cowork with curated groups at partner cafes in Bangalore",
-        theme_color: "#8B5CF6",
+        description: "Cowork with your people at great cafes",
+        theme_color: "#18181b",
         background_color: "#ffffff",
         display: "standalone",
         orientation: "portrait",
-        start_url: "/",
+        start_url: "/home",
         scope: "/",
         icons: [
           { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
@@ -46,12 +46,26 @@ export default defineConfig(({ mode }) => ({
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
             handler: "NetworkFirst",
-            options: { cacheName: "supabase-api", expiration: { maxEntries: 50, maxAgeSeconds: 300 } },
+            options: {
+              cacheName: "supabase-api",
+              expiration: { maxEntries: 50, maxAgeSeconds: 300 },
+              networkTimeoutSeconds: 5,
+            },
           },
           {
             urlPattern: /^https:\/\/.*tile\.openstreetmap\.org\/.*/i,
             handler: "CacheFirst",
             options: { cacheName: "map-tiles", expiration: { maxEntries: 200, maxAgeSeconds: 86400 * 7 } },
+          },
+          {
+            urlPattern: /\.(png|jpg|jpeg|svg|gif|webp)$/i,
+            handler: "CacheFirst",
+            options: { cacheName: "images", expiration: { maxEntries: 100, maxAgeSeconds: 86400 * 30 } },
+          },
+          {
+            urlPattern: /\.(woff2?|ttf|eot)$/i,
+            handler: "CacheFirst",
+            options: { cacheName: "fonts", expiration: { maxEntries: 20, maxAgeSeconds: 86400 * 365 } },
           },
         ],
       },

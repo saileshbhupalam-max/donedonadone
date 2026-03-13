@@ -4,6 +4,8 @@ export const PHASE_EMOJIS: Record<string, string> = {
   mini_break: "\u2615",
   social_break: "\u{1F5E3}\uFE0F",
   wrap_up: "\u{1F389}",
+  check_in: "\u2705",
+  silent_break: "\u{1F910}",
 };
 
 export const STATUS_CONFIG = {

@@ -14,6 +14,8 @@ export const SESSION_FORMATS = [
   { value: "casual", label: "Casual" },
   { value: "structured_2hr", label: "Structured 2hr" },
   { value: "structured_4hr", label: "Structured 4hr" },
+  { value: "focus_only_2hr", label: "Focus Only 2hr" },
+  { value: "focus_only_4hr", label: "Focus Only 4hr" },
 ];
 
 export const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];

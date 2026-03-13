@@ -25,7 +25,9 @@ import { joinWaitlist, getPopularityLabel, updateReliability, promoteWaitlist } 
 import { ERROR_STATES, CONFIRMATIONS } from "@/lib/personality";
 import { trackAnalyticsEvent } from "@/lib/growth";
 import { GroupReveal } from "@/components/session/GroupReveal";
+import { YourTableCard } from "@/components/session/YourTableCard";
 import { VenueVibeSummary } from "@/components/session/VenueVibeRating";
+import { VenueIntelligencePanel } from "@/components/venue/VenueQuickBadges";
 import { Input } from "@/components/ui/input";
 import { FirstSessionGuide } from "@/components/session/FirstSessionGuide";
 
@@ -339,8 +341,15 @@ export default function EventDetailPage() {
           )}
         </div>
 
-        {/* Venue vibe summary */}
-        {event.venue_name && <VenueVibeSummary venueName={event.venue_name} />}
+        {/* Venue intelligence — detailed ratings breakdown */}
+        {event.venue_name && (
+          <VenueIntelligencePanel
+            venueName={event.venue_name}
+            eventId={event.id}
+            userId={user?.id}
+            hasAttended={isPast && userRsvp?.status === "going"}
+          />
+        )}
 
         {event.creator && (
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate(`/profile/${event.creator!.id}`)}>
@@ -412,6 +421,8 @@ export default function EventDetailPage() {
         {showRsvpShare && event && (
           <RsvpSharePrompt eventTitle={event.title} eventDate={format(parseISO(event.date), "MMM d")} venueName={event.venue_name} eventId={event.id} referralCode={myProfile?.referral_code} />
         )}
+
+        {userRsvp?.status === "going" && !isPast && user && <YourTableCard eventId={event.id} userId={user.id} eventDate={event.date} />}
 
         {userRsvp?.status === "going" && !isPast && user && <GroupReveal eventId={event.id} userId={user.id} />}
 

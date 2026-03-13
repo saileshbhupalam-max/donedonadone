@@ -24,6 +24,7 @@ import { SkillSwapSuggestion } from "@/components/session/SkillSwapSuggestion";
 import { GivePropsFlow } from "@/components/session/GivePropsFlow";
 import { selectIcebreakerRounds, IcebreakerRound } from "@/lib/icebreakers";
 import { CAPTAIN_NUDGES, updateReliability } from "@/lib/antifragile";
+import { isFocusOnlyFormat } from "@/lib/sessionPhases";
 import { CONFIRMATIONS } from "@/lib/personality";
 import { trackAnalyticsEvent } from "@/lib/growth";
 import { FlagMemberForm } from "@/components/session/FlagMemberForm";
@@ -211,8 +212,8 @@ export default function SessionPage() {
     } else if (phase.phase_type === "social_break" || phase.phase_type === "icebreaker") {
       updateMyStatus("green");
     }
-    // Captain nudge
-    if (profile?.is_table_captain && CAPTAIN_NUDGES[phase.phase_type]) {
+    // Captain nudge — skip for focus_only formats
+    if (!isFocusOnlyFormat(event?.session_format) && profile?.is_table_captain && CAPTAIN_NUDGES[phase.phase_type]) {
       toast(CAPTAIN_NUDGES[phase.phase_type], { duration: 6000 });
     }
   }, [currentPhaseIdx, sessionStarted]);
@@ -311,6 +312,7 @@ export default function SessionPage() {
 
   const currentPhase = phases[currentPhaseIdx];
   const totalDuration = phases.reduce((a, p) => a + p.duration_minutes, 0);
+  const isFocusOnly = isFocusOnlyFormat(event?.session_format);
 
   // Props flow
   if (showProps) {
@@ -365,8 +367,8 @@ export default function SessionPage() {
               </p>
             </div>
 
-            {/* ICEBREAKER ENGINE */}
-            {currentPhase.phase_type === "icebreaker" && icebreakerActive && !icebreakerDone && (
+            {/* ICEBREAKER ENGINE — skip for focus_only formats */}
+            {!isFocusOnly && currentPhase.phase_type === "icebreaker" && icebreakerActive && !icebreakerDone && (
               <IcebreakerEngine
                 rounds={icebreakerRounds}
                 onComplete={() => {
@@ -375,6 +377,13 @@ export default function SessionPage() {
                 }}
                 onIntentionSet={(text) => saveIntention(text)}
               />
+            )}
+
+            {/* Focus Mode header during deep work */}
+            {isFocusOnly && currentPhase.phase_type === "deep_work" && (
+              <div className="text-center py-3 px-4 rounded-lg bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
+                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Focus Mode</p>
+              </div>
             )}
 
             {/* Timer ring (hide during active icebreaker) */}

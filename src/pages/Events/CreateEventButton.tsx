@@ -181,6 +181,8 @@ export function CreateEventButton({ onCreated }: { onCreated: () => void }) {
                   <SelectItem value="casual">☕ Casual</SelectItem>
                   <SelectItem value="structured_2hr">⏱️ Structured 2hr</SelectItem>
                   <SelectItem value="structured_4hr">⏱️ Structured 4hr</SelectItem>
+                  <SelectItem value="focus_only_2hr">🎧 Focus Only 2hr</SelectItem>
+                  <SelectItem value="focus_only_4hr">🎧 Focus Only 4hr</SelectItem>
                 </SelectContent>
               </Select>
               {sessionFormat !== "casual" && (

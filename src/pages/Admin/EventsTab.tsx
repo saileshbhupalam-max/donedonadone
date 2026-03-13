@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Users } from "lucide-react";
 import { createSmartGroups } from "@/lib/antifragile";
+import { NOTIFICATION_COPY } from "@/lib/personality";
 
 export function EventsTab() {
   const [events, setEvents] = useState<any[]>([]);
@@ -108,7 +109,7 @@ export function EventsTab() {
                 const { data: rsvps } = await supabase.from("event_rsvps").select("user_id").eq("event_id", e.id).eq("status", "going");
                 if (!rsvps || rsvps.length === 0) { toast.error("No confirmed RSVPs for this session"); return; }
                 const userIds = rsvps.map((r: any) => r.user_id);
-                const { data: profiles } = await supabase.from("profiles").select("id, gender, events_attended, is_table_captain, no_show_count, reliability_status").in("id", userIds);
+                const { data: profiles } = await supabase.from("profiles").select("id, display_name, gender, events_attended, is_table_captain, no_show_count, reliability_status").in("id", userIds);
                 if (!profiles || profiles.length === 0) { toast.error("Could not load profiles"); return; }
                 const members = profiles.map((p: any) => ({
                   id: p.id,
@@ -128,6 +129,28 @@ export function EventsTab() {
                   if (group) {
                     const memberInserts = groups[i].map((m) => ({ group_id: group.id, user_id: m.id }));
                     await supabase.from("group_members").insert(memberInserts);
+                  }
+                }
+                // Send buddy intro notifications to each group member
+                const profileMap = new Map(profiles.map((p: any) => [p.id, p]));
+                for (let i = 0; i < groups.length; i++) {
+                  for (const member of groups[i]) {
+                    const teammateNames = groups[i]
+                      .filter((m) => m.id !== member.id)
+                      .map((m) => {
+                        const prof = profileMap.get(m.id);
+                        return prof?.display_name || "a member";
+                      });
+                    if (teammateNames.length === 0) continue;
+                    const day = format(new Date(e.date), "EEEE");
+                    const body = NOTIFICATION_COPY.groupAssigned(teammateNames, e.venue_name, day);
+                    await supabase.rpc("create_system_notification", {
+                      p_user_id: member.id,
+                      p_title: `Meet your table for ${e.title}!`,
+                      p_body: body,
+                      p_type: "buddy_intro",
+                      p_link: `/events/${e.id}`,
+                    });
                   }
                 }
                 toast.success(`Created ${groups.length} groups for ${rsvps.length} attendees`);

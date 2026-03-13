@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { CalendarIcon, MapPin, Hand, AlertTriangle, Map } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
 import { VenueVibeSummary } from "@/components/session/VenueVibeRating";
+import { VenueQuickBadges } from "@/components/venue/VenueQuickBadges";
 import { Event as EventType } from "@/hooks/useEvents";
 import { getNeighborhoodLabel, getTimingLabel, isWithin48Hours } from "./constants";
 
@@ -48,7 +49,8 @@ export function EventCard({ event, onRsvp, userRsvp, isPast, allUpcoming, minThr
           <div className="flex-1 space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-serif text-lg text-foreground">{event.title}</h3>
-              {event.women_only && <Badge className="bg-secondary/20 text-secondary border-0 text-xs">👩 Women Only</Badge>}
+              {event.women_only && <Badge className="bg-secondary/20 text-secondary border-0 text-xs">Women Only</Badge>}
+              {event.session_format?.startsWith("focus_only") && <Badge className="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 border-0 text-xs">Focus Only</Badge>}
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <CalendarIcon className="w-3.5 h-3.5" />
@@ -64,6 +66,7 @@ export function EventCard({ event, onRsvp, userRsvp, isPast, allUpcoming, minThr
                 <span>{event.venue_name}{event.neighborhood ? ` · ${getNeighborhoodLabel(event.neighborhood)}` : ""}</span>
               </div>
             )}
+            {event.venue_name && <VenueQuickBadges venueName={event.venue_name} />}
           </div>
           {timingLabel && (
             <Badge variant="outline" className="text-xs shrink-0 border-primary/30 text-primary">{timingLabel}</Badge>
