@@ -16,6 +16,8 @@ export default {
       fontFamily: {
         sans: ["Inter", "sans-serif"],
         serif: ["DM Serif Display", "serif"],
+        display: ["Instrument Serif", "serif"],
+        body: ["Outfit", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

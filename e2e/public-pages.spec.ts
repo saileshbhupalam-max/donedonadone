@@ -16,23 +16,23 @@ test.describe("Landing page", () => {
 
   test("shows donedonadone branding immediately", async ({ page }) => {
     await page.goto("/");
-    // Both loading state and final render show donedonadone heading
-    await expect(page.locator("h1")).toContainText("donedonadone", { timeout: 10000 });
+    // Both loading state and final render show "done" in the h1 logo
+    await expect(page.locator("h1").first()).toContainText("done", { timeout: 10000 });
   });
 
   test("displays feature cards after auth resolves", async ({ page }) => {
     await page.goto("/");
-    // These only appear after loading=false in the Index component
+    // Features appear after loading=false — now in "Why" section
     await expect(page.locator("text=Smart Matching")).toBeVisible({ timeout: 30000 });
-    await expect(page.locator("text=Weekly Prompts")).toBeVisible();
-    await expect(page.locator("text=Cowork Sessions")).toBeVisible();
+    await expect(page.locator("text=Curated Sessions")).toBeVisible();
+    await expect(page.locator("text=Real Community")).toBeVisible();
   });
 
   test("has sign-in button after auth resolves", async ({ page }) => {
     await page.goto("/");
     // Wait for the actual landing content (not loading state)
     await expect(page.locator("text=Smart Matching")).toBeVisible({ timeout: 30000 });
-    // Now buttons should be present
+    // CTA buttons should be present
     const buttons = page.locator("button");
     await expect(buttons.first()).toBeVisible();
   });

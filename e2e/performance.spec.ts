@@ -85,8 +85,8 @@ test.describe("SPA routing performance", () => {
     await page.goto("/");
     await expect(page.locator("h1")).toContainText("donedonadone", { timeout: 15000 });
 
-    // Navigate to 404 via client-side link
-    const link = page.locator("a", { hasText: "Our Partner Venues" });
+    // Navigate via client-side link
+    const link = page.locator("a", { hasText: "Partner Venues" });
     await expect(link).toBeVisible({ timeout: 15000 });
 
     const start = Date.now();

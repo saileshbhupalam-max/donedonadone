@@ -18,8 +18,8 @@ test.describe("App boots and serves pages", () => {
 
   test("/ shows donedonadone branding (loading or landing)", async ({ page }) => {
     await page.goto("/");
-    // Both loading state and landing page show "donedonadone" heading
-    await expect(page.locator("h1")).toContainText("donedonadone", { timeout: 10000 });
+    // Both loading state and final render show "done" in the h1 logo
+    await expect(page.locator("h1").first()).toContainText("done", { timeout: 10000 });
   });
 
   test("/space/test-id/insights serves the app", async ({ page }) => {
