@@ -88,12 +88,12 @@ export default function Pricing() {
       >
         <div className="text-center space-y-2">
           <h1 className="font-serif text-3xl text-foreground">
-            {gateFeature ? `Unlock ${gateFeature.replace(/_/g, " ")}` : "Choose your plan"}
+            {gateFeature ? `Unlock ${gateFeature.replace(/_/g, " ")}` : "Find the right fit"}
           </h1>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
             {gateFeature
               ? "Upgrade to access this feature and more."
-              : "Start free, upgrade when you're ready for deeper connections and AI-powered matching."}
+              : "Start free, upgrade when you're ready for better matches and deeper connections."}
           </p>
         </div>
 
@@ -200,9 +200,12 @@ export default function Pricing() {
                         Current Plan
                       </Button>
                     ) : t.sort_order > (sortedTiers.find((st) => st.id === tier)?.sort_order ?? 0) ? (
-                      <Button className="w-full" onClick={handleUpgrade}>
-                        Upgrade
-                      </Button>
+                      <>
+                        <Button className="w-full" onClick={handleUpgrade}>
+                          Get {t.name}
+                        </Button>
+                        <p className="text-[10px] text-muted-foreground text-center mt-1.5">Cancel anytime</p>
+                      </>
                     ) : (
                       <Button variant="ghost" className="w-full text-muted-foreground" disabled>
                         —
@@ -224,7 +227,7 @@ export default function Pricing() {
             <div className="flex-1 text-center sm:text-left">
               <h3 className="font-serif text-lg text-foreground">Session Boost</h3>
               <p className="text-sm text-muted-foreground">
-                Don't want to commit? Try a Session Boost for <strong>₹99</strong> — unlock next-tier features for 24 hours.
+                Just need one day? Try a Session Boost for <strong>₹99</strong> — unlock next-tier features for 24 hours.
               </p>
             </div>
             <Button onClick={handleUpgrade} className="shrink-0 gap-2">

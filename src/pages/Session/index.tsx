@@ -442,14 +442,14 @@ export default function SessionPage() {
             {currentPhase.phase_type === "deep_work" && !intentionSaved && (
               <Card className="border-primary/20">
                 <CardContent className="p-4 space-y-3">
-                  <p className="font-serif text-sm text-foreground">Set your intention for this session</p>
+                  <p className="font-serif text-sm text-foreground">What's your one thing for today?</p>
                   <Input
                     value={intention}
                     onChange={e => setIntention(e.target.value.slice(0, 140))}
-                    placeholder="What do you want to accomplish?"
+                    placeholder="e.g., Finish the proposal draft"
                     maxLength={140}
                   />
-                  <Button size="sm" onClick={() => saveIntention()} disabled={!intention.trim()}>Set Intention {"\u{1F3AF}"}</Button>
+                  <Button size="sm" onClick={() => saveIntention()} disabled={!intention.trim()}>Lock it in {"\u{1F3AF}"}</Button>
                 </CardContent>
               </Card>
             )}

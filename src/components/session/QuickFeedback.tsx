@@ -50,8 +50,8 @@ export function QuickFeedback({ eventId, onDetailedFeedback }: QuickFeedbackProp
       <Card className="border-primary/20 bg-primary/5">
         <CardContent className="p-6 text-center space-y-3">
           <p className="text-2xl">{"\u{2728}"}</p>
-          <p className="font-serif text-lg text-foreground">Done! See you next time</p>
-          <p className="text-sm text-muted-foreground">Your rating helps us make sessions better.</p>
+          <p className="font-serif text-lg text-foreground">You're all set</p>
+          <p className="text-sm text-muted-foreground">Your feedback shapes future sessions.</p>
           <Button onClick={() => navigate("/events")} className="w-full">
             Back to Sessions
           </Button>
@@ -64,7 +64,7 @@ export function QuickFeedback({ eventId, onDetailedFeedback }: QuickFeedbackProp
     <Card className="border-primary/20">
       <CardContent className="p-4 space-y-4">
         <div className="text-center space-y-1">
-          <p className="font-serif text-base text-foreground">How was the session?</p>
+          <p className="font-serif text-base text-foreground">How was your session?</p>
           <p className="text-xs text-muted-foreground">Quick rate — tap and go</p>
         </div>
 
@@ -91,7 +91,7 @@ export function QuickFeedback({ eventId, onDetailedFeedback }: QuickFeedbackProp
           className="w-full"
           size="sm"
         >
-          {submitting ? "Saving..." : "Submit & Go"}
+          {submitting ? "Saving..." : "Done"}
         </Button>
 
         <button

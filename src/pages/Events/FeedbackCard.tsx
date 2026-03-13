@@ -72,7 +72,7 @@ export function FeedbackCard({ event, userId, onDismiss }: { event: any; userId:
   return (
     <Card className="border-primary/20">
       <CardContent className="p-4 space-y-3">
-        <p className="text-sm font-medium text-foreground">How was {event.title}?</p>
+        <p className="text-sm font-medium text-foreground">How was your session at {event.title}?</p>
         <div className="flex justify-center gap-3">
           {EMOJIS.map((e) => (
             <button key={e.value} onClick={() => submitFeedback(e.value)} className="text-2xl hover:scale-125 transition-transform p-1">{e.emoji}</button>
@@ -81,7 +81,7 @@ export function FeedbackCard({ event, userId, onDismiss }: { event: any; userId:
         <div className="flex gap-2">
           <Textarea value={comment} onChange={(e) => setComment(e.target.value.slice(0, 200))} placeholder="Any feedback? (optional)" rows={2} className="flex-1" />
         </div>
-        <button onClick={() => submitFeedback(0, false)} className="text-xs text-muted-foreground hover:underline">I didn't attend</button>
+        <button onClick={() => submitFeedback(0, false)} className="text-xs text-muted-foreground hover:underline">I wasn't there</button>
       </CardContent>
     </Card>
   );

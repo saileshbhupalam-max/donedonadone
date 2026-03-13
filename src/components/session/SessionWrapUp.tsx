@@ -93,7 +93,7 @@ export function SessionWrapUp({
       {step === "intention" && intentionSaved && !accomplished && (
         <Card className="border-primary/20">
           <CardContent className="p-4 space-y-3">
-            <p className="font-serif text-sm text-foreground">Did you accomplish your intention?</p>
+            <p className="font-serif text-sm text-foreground">Did you get your one thing done?</p>
             <p className="text-xs text-muted-foreground italic">"{intention}"</p>
             <div className="flex gap-2">
               {[

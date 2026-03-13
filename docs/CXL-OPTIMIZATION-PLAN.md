@@ -36,15 +36,15 @@ Ordered by conversion impact × traffic volume. Every user hits tiers 1-2. Tiers
 | # | Page/Flow | CXL Skill | Conversion Goal | Impact |
 |---|-----------|-----------|-----------------|--------|
 | 4 | **Session Request Sheet** | `/cxl:forms` + `/cxl:copy` | Intent → Session booked | DONE |
-| 5 | **Events Page** (`Events/index.tsx`) | `/cxl:optimize` | Browse → Book | HIGH |
-| 6 | **Session Page** (live + wrap-up) | `/cxl:optimize` | Attend → Give feedback + props | MEDIUM |
-| 7 | **Discover Page** (`Discover.tsx`) | `/cxl:optimize` + `/cxl:copy` | Browse → Connect/Request | MEDIUM |
+| 5 | **Events Page** (`Events/index.tsx`) | `/cxl:optimize` | Browse → Book | DONE |
+| 6 | **Session Page** (live + wrap-up) | `/cxl:optimize` | Attend → Give feedback + props | DONE |
+| 7 | **Discover Page** (`Discover.tsx`) | `/cxl:optimize` + `/cxl:copy` | Browse → Connect/Request | DONE |
 
 ### Tier 3 — Revenue & Growth
 
 | # | Page/Flow | CXL Skill | Conversion Goal | Impact |
 |---|-----------|-----------|-----------------|--------|
-| 8 | **Pricing Page** (`Pricing.tsx`) | `/cxl:pricing` | Free → Paid tier | HIGH (revenue) |
+| 8 | **Pricing Page** (`Pricing.tsx`) | `/cxl:pricing` | Free → Paid tier | DONE |
 | 9 | **Profile Page** (edit mode) | `/cxl:forms` + `/cxl:onboarding` | Incomplete → Complete profile | MEDIUM |
 | 10 | **Invite/Referral Flow** | `/cxl:copy` | Member → Inviter | HIGH (growth) |
 | 11 | **Nominate Venue** (`NominateVenue.tsx`) | `/cxl:forms` | Member → Venue nominator | MEDIUM |
@@ -86,63 +86,29 @@ Ordered by conversion impact × traffic volume. Every user hits tiers 1-2. Tiers
 - **Changes**: Pre-filled neighborhood from profile (smart default). Conversational labels ("When works for you?" not "Preferred Days"). Benefit-oriented CTA ("Find my table"). Positive trigger framing. Friction reducer near CTA. Removed asterisk form anxiety.
 - **Audit artifact**: `docs/cxl-audits/session-request-audit.md`
 
-### Phase 4: Events Page
-- **Target files**: `src/pages/Events/index.tsx` and Events components
-- **Skills**: `/cxl:optimize`, `/cxl:copy`
-- **Goals**:
-  - Scannable event cards (F-pattern optimized)
-  - Social proof on each card (attendee count, spots left)
-  - Truthful scarcity ("3 spots left" when real)
-  - Clear CTA per card
-  - Loss-framed empty state ("No sessions booked yet. Don't work alone this week.")
-- **Audit steps**:
-  1. `/cxl:optimize` — Heuristic evaluation of Events page
-  2. `/cxl:copy` — Rewrite event card copy, empty states, CTAs
-  3. Implement changes
-  4. Write `docs/cxl-audits/events-audit.md`
+### Phase 4: Events Page [COMPLETE]
+- **Status**: Done
+- **Skills used**: `/cxl:optimize`, `/cxl:copy`
+- **Changes**: CTA "RSVP" → "I'm in" (conversational, lower commitment). Filled button for non-RSVP'd (Von Restorff). "Going ✓" → "You're in" (endowment). Truthful scarcity "Only X left" at >60% capacity. Low-attendance reframed from problem → agency ("Bring a friend and make this happen"). Loss-framed empty states. Feedback prompt uses endowment ("your session").
+- **Audit artifact**: `docs/cxl-audits/events-audit.md`
 
-### Phase 5: Session Page (Live + Wrap-up)
-- **Target files**: `src/pages/Session/index.tsx` and session components
-- **Skills**: `/cxl:optimize`, `/cxl:copy`
-- **Goals**:
-  - Wrap-up phase: maximize feedback completion (props, venue rating, health check)
-  - Endowment effect: "Your session summary" — show what they accomplished
-  - Variable rewards: unexpected reveals ("You earned 15 Focus Credits!")
-  - Reciprocity: "Your tablemates said nice things about you" → drives return
-- **Audit steps**:
-  1. `/cxl:optimize` — Audit wrap-up flow specifically
-  2. `/cxl:copy` — Rewrite wrap-up prompts, reward messages, empty states
-  3. Implement changes
-  4. Write `docs/cxl-audits/session-audit.md`
+### Phase 5: Session Page (Live + Wrap-up) [COMPLETE]
+- **Status**: Done
+- **Skills used**: `/cxl:optimize`, `/cxl:copy`
+- **Changes**: Pre-start "Ready to start?" → "Your table is ready" (endowment). "Start Session" → "Let's go" (conversational). Intention "Set your intention" → "What's your one thing for today?" (Zeigarnik + specificity). "Lock it in" CTA (commitment). Quick feedback "How was the session?" → "How was your session?" (endowment). "Submit & Go" → "Done" (fluency). Post-submit copy reframed from company-centric to user-agency.
+- **Audit artifact**: `docs/cxl-audits/session-audit.md`
 
-### Phase 6: Discover Page
-- **Target files**: `src/pages/Discover.tsx` and discover components
-- **Skills**: `/cxl:optimize`, `/cxl:copy`
-- **Goals**:
-  - Clear primary action per member card (Connect > View Profile)
-  - Processing fluency: scannable member cards
-  - Social proof: mutual connections, shared interests
-  - Cognitive load: limit visible members, progressive disclosure
-- **Audit steps**:
-  1. `/cxl:optimize` — Heuristic evaluation
-  2. `/cxl:copy` — Rewrite card copy, CTA text, empty states
-  3. Implement changes
-  4. Write `docs/cxl-audits/discover-audit.md`
+### Phase 6: Discover Page [COMPLETE]
+- **Status**: Done
+- **Skills used**: `/cxl:optimize`, `/cxl:copy`
+- **Changes**: Subtitle → "Find people to work with" (specificity). "People working right now" (urgency). Connections empty state adds next step ("attend a session"). DNA prompt benefit-framed. "Start matching" CTA. Venue nomination → "Suggest a spot" (lower commitment).
+- **Audit artifact**: `docs/cxl-audits/discover-audit.md`
 
-### Phase 7: Pricing Page
-- **Target files**: `src/pages/Pricing.tsx`
-- **Skills**: `/cxl:pricing`
-- **Goals**:
-  - Anchoring: show highest tier first (left-to-right)
-  - Decoy effect: structure tiers so target tier is obvious best value
-  - Default bias: pre-highlight "Most Popular" tier
-  - Price framing: per-day or per-session framing
-  - Risk reversal near CTA
-  - Social proof per tier ("Chosen by X% of members")
-- **Audit steps**:
-  1. `/cxl:pricing` — Full pricing psychology audit
-  2. Implement tier restructuring + copy changes
-  3. Write `docs/cxl-audits/pricing-audit.md`
+### Phase 7: Pricing Page [COMPLETE]
+- **Status**: Done
+- **Skills used**: `/cxl:pricing`
+- **Changes**: "Choose your plan" → "Find the right fit" (personalization). "Upgrade" → "Get [Tier Name]" (specificity + endowment). Added "Cancel anytime" risk reversal below CTA. Subtitle reframed from feature-speak to benefit. Session Boost positive framing.
+- **Audit artifact**: `docs/cxl-audits/pricing-audit.md`
 
 ### Phase 8: Profile Page
 - **Target files**: `src/pages/Profile/index.tsx`

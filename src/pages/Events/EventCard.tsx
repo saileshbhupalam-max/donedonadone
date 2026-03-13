@@ -85,7 +85,11 @@ export function EventCard({ event, onRsvp, userRsvp, isPast, allUpcoming, minThr
           <div className="space-y-1">
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>{goingCount} of {event.max_spots} spots</span>
-              {goingCount >= event.max_spots && <span className="text-destructive font-medium">Full</span>}
+              {goingCount >= event.max_spots
+                ? <span className="text-destructive font-medium">Full</span>
+                : (goingCount / event.max_spots) >= 0.6
+                  ? <span className="text-primary font-medium">Only {event.max_spots - goingCount} left</span>
+                  : null}
             </div>
             <Progress value={(goingCount / event.max_spots) * 100} className="h-1.5" />
           </div>
@@ -95,7 +99,7 @@ export function EventCard({ event, onRsvp, userRsvp, isPast, allUpcoming, minThr
           <div className="bg-destructive/10 rounded-lg p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2 text-xs text-destructive">
               <AlertTriangle className="w-3.5 h-3.5" />
-              <span>This session needs more people — invite a friend or check nearby sessions</span>
+              <span>Bring a friend and make this session happen</span>
             </div>
             {nearbySessions.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
@@ -153,19 +157,19 @@ export function EventCard({ event, onRsvp, userRsvp, isPast, allUpcoming, minThr
             {userRsvp?.status === "going" ? (
               <Button size="sm" variant="default" className="flex-1 bg-primary"
                 onClick={() => onRsvp(event.id, "going")}>
-                <Hand className="w-3.5 h-3.5" /> Going ✓
+                <Hand className="w-3.5 h-3.5" /> You're in
               </Button>
             ) : event.max_spots && goingCount >= event.max_spots ? (
               <Button size="sm" variant="outline" className="flex-1"
                 onClick={() => onRsvp(event.id, "going")}
                 disabled={isRestricted}>
-                Join Waitlist
+                Get on the waitlist
               </Button>
             ) : (
-              <Button size="sm" variant="outline" className="flex-1"
+              <Button size="sm" variant="default" className="flex-1"
                 onClick={() => onRsvp(event.id, "going")}
                 disabled={isRestricted}>
-                <Hand className="w-3.5 h-3.5" /> RSVP
+                <Hand className="w-3.5 h-3.5" /> I'm in
               </Button>
             )}
           </div>

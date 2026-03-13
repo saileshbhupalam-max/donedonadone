@@ -19,7 +19,7 @@ export function SessionPreStart({ event, phases, checkedIn, eventId, userId, onC
   return (
     <Card className="border-primary/20">
       <CardContent className="p-6 text-center space-y-4">
-        <p className="font-serif text-lg text-foreground">Ready to start?</p>
+        <p className="font-serif text-lg text-foreground">Your table is ready</p>
         <div className="space-y-2">
           {phases.map((p) => (
             <div key={p.id} className="flex items-center gap-3 text-sm">
@@ -43,7 +43,7 @@ export function SessionPreStart({ event, phases, checkedIn, eventId, userId, onC
             hasVenueCoords={!!event?.venue_latitude}
           />
         ) : (
-          <Button className="w-full" onClick={onStartSession}>Start Session</Button>
+          <Button className="w-full" onClick={onStartSession}>Let's go</Button>
         )}
       </CardContent>
     </Card>

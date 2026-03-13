@@ -113,7 +113,7 @@ function ActiveLocationsSection() {
   return (
     <section className="mt-2">
       <h2 className="font-serif text-lg px-4 mb-1 text-foreground flex items-center gap-2">
-        <MapPin className="w-4 h-4 text-primary" /> Where people are working
+        <MapPin className="w-4 h-4 text-primary" /> People working right now
       </h2>
       {totalActive > 0 && (
         <p className="text-xs text-muted-foreground px-4 mb-2">{totalActive} people checked in now</p>
@@ -240,8 +240,8 @@ function SuggestedConnectionsSection() {
         <Card className="border-border/50 bg-muted/30">
           <CardContent className="p-4 text-center space-y-2">
             <Sparkles className="w-5 h-5 text-primary mx-auto" />
-            <p className="text-sm font-medium text-foreground">Complete your Work DNA to get connection suggestions</p>
-            <Button size="sm" variant="outline" onClick={() => navigate("/me/dna")}>Build your DNA</Button>
+            <p className="text-sm font-medium text-foreground">Better matches start with your Work DNA</p>
+            <Button size="sm" variant="outline" onClick={() => navigate("/me/dna")}>Start matching</Button>
           </CardContent>
         </Card>
       </section>
@@ -304,7 +304,7 @@ function YourConnectionsSection() {
       </h2>
       {connections.length === 0 ? (
         <Card className="mx-4"><CardContent className="py-6 text-center">
-          <p className="text-sm text-muted-foreground">Your connections will appear here as you meet people</p>
+          <p className="text-sm text-muted-foreground">No connections yet — attend a session to start building your circle</p>
         </CardContent></Card>
       ) : (
         <div className="px-4 space-y-2">
@@ -510,7 +510,7 @@ export default function Discover() {
         >
           <div className="px-4 pt-4 pb-2">
             <h1 className="font-serif text-2xl text-foreground">Discover</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">See who's around and find your people</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Find people to work with</p>
           </div>
 
           <Tabs defaultValue="people" className="px-4 mb-2">
@@ -533,9 +533,9 @@ export default function Discover() {
                 <Card className="border-dashed border-primary/30">
                   <CardContent className="p-4 text-center space-y-2">
                     <MapPin className="w-5 h-5 text-primary mx-auto" />
-                    <p className="text-xs text-muted-foreground">Know a great work spot? Nominate it for the community.</p>
+                    <p className="text-xs text-muted-foreground">Know a great cafe to work from? Help others discover it.</p>
                     <Button size="sm" variant="outline" onClick={() => navigate("/nominate")}>
-                      <MapPin className="w-3 h-3 mr-1.5" /> Nominate a Venue
+                      <MapPin className="w-3 h-3 mr-1.5" /> Suggest a spot
                     </Button>
                   </CardContent>
                 </Card>

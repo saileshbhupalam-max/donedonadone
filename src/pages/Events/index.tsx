@@ -192,8 +192,8 @@ export default function Events() {
               {loading ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />) :
                 filterEvents(upcoming).length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground text-sm">No upcoming sessions</p>
-                    <p className="text-xs text-muted-foreground mt-1">Check back soon or request one below</p>
+                    <p className="text-muted-foreground text-sm">No sessions near you yet</p>
+                    <p className="text-xs text-muted-foreground mt-1">Request one below — we'll match you when others want the same slot</p>
                   </div>
                 ) : filterEvents(upcoming).map((e) => (
                   <EventCard key={e.id} event={e} onRsvp={toggleRsvp} userRsvp={getUserRsvp(e.id)}
@@ -207,7 +207,7 @@ export default function Events() {
             <TabsContent value="past" className="space-y-3 mt-3">
               {loading ? Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />) :
                 filterEvents(past).length === 0 ? (
-                  <p className="text-center text-muted-foreground text-sm py-8">No past sessions yet</p>
+                  <p className="text-center text-muted-foreground text-sm py-8">You haven't been to a session yet</p>
                 ) : filterEvents(past).map((e) => (
                   <EventCard key={e.id} event={e} onRsvp={toggleRsvp} userRsvp={getUserRsvp(e.id)}
                     isPast={true} allUpcoming={upcoming} minThreshold={minThreshold}
