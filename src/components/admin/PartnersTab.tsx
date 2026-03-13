@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Plus, Download, Copy, MessageCircle, Upload, MapPin, QrCode, ExternalLink, BarChart3 } from "lucide-react";
-const QRCodeSVG = lazy(() => import("qrcode.react").then(m => ({ default: m.QRCodeSVG })));
+import { Plus, Copy, MessageCircle, Upload, MapPin, QrCode, ExternalLink, BarChart3 } from "lucide-react";
 import { format } from "date-fns";
 
 const NEIGHBORHOODS = [
@@ -116,91 +115,8 @@ function PartnerDashboardStats({ partners, scansThisMonth, membersThisMonth }: {
   );
 }
 
-// ─── QR Code Card ──────────────────────────────────────
-function QrCodeSection({ partner }: { partner: VenuePartner }) {
-  const qrRef = useRef<HTMLDivElement>(null);
-  const tableTentRef = useRef<HTMLDivElement>(null);
-  const qrLink = getQrLink(partner.id);
-
-  const downloadQR = () => {
-    const svg = qrRef.current?.querySelector("svg");
-    if (!svg) return;
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    canvas.width = 512; canvas.height = 512;
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-    img.onload = () => {
-      ctx?.drawImage(img, 0, 0, 512, 512);
-      const a = document.createElement("a");
-      a.download = `qr-${partner.venue_name.replace(/\s+/g, "-").toLowerCase()}.png`;
-      a.href = canvas.toDataURL("image/png");
-      a.click();
-    };
-    img.src = "data:image/svg+xml;base64," + btoa(svgData);
-  };
-
-  const downloadTableTent = () => {
-    const el = tableTentRef.current;
-    if (!el) return;
-    import("html2canvas").then(({ default: html2canvas }) => {
-      html2canvas(el, { scale: 2, backgroundColor: null }).then(canvas => {
-        const a = document.createElement("a");
-        a.download = `table-tent-${partner.venue_name.replace(/\s+/g, "-").toLowerCase()}.png`;
-        a.href = canvas.toDataURL("image/png");
-        a.click();
-      });
-    });
-  };
-
-  return (
-    <div className="space-y-3">
-      <div ref={qrRef} className="flex justify-center">
-        <Suspense fallback={<div className="w-32 h-32 bg-muted animate-pulse rounded" />}>
-          <QRCodeSVG
-            value={qrLink}
-            size={180}
-            fgColor="hsl(18, 46%, 56%)"
-            bgColor="transparent"
-            level="M"
-          />
-        </Suspense>
-      </div>
-
-      {/* Hidden table tent for download */}
-      <div className="overflow-hidden h-0">
-        <div ref={tableTentRef} style={{ width: 420, padding: 32, background: "linear-gradient(135deg, #F5F0EB, #F0D5C5)", fontFamily: "Inter, sans-serif", textAlign: "center" }}>
-          <div style={{ fontSize: 28, fontFamily: "DM Serif Display, serif", marginBottom: 8 }}>
-            <span>Focus</span><span style={{ fontWeight: 300 }}>Club</span>
-          </div>
-          <p style={{ fontSize: 13, color: "#666", marginBottom: 20 }}>Find your people. Focus together.</p>
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-            <Suspense fallback={<div className="w-32 h-32 bg-muted animate-pulse rounded" />}>
-              <QRCodeSVG value={qrLink} size={200} fgColor="#C17B50" bgColor="transparent" level="M" />
-            </Suspense>
-          </div>
-          <p style={{ fontSize: 15, fontWeight: 600, color: "#2D2D2D", marginBottom: 6 }}>Scan to join the coworking community</p>
-          <p style={{ fontSize: 11, color: "#888" }}>Free to join · {partner.venue_name} is a FocusClub partner</p>
-          <div style={{ borderTop: "1px solid #ddd", marginTop: 16, paddingTop: 12 }}>
-            <p style={{ fontSize: 10, color: "#999" }}>focusclub.app</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex gap-2">
-        <Button size="sm" variant="outline" className="flex-1 text-xs" onClick={downloadQR}>
-          <Download className="w-3 h-3" /> QR Code
-        </Button>
-        <Button size="sm" variant="outline" className="flex-1 text-xs" onClick={downloadTableTent}>
-          <Download className="w-3 h-3" /> Table Tent
-        </Button>
-        <Button size="sm" variant="outline" className="text-xs" onClick={() => { navigator.clipboard.writeText(qrLink); toast.success("Link copied!"); }}>
-          <Copy className="w-3 h-3" />
-        </Button>
-      </div>
-    </div>
-  );
-}
+// ─── QR Code Card (uses shared component) ──────────────────────────────────────
+import { VenueQrSection } from "@/components/venue/VenueQrSection";
 
 // ─── Partner Form ──────────────────────────────────────
 function PartnerForm({ partner, onSave, onClose }: { partner?: VenuePartner | null; onSave: () => void; onClose: () => void }) {
@@ -356,7 +272,7 @@ function PartnerDetail({ partner, onBack, onRefresh }: { partner: VenuePartner; 
       <Card>
         <CardContent className="p-4">
           <h3 className="text-sm font-medium text-foreground mb-3">QR Code</h3>
-          <QrCodeSection partner={partner} />
+          <VenueQrSection venueId={partner.id} venueName={partner.venue_name} />
         </CardContent>
       </Card>
 

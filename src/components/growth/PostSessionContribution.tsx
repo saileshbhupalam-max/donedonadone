@@ -1,5 +1,6 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Star, Camera, Upload, Coins, ChevronDown, ChevronUp, Zap } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -79,6 +80,19 @@ export function PostSessionContribution({ sessionId, venueId, userId, onComplete
   const [expandedSection, setExpandedSection] = useState(0);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [submitting, setSubmitting] = useState(false);
+  const [weeklyContributors, setWeeklyContributors] = useState<number | null>(null);
+
+  useEffect(() => {
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    supabase
+      .from("focus_credits")
+      .select("user_id")
+      .gt("amount", 0)
+      .gte("created_at", weekAgo)
+      .then(({ data }) => {
+        if (data) setWeeklyContributors(new Set(data.map((d: any) => d.user_id)).size);
+      });
+  }, []);
 
   // Commitment escalation: sections ordered from easiest to hardest
   const sections = useMemo(() => [
@@ -280,9 +294,11 @@ export function PostSessionContribution({ sessionId, venueId, userId, onComplete
         )}
 
         {/* Social proof */}
-        <p className="text-xs text-center text-muted-foreground pt-2">
-          47 members contributed this week
-        </p>
+        {weeklyContributors !== null && weeklyContributors >= 5 && (
+          <p className="text-xs text-center text-muted-foreground pt-2">
+            {weeklyContributors} members contributed this week
+          </p>
+        )}
 
         {completed.size > 0 && (
           <div className="pt-2 text-center space-y-2">

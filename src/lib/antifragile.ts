@@ -25,6 +25,9 @@ interface MatchAttendee {
   is_table_captain: boolean;
   no_show_count: number;
   reliability_status: string;
+  work_vibe: string | null;
+  noise_preference: string | null;
+  comm_style: string | null;
 }
 
 export function createSmartGroups(attendees: MatchAttendee[], groupSize: number = 4): MatchAttendee[][] {
@@ -87,7 +90,59 @@ export function createSmartGroups(attendees: MatchAttendee[], groupSize: number 
     if (!improved) break;
   }
 
+  // 5. Compatibility pass: swap to group similar work vibes and noise preferences together
+  for (let iter = 0; iter < 10; iter++) {
+    let improved = false;
+    for (let i = 0; i < numGroups; i++) {
+      for (let j = i + 1; j < numGroups; j++) {
+        for (let a = 0; a < groups[i].length; a++) {
+          for (let b = 0; b < groups[j].length; b++) {
+            const beforeCompat = getGroupCompatibility(groups[i]) + getGroupCompatibility(groups[j]);
+            const beforeGender = getGroupGenderBalance(groups[i]) + getGroupGenderBalance(groups[j]);
+            [groups[i][a], groups[j][b]] = [groups[j][b], groups[i][a]];
+            const afterCompat = getGroupCompatibility(groups[i]) + getGroupCompatibility(groups[j]);
+            const afterGender = getGroupGenderBalance(groups[i]) + getGroupGenderBalance(groups[j]);
+            // Accept swap only if compatibility improves without worsening gender balance
+            if (afterCompat > beforeCompat && afterGender >= beforeGender - 0.05) {
+              improved = true;
+            } else {
+              [groups[i][a], groups[j][b]] = [groups[j][b], groups[i][a]];
+            }
+          }
+        }
+      }
+    }
+    if (!improved) break;
+  }
+
   return groups.filter(g => g.length > 0);
+}
+
+/** Score how compatible a group is based on work vibe, noise preference, and comm style alignment. */
+function getGroupCompatibility(group: MatchAttendee[]): number {
+  if (group.length <= 1) return 1;
+  let score = 0;
+  let comparisons = 0;
+
+  for (let i = 0; i < group.length; i++) {
+    for (let j = i + 1; j < group.length; j++) {
+      comparisons++;
+      // Work vibe match (strongest signal)
+      if (group[i].work_vibe && group[j].work_vibe && group[i].work_vibe === group[j].work_vibe) {
+        score += 3;
+      }
+      // Noise preference match
+      if (group[i].noise_preference && group[j].noise_preference && group[i].noise_preference === group[j].noise_preference) {
+        score += 2;
+      }
+      // Comm style match
+      if (group[i].comm_style && group[j].comm_style && group[i].comm_style === group[j].comm_style) {
+        score += 1;
+      }
+    }
+  }
+
+  return comparisons > 0 ? score / comparisons : 0;
 }
 
 function getGroupGenderBalance(group: MatchAttendee[]): number {

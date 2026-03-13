@@ -10,7 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { getInitials } from "@/lib/utils";
-import { MapPin, Users, Clock, Repeat, BarChart3, Loader2 } from "lucide-react";
+import { MapPin, Users, Clock, Repeat, BarChart3, Loader2, QrCode } from "lucide-react";
+import { VenueQrSection } from "@/components/venue/VenueQrSection";
 import { motion } from "framer-motion";
 import { format, parseISO, subDays } from "date-fns";
 
@@ -245,6 +246,23 @@ export default function PartnerDashboard() {
                 <Badge key={i} variant="secondary" className="text-xs px-3 py-1">{t}</Badge>
               ))}
             </div>
+          </section>
+        )}
+
+        {/* QR Code & Marketing Materials */}
+        {locationId && application?.venue_name && (
+          <section>
+            <h2 className="font-serif text-lg text-foreground mb-3 flex items-center gap-2">
+              <QrCode className="w-4 h-4 text-primary" /> QR Code & Table Tent
+            </h2>
+            <Card>
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground mb-3">
+                  Download your QR code and table tent to place at your venue. Each scan is tracked.
+                </p>
+                <VenueQrSection venueId={locationId} venueName={application.venue_name} />
+              </CardContent>
+            </Card>
           </section>
         )}
       </motion.div>

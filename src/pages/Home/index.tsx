@@ -46,6 +46,7 @@ import { ProfilePromptCard } from "@/components/home/ProfilePromptCard";
 import { GratitudeEchoCard } from "@/components/home/GratitudeEchoCard";
 import { CommunityRitualCard } from "@/components/home/CommunityRitualCard";
 import { CaptainDashboardCard } from "@/components/home/CaptainDashboardCard";
+import { CompanyHomeCard } from "@/components/home/CompanyHomeCard";
 import { Users as UsersIcon, Zap, Shield } from "lucide-react";
 import { ActiveCheckInCard, CheckInFlow } from "@/components/checkin/CheckInFlow";
 import { useUserContext } from "@/hooks/useUserContext";
@@ -462,6 +463,9 @@ export default function Home() {
 
         {/* Contribution Milestone - premium earn path */}
         <ContributionMilestoneCard userId={user!.id} />
+
+        {/* Company quick-glance card — matches, intros, profile link */}
+        <CompanyHomeCard />
 
         {/* Neighborhood Leaderboard — top contributors in user's area */}
         {profile.neighborhood && (

@@ -95,66 +95,32 @@
 ### TD-021: No API error tracking granularity — RESOLVED
 - **Status:** RESOLVED — `captureSupabaseError()` in sentry.ts with operation tags and query context. Applied to useEvents, useNotifications, useSubscription, Session page.
 
-### TD-022: Four growth components built but never imported
-- **Location:** `src/components/growth/`
-- **Description:** Four fully-implemented growth components exist but are never imported or rendered anywhere in the app:
-  - `PostSessionContribution.tsx` — Awards FC for post-session ratings/reports. Should be in Session wrap-up.
-  - `ReferralDashboard.tsx` — Shows referral stats, invite link, Community Builder progress. Should be in Profile Journey tab.
-  - `VenueDataCollector.tsx` — 7-section venue data form with FC rewards. Should be in post-session flow.
-  - `NeighborhoodLeaderboard.tsx` — Top contributors by focus hours in neighborhood. Should be on Home page.
-- **Impact:** Key growth features (referrals, venue contributions, leaderboard) are invisible to users despite being fully coded.
-- **Fix:** Wire each component into its correct parent page. See PRD Section 9 for wiring map.
+### TD-022: Four growth components built but never imported — RESOLVED
+- **Status:** RESOLVED — All four wired: PostSessionContribution + VenueDataCollector in Session wrap-up, ReferralDashboard in Profile Journey, NeighborhoodLeaderboard on Home page.
 
-### TD-023: Focus Credits have no spending UI
-- **Location:** `src/lib/focusCredits.ts` (spendCredits function), no UI consumer
-- **Description:** The Focus Credits engine has full earn AND spend logic (6 redemption options: free session, priority matching, venue upgrade, pick seat, gift session, exclusive session). Users can earn credits via the CreditsBadge in TopBar. But there is zero UI for spending credits — no redemption dialog, no rewards shop, no way to use earned FC.
-- **Impact:** Credits accumulate with no outlet. Users may disengage from earning when they realize credits have no value.
-- **Fix:** Build redemption dialog triggered from CreditsBadge tap. Show balance, earning history, and redemption options.
+### TD-023: Focus Credits have no spending UI — RESOLVED
+- **Status:** RESOLVED — `src/pages/Credits.tsx` with balance display, earning history, 6 redemption options, and "How to Earn" guide. Route `/credits` added to App.tsx. CreditsBadge navigates to it.
 
-### TD-024: Smart group formation (antifragile.ts) not connected to session creation
-- **Location:** `src/lib/antifragile.ts` — `createSmartGroups()`, `updateReliability()`, `joinWaitlist()`, `promoteWaitlist()`, `checkFlagEscalation()`
-- **Description:** 6 group matching functions exist but are not called from the admin session creation flow or any automated grouping. Sessions use simple assignment instead. Only `CAPTAIN_NUDGES` and `updateReliability` are imported (in Session/index.tsx).
-- **Impact:** Group quality is suboptimal — captain distribution, experience balance, and gender balance algorithms aren't applied.
-- **Fix:** Wire `createSmartGroups()` into the admin GroupPreviewModal or automated group assignment flow.
+### TD-024: Smart group formation (antifragile.ts) not connected to session creation — RESOLVED
+- **Status:** RESOLVED — `createSmartGroups()` was already wired into EventsTab "Create Groups" button + GroupPreviewModal shuffle. Enhanced with taste graph compatibility scoring (work_vibe, noise_preference, comm_style) via new `getGroupCompatibility()` function and a compatibility swap pass. EventsTab now fetches these fields from profiles.
 
-### TD-025: Calendar export functions unused
-- **Location:** `src/lib/calendar.ts` — `getGoogleCalendarUrl()`, `downloadICSFile()`
-- **Description:** AddToCalendarButton component exists in session/ but the underlying lib functions in calendar.ts are not called from any UI element.
-- **Impact:** Users cannot add sessions to their calendar.
-- **Fix:** Verify AddToCalendarButton is properly wired. If it uses its own implementation, clean up or consolidate.
+### TD-025: Calendar export functions unused — RESOLVED
+- **Status:** RESOLVED — `AddToCalendarButton` imports and uses both `getGoogleCalendarUrl()` and `downloadICSFile()` from `calendar.ts`. Wired in PrimaryActionCard, Home, and EventDetail.
 
-### TD-026: Three discover components built but unused
-- **Location:** `src/components/discover/HorizontalCard.tsx`, `src/components/discover/SkeletonCards.tsx`, `src/components/home/CompanyHomeCard.tsx`
-- **Description:** Three UI components exist but are never imported:
-  - `HorizontalCard.tsx` — Compact member card variant
-  - `SkeletonCards.tsx` (exports `SkeletonHorizontal`) — Loading placeholder for HorizontalCard
-  - `CompanyHomeCard.tsx` — Company card for Home page
-- **Impact:** Dead code. Minor — no user-facing consequence.
-- **Fix:** Either integrate into Discover/Home pages or remove to reduce bundle.
+### TD-026: Three discover components built but unused — RESOLVED
+- **Status:** RESOLVED — `CompanyHomeCard` wired into Home page. `HorizontalCard.tsx` and `SkeletonCards.tsx` deleted as dead code.
 
-### TD-027: Hardcoded social proof numbers in growth UI
-- **Location:** Multiple growth components
-- **Description:** Components like PostSessionContribution and VenueDataCollector contain hardcoded social proof text like "47 members contributed this week" that doesn't reflect real data.
-- **Impact:** Minor — self-corrects once real data flows. But could erode trust if users notice obviously fake numbers early on.
-- **Fix:** Replace with real queries or hide social proof when user count is below threshold (e.g., show after 20+ real contributions).
+### TD-027: Hardcoded social proof numbers in growth UI — RESOLVED
+- **Status:** RESOLVED — All 3 hardcoded strings replaced with real Supabase queries. Social proof hidden when counts are below threshold (5 for weekly, 3 for venue-specific).
 
-### TD-028: SpaceInsights page has no conversion CTA
-- **Location:** `src/pages/SpaceInsights.tsx`
-- **Description:** The public venue insights page (QR code destination) shows only analytics. No "Join a session" CTA, no live "people here now" count, no upcoming session preview, no download CTA. As the primary QR destination, this page must convert visitors.
-- **Impact:** HIGH — QR scans → analytics page → bounce. Zero acquisition from physical touchpoints.
-- **Fix:** Add above-the-fold conversion section with live social proof, next session CTA, and app download link.
+### TD-028: SpaceInsights page has no conversion CTA — RESOLVED
+- **Status:** RESOLVED — `LiveConversionHero` component added with live check-in avatars, next session CTA, and "Join FocusClub" button.
 
-### TD-029: Partner dashboard QR/marketing tools are admin-only
-- **Location:** `src/components/admin/PartnersTab.tsx` (QR generation, table tent PDF)
-- **Description:** QR code generation and table tent PDF creation exist only in the admin PartnersTab. Venue partners cannot access their own marketing materials from the partner dashboard at /partner.
-- **Impact:** Partners depend on admin to generate their own QR codes. Adds friction to the onboarding process.
-- **Fix:** Move QR code + table tent generation to the partner dashboard page. Let partners self-serve.
+### TD-029: Partner dashboard QR/marketing tools are admin-only — RESOLVED
+- **Status:** RESOLVED — Extracted `VenueQrSection` shared component (`src/components/venue/VenueQrSection.tsx`). Added to PartnerDashboard with QR download, table tent download, and link copy. PartnersTab refactored to use same shared component.
 
-### TD-030: No TV Mode display for venues
-- **Location:** Not built
-- **Description:** No `/space/:id/live` route exists. Venues with TVs/displays have no always-on FocusClub content to show. This is a zero-cost, high-impact ambient acquisition channel.
-- **Impact:** Missed growth opportunity. Every coworking space has idle screen real estate.
-- **Fix:** Build TV Mode page — landscape-optimized, auto-refreshing, QR code + live stats.
+### TD-030: No TV Mode display for venues — RESOLVED
+- **Status:** RESOLVED — `SpaceLive.tsx` at `/space/:id/live` with rotating stats, auto-refresh, QR placeholder, and FocusClub branding.
 
 ---
 
@@ -192,3 +158,12 @@
 | TD-R28 | No offline data cache (TD-011) | `offlineCache.ts` + `useOfflineQuery` hook |
 | TD-R29 | strictNullChecks (TD-016) | Enabled, 33 errors fixed across 24 files |
 | TD-R30 | Sentry error tracking (TD-021) | `captureSupabaseError()` on critical paths |
+| TD-R31 | Growth components unwired (TD-022) | Wired into Session, Profile, Home |
+| TD-R32 | Credits no spending UI (TD-023) | `Credits.tsx` page with redemption + history |
+| TD-R33 | Smart grouping no taste graph (TD-024) | `getGroupCompatibility()` + compatibility swap pass |
+| TD-R34 | Calendar export unused (TD-025) | Already wired via `AddToCalendarButton` |
+| TD-R35 | Unused discover components (TD-026) | CompanyHomeCard wired, dead code deleted |
+| TD-R36 | Hardcoded social proof (TD-027) | Real Supabase queries with threshold hiding |
+| TD-R37 | SpaceInsights no CTA (TD-028) | `LiveConversionHero` component |
+| TD-R38 | Partner QR admin-only (TD-029) | Shared `VenueQrSection` in PartnerDashboard |
+| TD-R39 | No TV Mode (TD-030) | `SpaceLive.tsx` at `/space/:id/live` |

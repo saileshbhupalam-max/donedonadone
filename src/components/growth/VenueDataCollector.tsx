@@ -1,5 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Camera, Upload, Wifi, Volume2, Coins, Zap, ChevronRight, Check, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -107,6 +108,17 @@ export function VenueDataCollector({ venueId, venueName, userId, trigger, onComp
   const [noiseTime, setNoiseTime] = useState<string | null>(null);
 
   const totalPossible = SECTIONS.reduce((a, b) => a + b.reward, 0);
+  const [venueContributorCount, setVenueContributorCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("venue_contributions")
+      .select("user_id")
+      .eq("venue_id", venueId)
+      .then(({ data }) => {
+        if (data) setVenueContributorCount(new Set(data.map((d: any) => d.user_id)).size);
+      });
+  }, [venueId]);
 
   const completeSection = useCallback(async (key: string) => {
     const contributions: SectionContribution[] = [];
@@ -442,9 +454,11 @@ export function VenueDataCollector({ venueId, venueName, userId, trigger, onComp
           })}
 
           {/* Social proof */}
-          <p className="text-xs text-center text-muted-foreground pt-3">
-            23 members have contributed data for this venue
-          </p>
+          {venueContributorCount !== null && venueContributorCount >= 3 && (
+            <p className="text-xs text-center text-muted-foreground pt-3">
+              {venueContributorCount} members have contributed data for this venue
+            </p>
+          )}
 
           {completedSections.size >= 3 && (
             <div className="text-center pt-3">

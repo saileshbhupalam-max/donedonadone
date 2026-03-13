@@ -48,6 +48,7 @@ const CompanyProfile = lazy(() => import("./pages/CompanyProfile"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Companies = lazy(() => import("./pages/Companies"));
 const Needs = lazy(() => import("./pages/Needs"));
+const Credits = lazy(() => import("./pages/Credits"));
 const SpaceInsights = lazy(() => import("./pages/SpaceInsights"));
 const SpaceLive = lazy(() => import("./pages/SpaceLive"));
 const CrossSpaceNetwork = lazy(() => import("./pages/CrossSpaceNetwork"));
@@ -138,6 +139,9 @@ const App = () => (
             } />
             <Route path="/needs" element={
               <ProtectedPage><Needs /></ProtectedPage>
+            } />
+            <Route path="/credits" element={
+              <ProtectedPage><Credits /></ProtectedPage>
             } />
             <Route path="/network" element={
               <ProtectedPage><CrossSpaceNetwork /></ProtectedPage>

@@ -86,6 +86,7 @@ export function ContributionMilestoneCard({ userId, onActionSelect }: Contributi
   const [celebrated, setCelebrated] = useState(false);
   const [data, setData] = useState<MilestoneProgress | null>(null);
   const [loading, setLoading] = useState(true);
+  const [weeklyPremiumEarners, setWeeklyPremiumEarners] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,6 +97,20 @@ export function ContributionMilestoneCard({ userId, onActionSelect }: Contributi
         setLoading(false);
       }
     });
+
+    // Fetch real weekly premium earners count
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    supabase
+      .from("focus_credits")
+      .select("user_id")
+      .eq("action", "contribution_milestone")
+      .gte("created_at", weekAgo)
+      .then(({ data: earners }) => {
+        if (!cancelled && earners) {
+          setWeeklyPremiumEarners(new Set(earners.map((e: any) => e.user_id)).size);
+        }
+      });
+
     return () => { cancelled = true; };
   }, [userId]);
 
@@ -201,9 +216,11 @@ export function ContributionMilestoneCard({ userId, onActionSelect }: Contributi
               })}
 
               {/* Social proof */}
-              <p className="text-[10px] text-muted-foreground">
-                12 members earned Premium this week through contributions
-              </p>
+              {weeklyPremiumEarners !== null && weeklyPremiumEarners >= 3 && (
+                <p className="text-[10px] text-muted-foreground">
+                  {weeklyPremiumEarners} members earned Premium this week through contributions
+                </p>
+              )}
             </div>
           </div>
         )}
