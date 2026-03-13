@@ -93,10 +93,8 @@ export default function Home() {
   const [autopilotDismissed] = useState(() => localStorage.getItem("fc_autopilot_dismissed") === "true");
   const [showMoreSections, setShowMoreSections] = useState(false);
 
-  useEffect(() => {
+  const fetchAll = useCallback(async () => {
     if (!user || !profile) return;
-
-    const fetchAll = async () => {
       const today = new Date().toISOString().split("T")[0];
       const twoWeeksAgo = subDays(new Date(), 14).toISOString();
       const oneWeekAgo = subDays(new Date(), 7).toISOString();
@@ -393,10 +391,11 @@ export default function Home() {
       }
 
       setLoading(false);
-    };
-
-    fetchAll();
   }, [user, profile]);
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
   // Top matches
   const topMatches = useMemo(() => {
@@ -411,8 +410,9 @@ export default function Home() {
   const completion = profile ? calculateProfileCompletion(profile) : 0;
   const nextAction = profile ? getNextAction(profile) : null;
   const handleRefresh = useCallback(async () => {
-    window.location.reload();
-  }, []);
+    await refreshProfile();
+    await fetchAll();
+  }, [refreshProfile, fetchAll]);
 
   if (!profile) return (
     <AppShell>

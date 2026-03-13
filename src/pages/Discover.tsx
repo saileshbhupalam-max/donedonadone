@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useReducer } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -490,9 +490,11 @@ function CompanyDirectorySection() {
 
 export default function Discover() {
   usePageTitle("Discover — FocusClub");
+  // Incrementing refreshKey forces sub-components to remount and re-fetch their data
+  const [refreshKey, incrementRefreshKey] = useReducer((c: number) => c + 1, 0);
 
   const handleRefresh = useCallback(async () => {
-    window.location.reload();
+    incrementRefreshKey();
   }, []);
 
   return (
@@ -520,13 +522,13 @@ export default function Discover() {
             </TabsList>
 
             <TabsContent value="people" className="mt-0 -mx-4">
-              <ActiveLocationsSection />
-              <SuggestedConnectionsSection />
-              <YourConnectionsSection />
+              <ActiveLocationsSection key={`locations-${refreshKey}`} />
+              <SuggestedConnectionsSection key={`suggestions-${refreshKey}`} />
+              <YourConnectionsSection key={`connections-${refreshKey}`} />
             </TabsContent>
 
             <TabsContent value="companies" className="mt-0 -mx-4">
-              <CompanyDirectorySection />
+              <CompanyDirectorySection key={`companies-${refreshKey}`} />
             </TabsContent>
           </Tabs>
         </motion.div>

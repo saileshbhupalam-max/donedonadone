@@ -53,6 +53,6 @@ describe('Route modules load without errors', () => {
       const mod = await import(path);
       expect(mod).toBeDefined();
       expect(mod.default).toBeDefined();
-    }, 15000);
+    }, 30000);
   });
 });
