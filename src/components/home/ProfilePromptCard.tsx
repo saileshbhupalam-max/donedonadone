@@ -25,9 +25,14 @@ type Profile = Tables<"profiles">;
 
 type PromptType = "work-style" | "location" | "schedule" | "interests" | "socials" | "buddy" | null;
 
+function safeParseDismissed(): Record<string, number> {
+  try { return JSON.parse(localStorage.getItem("dismissed_prompts") || "{}"); }
+  catch { return {}; }
+}
+
 function getPromptType(profile: Profile): PromptType {
   const attended = profile.events_attended || 0;
-  const dismissed = JSON.parse(localStorage.getItem("dismissed_prompts") || "{}");
+  const dismissed = safeParseDismissed();
   const isDismissed = (key: string) => dismissed[key] && attended - dismissed[key] < 3;
 
   if (attended >= 1 && !profile.noise_preference && !isDismissed("work-style"))
@@ -100,7 +105,7 @@ export function ProfilePromptCard({ profile }: { profile: Profile }) {
   if (!promptType || !user) return null;
 
   const dismiss = () => {
-    const dismissed = JSON.parse(localStorage.getItem("dismissed_prompts") || "{}");
+    const dismissed = safeParseDismissed();
     dismissed[promptType] = profile.events_attended || 0;
     localStorage.setItem("dismissed_prompts", JSON.stringify(dismissed));
     // Force re-render by refreshing

@@ -50,7 +50,8 @@ const Index = () => {
     if (venueId) {
       localStorage.setItem("fc_venue", venueId);
       // Track scan
-      supabase.from("venue_scans").insert({ venue_partner_id: venueId });
+      supabase.from("venue_scans").insert({ venue_partner_id: venueId })
+        .then(({ error }) => { if (error) console.error("[venue_scans]", error.message); });
       // Fetch venue info
       supabase.from("venue_partners").select("venue_name, neighborhood").eq("id", venueId).single()
         .then(({ data }: any) => { if (data) setVenueInfo(data); });

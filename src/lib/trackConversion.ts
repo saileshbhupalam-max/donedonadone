@@ -7,6 +7,7 @@ export function trackConversion(eventType: string, eventData?: Record<string, un
     supabase
       .from("conversion_events")
       .insert({ user_id: data.user.id, event_type: eventType, event_data: (eventData || {}) as any })
-      .then(() => {});
-  });
+      .then(() => {})
+      .catch((e) => console.error("[trackConversion]", e));
+  }).catch((e) => console.error("[trackConversion:auth]", e));
 }

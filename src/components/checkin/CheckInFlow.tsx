@@ -137,7 +137,7 @@ export function CheckInFlow({ open, onClose, onCheckIn }: CheckInFlowProps) {
 
     // Increment member count on first check-in at a location
     if (locationId) {
-      try { await supabase.rpc("increment_location_member_count", { p_location_id: locationId }); } catch {}
+      try { await supabase.rpc("increment_location_member_count", { p_location_id: locationId }); } catch (e) { console.error("[check-in] increment failed:", e); }
     }
 
     setSaving(false);

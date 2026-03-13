@@ -54,9 +54,10 @@ export default function Events() {
   const [formatFilter, setFormatFilter] = useState<string>("all_formats");
   const neighborhoodDefaultApplied = useRef(false);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
-  const [savedEvents, setSavedEvents] = useState<string[]>(() =>
-    JSON.parse(localStorage.getItem("fc_saved_events") || "[]")
-  );
+  const [savedEvents, setSavedEvents] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("fc_saved_events") || "[]"); }
+    catch { return []; }
+  });
   const [minThreshold, setMinThreshold] = useState(3);
   const [pendingFeedback, setPendingFeedback] = useState<any[]>([]);
   const [circleUserIds, setCircleUserIds] = useState<string[]>([]);

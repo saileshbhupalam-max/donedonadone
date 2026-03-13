@@ -79,8 +79,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setProfile(null);
     // Clear all local state
-    localStorage.removeItem("fc_ref");
-    localStorage.removeItem("fc_theme");
+    try {
+      localStorage.removeItem("fc_ref");
+      localStorage.removeItem("fc_theme");
+    } catch { /* private browsing */ }
   };
 
   return (

@@ -7,9 +7,9 @@ interface FeatureFlagsContextType {
   isEnabled: (flagName: string) => boolean;
 }
 
-// Module-level cache
+// Module-level cache (data only — no React setters)
 let cachedFlags: Record<string, boolean> | null = null;
-let cachePromise: Promise<void> | null = null;
+let cachePromise: Promise<Record<string, boolean>> | null = null;
 
 const FeatureFlagsContext = createContext<FeatureFlagsContextType>({
   flags: {},
@@ -17,13 +17,18 @@ const FeatureFlagsContext = createContext<FeatureFlagsContextType>({
   isEnabled: () => false,
 });
 
-async function loadFlags(): Promise<Record<string, boolean>> {
-  if (cachedFlags) return cachedFlags;
-  const { data } = await supabase.from("feature_flags").select("flag_name, enabled");
-  const map: Record<string, boolean> = {};
-  (data || []).forEach((f: any) => { map[f.flag_name] = f.enabled; });
-  cachedFlags = map;
-  return map;
+function loadFlags(): Promise<Record<string, boolean>> {
+  if (cachedFlags) return Promise.resolve(cachedFlags);
+  if (!cachePromise) {
+    cachePromise = supabase.from("feature_flags").select("flag_name, enabled")
+      .then(({ data }) => {
+        const map: Record<string, boolean> = {};
+        (data || []).forEach((f: any) => { map[f.flag_name] = f.enabled; });
+        cachedFlags = map;
+        return map;
+      });
+  }
+  return cachePromise;
 }
 
 export function FeatureFlagsProvider({ children }: { children: ReactNode }) {
@@ -31,22 +36,14 @@ export function FeatureFlagsProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(!cachedFlags);
 
   useEffect(() => {
-    if (cachedFlags) {
-      setFlags(cachedFlags);
-      setLoading(false);
-      return;
-    }
-    if (!cachePromise) {
-      cachePromise = loadFlags().then(f => {
+    let mounted = true;
+    loadFlags().then((f) => {
+      if (mounted) {
         setFlags(f);
         setLoading(false);
-      });
-    } else {
-      cachePromise.then(() => {
-        setFlags(cachedFlags || {});
-        setLoading(false);
-      });
-    }
+      }
+    });
+    return () => { mounted = false; };
   }, []);
 
   const isEnabled = useCallback((flagName: string) => {

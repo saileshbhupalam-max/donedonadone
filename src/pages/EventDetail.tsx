@@ -257,26 +257,30 @@ export default function EventDetailPage() {
 
         // Auto-match buddy for first-timers
         if ((myProfile?.events_attended || 0) === 0) {
-          supabase.from("event_rsvps").update({ is_first_session: true })
-            .eq("event_id", event.id).eq("user_id", user.id).then(() => {});
-          supabase.from("event_rsvps")
-            .select("user_id, profiles!inner(display_name, events_attended, is_welcome_buddy)")
-            .eq("event_id", event.id).eq("status", "going").neq("user_id", user.id)
-            .eq("profiles.is_welcome_buddy", true)
-            .gte("profiles.events_attended", 5).limit(1)
-            .then(({ data: buddyCandidates }) => {
+          (async () => {
+            try {
+              await supabase.from("event_rsvps").update({ is_first_session: true })
+                .eq("event_id", event.id).eq("user_id", user.id);
+              const { data: buddyCandidates } = await supabase.from("event_rsvps")
+                .select("user_id, profiles!inner(display_name, events_attended, is_welcome_buddy)")
+                .eq("event_id", event.id).eq("status", "going").neq("user_id", user.id)
+                .eq("profiles.is_welcome_buddy", true)
+                .gte("profiles.events_attended", 5).limit(1);
               if (buddyCandidates && buddyCandidates.length > 0) {
                 const buddy = buddyCandidates[0];
-                supabase.from("event_rsvps").update({ buddy_user_id: buddy.user_id })
-                  .eq("event_id", event.id).eq("user_id", user.id).then(() => {});
-                supabase.rpc("create_system_notification", {
+                await supabase.from("event_rsvps").update({ buddy_user_id: buddy.user_id })
+                  .eq("event_id", event.id).eq("user_id", user.id);
+                await supabase.rpc("create_system_notification", {
                   p_user_id: buddy.user_id,
                   p_title: "Welcome Buddy Request",
                   p_body: `${myProfile?.display_name || "Someone"} is coming to their first session! Say hi when they arrive.`,
                   p_type: "buddy",
-                }).then(() => {});
+                });
               }
-            });
+            } catch (e) {
+              console.error("[buddy-match]", e);
+            }
+          })();
         }
       }
     }
