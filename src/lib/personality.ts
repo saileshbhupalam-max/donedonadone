@@ -89,7 +89,7 @@ const MORNING = [
   (n: string) => `Morning, ${n}. Coffee's poured. World's unpaused. Let's go.`,
   (n: string) => `New day, new deep work. Same great you, ${n}.`,
   (n: string) => `${n}. Mornings like this were made for focus.`,
-  () => `The early bird gets the... best seat at the cafe.`,
+  (n: string) => `The early bird gets the... best seat at the cafe, ${n}.`,
 ];
 
 const AFTERNOON = [
@@ -97,14 +97,14 @@ const AFTERNOON = [
   (n: string) => `Still going, ${n}? Respect.`,
   (n: string) => `The afternoon belongs to the persistent. That's you, ${n}.`,
   (n: string) => `${n}. Coffee number two? No judgment.`,
-  () => `Halfway through the day. Fully through the noise.`,
+  (n: string) => `Halfway through the day, ${n}. Fully through the noise.`,
 ];
 
 const EVENING = [
   (n: string) => `Evening, ${n}. You showed up today. That counts.`,
   (n: string) => `${n}, winding down? Or just getting started?`,
   (n: string) => `The day's done but the week's young, ${n}.`,
-  () => `Sunset mode. Reflect, recharge, repeat.`,
+  (n: string) => `Sunset mode, ${n}. Reflect, recharge, repeat.`,
 ];
 
 const NIGHT = [

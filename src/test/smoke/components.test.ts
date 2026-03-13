@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import '../mocks/supabase';
+
+// Smoke tests verify modules load — dynamic imports can be slow under
+// full-suite memory pressure, so use a generous timeout.
+const SMOKE_TIMEOUT = 15000;
 
 describe('Home components load without errors', () => {
   const homeComponents = [
@@ -15,7 +18,7 @@ describe('Home components load without errors', () => {
       expect(mod).toBeDefined();
       expect(mod[exportName]).toBeDefined();
       expect(typeof mod[exportName]).toBe('function');
-    });
+    }, SMOKE_TIMEOUT);
   });
 });
 
@@ -43,7 +46,7 @@ describe('Session components load without errors', () => {
       expect(mod).toBeDefined();
       expect(mod[exportName]).toBeDefined();
       expect(typeof mod[exportName]).toBe('function');
-    });
+    }, SMOKE_TIMEOUT);
   });
 });
 
@@ -53,21 +56,21 @@ describe('Layout components load without errors', () => {
     expect(mod).toBeDefined();
     expect(mod.BottomNav).toBeDefined();
     expect(typeof mod.BottomNav).toBe('function');
-  });
+  }, SMOKE_TIMEOUT);
 
   it('AppShell imports without error', async () => {
     const mod = await import('../../components/layout/AppShell');
     expect(mod).toBeDefined();
     expect(mod.AppShell).toBeDefined();
     expect(typeof mod.AppShell).toBe('function');
-  });
+  }, SMOKE_TIMEOUT);
 
   it('TopBar imports without error', async () => {
     const mod = await import('../../components/layout/TopBar');
     expect(mod).toBeDefined();
     expect(mod.TopBar).toBeDefined();
     expect(typeof mod.TopBar).toBe('function');
-  });
+  }, SMOKE_TIMEOUT);
 });
 
 describe('ErrorBoundary loads without errors', () => {
@@ -76,5 +79,5 @@ describe('ErrorBoundary loads without errors', () => {
     expect(mod).toBeDefined();
     expect(mod.ErrorBoundary).toBeDefined();
     expect(typeof mod.ErrorBoundary).toBe('function');
-  });
+  }, SMOKE_TIMEOUT);
 });
