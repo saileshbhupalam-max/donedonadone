@@ -7,6 +7,7 @@ import { ERROR_STATES } from "@/lib/personality";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeProfileData } from "@/lib/profileValidation";
 import { useNavigate } from "react-router-dom";
 import { useState, useCallback } from "react";
 import { Progress } from "@/components/ui/progress";
@@ -126,7 +127,7 @@ export default function Onboarding() {
     setSaving(true);
     try {
       const completion = calculateCompletion();
-      const { error } = await supabase.from("profiles").update({
+      const { error } = await supabase.from("profiles").update(sanitizeProfileData({
         display_name: data.display_name,
         avatar_url: data.avatar_url,
         tagline: data.tagline,
@@ -139,7 +140,7 @@ export default function Onboarding() {
         can_offer: data.can_offer,
         onboarding_completed: true,
         profile_completion: completion,
-      }).eq("id", user.id);
+      })).eq("id", user.id);
 
       if (error) throw error;
 

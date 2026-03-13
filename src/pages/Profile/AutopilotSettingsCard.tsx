@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeProfileData } from "@/lib/profileValidation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { motion } from "framer-motion";
@@ -14,7 +15,7 @@ export function AutopilotSettingsCard({ profile, userId }: { profile: any; userI
   const [preferCircle, setPreferCircle] = useState(profile.autopilot_prefer_circle ?? true);
 
   const save = async (updates: Record<string, any>) => {
-    await supabase.from("profiles").update(updates).eq("id", userId);
+    await supabase.from("profiles").update(sanitizeProfileData(updates)).eq("id", userId);
   };
 
   const DAY_CHIPS = [

@@ -16,6 +16,7 @@
  * Related: RankAvatar.tsx, RankBadge.tsx (visual display), LeaderboardSection.tsx, AchievementsSection.tsx, MonthlyTitlesSection.tsx
  */
 import { supabase } from "@/integrations/supabase/client";
+import { validateFocusHours } from "@/lib/profileValidation";
 
 export interface RankTier {
   name: string;
@@ -137,7 +138,7 @@ export async function addFocusHours(userId: string, hours: number): Promise<void
     .single();
 
   const currentHours = Number(profile?.focus_hours ?? 0);
-  const newHours = Math.round((currentHours + hours) * 10) / 10;
+  const newHours = validateFocusHours(Math.round((currentHours + hours) * 10) / 10);
   const newRank = getRankForHours(newHours);
   const oldRank = getRankForHours(currentHours);
 
