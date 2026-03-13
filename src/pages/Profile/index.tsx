@@ -360,6 +360,16 @@ export default function Profile() {
               </CardContent>
             </Card>
 
+            {/* Profile completion nudge */}
+            {completion < 100 && (
+              <Card className="border-primary/20">
+                <CardContent className="p-3 flex items-center gap-3">
+                  <div className="text-lg font-bold text-primary">{completion}%</div>
+                  <p className="text-xs text-muted-foreground flex-1">Members with complete profiles get better matches. Finish yours in Settings.</p>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Next rank */}
             {nextRank && (
               <p className="text-xs text-muted-foreground text-center">
@@ -412,9 +422,9 @@ export default function Profile() {
             ) : (
               <Card>
                 <CardContent className="p-8 text-center text-muted-foreground">
-                  <p className="font-serif text-lg mb-1">Your journey starts with your first session.</p>
-                  <p className="text-sm">RSVP to a session and start building your story.</p>
-                  <Button variant="outline" size="sm" className="mt-3" onClick={() => navigate("/events")}>Browse Sessions</Button>
+                  <p className="font-serif text-lg mb-1">Your story starts with your first session.</p>
+                  <p className="text-sm">Book a session to start building your journey.</p>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={() => navigate("/events")}>Find a session</Button>
                 </CardContent>
               </Card>
             )}
@@ -436,7 +446,7 @@ export default function Profile() {
                   </label>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground">Display Name *</label>
+                  <label className="text-sm font-medium text-foreground">Display Name</label>
                   <Input value={displayName} onChange={e => setDisplayName(e.target.value)} className="mt-1" />
                 </div>
                 <div>
@@ -480,7 +490,7 @@ export default function Profile() {
                 </div>
                 {gender === "woman" && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-foreground">Women-only meetups</span>
+                    <span className="text-sm text-foreground">Women-only sessions</span>
                     <Switch checked={womenOnly} onCheckedChange={setWomenOnly} />
                   </div>
                 )}
@@ -521,7 +531,7 @@ export default function Profile() {
             {/* Exchange */}
             <Card>
               <CardContent className="pt-4 space-y-5">
-                <h3 className="font-serif text-base text-foreground">Exchange</h3>
+                <h3 className="font-serif text-base text-foreground">What you give and get</h3>
                 <TagInput label="Looking For" tags={lookingFor} onChange={setLookingFor} suggestions={lookingSuggestions} variant="primary" placeholder="Type + Enter" />
                 <TagInput label="Can Offer" tags={canOffer} onChange={setCanOffer} suggestions={offerSuggestions} variant="secondary" placeholder="Type + Enter" />
               </CardContent>

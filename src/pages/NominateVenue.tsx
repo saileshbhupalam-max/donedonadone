@@ -267,7 +267,7 @@ export default function NominateVenue() {
         {view === "list" && (
           <>
             <Button className="w-full" onClick={() => setView("nominate")}>
-              <Plus className="w-4 h-4 mr-2" /> Nominate a New Venue
+              <Plus className="w-4 h-4 mr-2" /> Suggest a new spot
             </Button>
 
             {(!readiness?.nominations || readiness.nominations.length === 0) ? (
@@ -275,7 +275,7 @@ export default function NominateVenue() {
                 <CardContent className="py-8 text-center">
                   <MapPin className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                   <p className="text-sm text-muted-foreground">
-                    No nominations yet. Be the first to nominate your favorite work spot!
+                    No nominations yet. Be the first to suggest a great work spot!
                   </p>
                 </CardContent>
               </Card>
@@ -344,7 +344,7 @@ export default function NominateVenue() {
           <Card>
             <CardContent className="p-4 space-y-4">
               <div>
-                <Label>Venue Name *</Label>
+                <Label>Venue Name</Label>
                 <Input
                   value={form.venue_name}
                   onChange={(e) => setForm({ ...form, venue_name: e.target.value })}
@@ -352,7 +352,7 @@ export default function NominateVenue() {
                 />
               </div>
               <div>
-                <Label>Address *</Label>
+                <Label>Address</Label>
                 <Input
                   value={form.address}
                   onChange={(e) => setForm({ ...form, address: e.target.value })}
@@ -418,7 +418,7 @@ export default function NominateVenue() {
                 onClick={handleNominate}
               >
                 {submitting || uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <MapPin className="w-4 h-4 mr-2" />}
-                {uploading ? "Uploading photo..." : submitting ? "Submitting..." : "Submit Nomination"}
+                {uploading ? "Uploading photo..." : submitting ? "Adding..." : "Add this spot"}
               </Button>
             </CardContent>
           </Card>

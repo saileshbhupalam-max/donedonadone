@@ -24,7 +24,7 @@ export function InviteSection({ userId, referralCode }: { userId?: string; refer
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-medium text-foreground">Your Invites</h3>
+      <h3 className="text-sm font-medium text-foreground">Invite your people</h3>
       {referralCount > 0 && (
         <div className="space-y-2">
           <p className="text-xs text-foreground font-medium">{referralCount} {referralCount === 1 ? "person" : "people"} joined through your link 🎉</p>
@@ -42,7 +42,7 @@ export function InviteSection({ userId, referralCode }: { userId?: string; refer
         <Input value={inviteLink} readOnly className="text-xs flex-1" />
         <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(inviteLink); sonnerToast.success("Link copied!"); }}>Copy</Button>
       </div>
-      <WhatsAppShareButton message={`Hey! I'm on donedonadone — a community for people who cowork in Bangalore. Join me: ${inviteLink}`} label="Share on WhatsApp" fullWidth />
+      <WhatsAppShareButton message={`Hey! I've been coworking with people at cafes through donedonadone — it's way better than working alone. Join me: ${inviteLink}`} label="Share on WhatsApp" fullWidth />
     </div>
   );
 }
