@@ -56,7 +56,7 @@ Ordered by conversion impact × traffic volume. Every user hits tiers 1-2. Tiers
 | 12 | **Partner Apply** (`PartnerApply.tsx`) | `/cxl:forms` + `/cxl:landing-page` | Venue → Partner application | MEDIUM |
 | 13 | **Company Create** (`CompanyCreate.tsx`) | `/cxl:forms` | Member → Company creator | LOW |
 | 14 | **Needs Page** (`Needs.tsx`) | `/cxl:copy` + `/cxl:optimize` | Browse → Create/respond to need | LOW |
-| 15 | **Public Pages** (SpaceInsights, SpaceLive) | `/cxl:optimize` | Visitor → Sign-up | LOW |
+| 15 | **Public Pages** (SpaceInsights, SpaceLive) | `/cxl:optimize` | Visitor → Sign-up | DONE |
 
 ---
 

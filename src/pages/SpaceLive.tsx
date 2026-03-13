@@ -78,7 +78,7 @@ export default function SpaceLive() {
     { icon: Users, label: "people focused right now", value: data.activeCount },
     { icon: Zap, label: "focused hours this month", value: data.monthlyHours },
     { icon: Users, label: "unique coworkers this week", value: data.weeklyUnique },
-    { icon: Calendar, label: data.nextSession ? `Next: ${data.nextSession.format} — ${data.nextSession.spotsLeft} spots left` : "Check focusclub.in for sessions", value: data.nextSession ? data.nextSession.date : "" },
+    { icon: Calendar, label: data.nextSession ? `Next: ${data.nextSession.format} — ${data.nextSession.spotsLeft} spots left` : "No sessions scheduled yet", value: data.nextSession ? data.nextSession.date : "" },
   ];
 
   const current = stats[statIdx];
@@ -110,7 +110,7 @@ export default function SpaceLive() {
       <div className="flex flex-col items-center gap-4">
         <div className="w-40 h-40 rounded-2xl border-2 border-primary/30 bg-primary/5 flex items-center justify-center">
           <p className="text-sm text-muted-foreground text-center px-4">
-            Scan QR to join
+            Scan to join the table
           </p>
         </div>
         <p className="text-sm text-muted-foreground">

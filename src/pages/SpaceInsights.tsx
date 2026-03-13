@@ -384,7 +384,7 @@ function LiveConversionHero({ locationId }: { locationId: string }) {
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <p className="text-sm text-muted-foreground">Be the first to book a session here</p>
             <Button asChild size="sm" variant="outline" className="w-fit">
-              <Link to="/events">Browse Events</Link>
+              <Link to="/events">Browse sessions</Link>
             </Button>
           </div>
         )}
@@ -393,7 +393,7 @@ function LiveConversionHero({ locationId }: { locationId: string }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
           <Button asChild size="sm" variant="default" className="w-fit">
             <Link to="/">
-              Join donedonadone <ArrowRight className="w-4 h-4 ml-1" />
+              Join the community <ArrowRight className="w-4 h-4 ml-1" />
             </Link>
           </Button>
           <span className="text-xs text-muted-foreground">
@@ -670,7 +670,7 @@ export default function SpaceInsights() {
                 >
                   donedonadone
                 </a>{" "}
-                -- Group coworking for Bangalore
+                -- Group coworking at cafes in Bangalore
               </p>
             </footer>
           </>
