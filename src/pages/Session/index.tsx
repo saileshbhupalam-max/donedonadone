@@ -32,37 +32,10 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { CaptainBadge } from "@/components/captain/CaptainCard";
 import { ScrapbookPrompt } from "@/components/session/ScrapbookPrompt";
 
-type Profile = Tables<"profiles">;
-
-interface Phase {
-  id: string;
-  phase_order: number;
-  phase_type: string;
-  phase_label: string;
-  duration_minutes: number;
-}
-
-interface MemberStatusRow {
-  user_id: string;
-  status: string;
-  until_time: string | null;
-  topic: string | null;
-  profile?: Profile;
-}
-
-const PHASE_EMOJIS: Record<string, string> = {
-  icebreaker: "👋",
-  deep_work: "🎯",
-  mini_break: "☕",
-  social_break: "🗣️",
-  wrap_up: "🎉",
-};
-
-const STATUS_CONFIG = {
-  red: { label: "Deep Focus", emoji: "🔴", ringClass: "ring-destructive" },
-  amber: { label: "Open to Chat", emoji: "🟡", ringClass: "ring-[hsl(40,80%,55%)]" },
-  green: { label: "Free", emoji: "🟢", ringClass: "ring-secondary" },
-};
+import { Profile, Phase, MemberStatusRow } from "./types";
+import { PHASE_EMOJIS, STATUS_CONFIG } from "./constants";
+import { SessionPreStart } from "./SessionPreStart";
+import { TrafficLightPanel } from "./TrafficLightPanel";
 
 export default function SessionPage() {
   const { eventId } = useParams<{ eventId: string }>();
@@ -358,39 +331,18 @@ export default function SessionPage() {
         <h1 className="font-serif text-xl text-foreground">{event.title}</h1>
 
         {!sessionStarted ? (
-          <Card className="border-primary/20">
-            <CardContent className="p-6 text-center space-y-4">
-              <p className="font-serif text-lg text-foreground">Ready to start?</p>
-              <div className="space-y-2">
-                {phases.map((p) => (
-                  <div key={p.id} className="flex items-center gap-3 text-sm">
-                    <span className="text-lg">{PHASE_EMOJIS[p.phase_type] || "📋"}</span>
-                    <span className="flex-1 text-left text-foreground">{p.phase_label}</span>
-                    <span className="text-muted-foreground">{p.duration_minutes}min</span>
-                  </div>
-                ))}
-              </div>
-              {event.vibe_soundtrack && (
-                <a href={event.vibe_soundtrack} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
-                  <Music className="w-3 h-3" /> Session Playlist <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
-              {!checkedIn ? (
-                <CheckInButton
-                  eventId={eventId!}
-                  userId={user?.id || ""}
-                  onCheckedIn={() => {
-                    setCheckedIn(true);
-                    startSession();
-                  }}
-                  hasVenueCoords={!!event?.venue_latitude}
-                />
-              ) : (
-                <Button className="w-full" onClick={startSession}>Start Session</Button>
-              )}
-            </CardContent>
-          </Card>
+          <SessionPreStart
+            event={event}
+            phases={phases}
+            checkedIn={checkedIn}
+            eventId={eventId!}
+            userId={user?.id || ""}
+            onCheckedIn={() => {
+              setCheckedIn(true);
+              startSession();
+            }}
+            onStartSession={startSession}
+          />
         ) : (
           <>
             {/* Phase dots */}
@@ -474,7 +426,7 @@ export default function SessionPage() {
                     placeholder="What do you want to accomplish?"
                     maxLength={140}
                   />
-                  <Button size="sm" onClick={() => saveIntention()} disabled={!intention.trim()}>Set Intention 🎯</Button>
+                  <Button size="sm" onClick={() => saveIntention()} disabled={!intention.trim()}>Set Intention {"\u{1F3AF}"}</Button>
                 </CardContent>
               </Card>
             )}
@@ -565,7 +517,7 @@ export default function SessionPage() {
                 return (
                   <Card className="border-secondary/20 bg-secondary/5">
                     <CardContent className="p-3 space-y-2">
-                      <p className="text-xs font-medium text-secondary">💡 Suggested connections</p>
+                      <p className="text-xs font-medium text-secondary">{"\u{1F4A1}"} Suggested connections</p>
                       {suggestions.map(s => (
                         <div key={s.user_id} className="flex items-center gap-2 text-sm">
                           <Avatar className="w-6 h-6">
@@ -583,84 +535,15 @@ export default function SessionPage() {
             )}
 
             {/* Traffic Light Status */}
-            <Card>
-              <CardContent className="p-4 space-y-3">
-                <h3 className="font-serif text-sm text-foreground">Your Status</h3>
-                <div className="flex gap-2">
-                  {(["red", "amber", "green"] as const).map(s => (
-                    <Button
-                      key={s}
-                      size="sm"
-                      variant={myStatus === s ? "default" : "outline"}
-                      className={cn("flex-1", myStatus === s && s === "red" && "bg-destructive text-destructive-foreground",
-                        myStatus === s && s === "green" && "bg-secondary text-secondary-foreground")}
-                      onClick={() => updateMyStatus(s, undefined, topic || undefined)}
-                    >
-                      {STATUS_CONFIG[s].emoji} {STATUS_CONFIG[s].label}
-                    </Button>
-                  ))}
-                </div>
-                {myStatus === "amber" && (
-                  <Input
-                    value={topic}
-                    onChange={e => setTopic(e.target.value)}
-                    placeholder="Topics you're open to discuss"
-                    onBlur={() => updateMyStatus("amber", undefined, topic)}
-                    className="text-xs"
-                  />
-                )}
-
-                <h3 className="font-serif text-sm text-foreground mt-3">Your Table</h3>
-                <div className="space-y-2">
-                  {groupStatuses.filter(s => s.user_id !== user?.id).map(s => {
-                    const cfg = STATUS_CONFIG[s.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.green;
-                    return (
-                      <div key={s.user_id} className="flex items-center gap-3">
-                        <div className={cn("rounded-full ring-2 p-0.5", cfg.ringClass)}>
-                          <Avatar className="w-8 h-8">
-                            <AvatarImage src={s.profile?.avatar_url || ""} />
-                            <AvatarFallback className="text-[10px]">{getInitials(s.profile?.display_name)}</AvatarFallback>
-                          </Avatar>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-sm font-medium text-foreground">{s.profile?.display_name || "Member"}</p>
-                            {s.profile?.is_table_captain && <CaptainBadge />}
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {s.status === "red" && `Deep focus${s.until_time ? ` until ${new Date(s.until_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}`}
-                            {s.status === "amber" && `💬 ${s.topic || "Open to chat"}`}
-                            {s.status === "green" && "☕ Light work, come chat"}
-                          </p>
-                        </div>
-                        <span className="text-lg">{cfg.emoji}</span>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <button className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-destructive" title="Report">
-                              <Flag className="w-3.5 h-3.5" />
-                            </button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <FlagMemberForm
-                              eventId={eventId!}
-                              attendees={groupStatuses.filter(gs => gs.user_id !== user?.id).map(gs => ({
-                                id: gs.user_id,
-                                display_name: gs.profile?.display_name || null,
-                                avatar_url: gs.profile?.avatar_url || null,
-                              }))}
-                              onDone={() => {}}
-                            />
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    );
-                  })}
-                  {groupStatuses.filter(s => s.user_id !== user?.id).length === 0 && (
-                    <p className="text-xs text-muted-foreground text-center">No one else has joined yet</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <TrafficLightPanel
+              myStatus={myStatus}
+              topic={topic}
+              groupStatuses={groupStatuses}
+              userId={user?.id || ""}
+              eventId={eventId!}
+              onStatusUpdate={updateMyStatus}
+              onTopicChange={setTopic}
+            />
 
             {event.vibe_soundtrack && (
               <a href={event.vibe_soundtrack} target="_blank" rel="noopener noreferrer"

@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { AppShell } from "@/components/layout/AppShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,77 +56,10 @@ import { UpgradeSessionPrompt } from "@/components/upgrade/UpgradeSessionPrompt"
 import { BoostMathBanner } from "@/components/upgrade/BoostMathBanner";
 import { WeeklyDigest } from "@/components/dashboard/WeeklyDigest";
 
-type Profile = Tables<"profiles">;
-
-interface ActivePrompt {
-  id: string;
-  question: string;
-  emoji: string | null;
-  response_count: number | null;
-  userAnswered: boolean;
-}
-
-interface NextMeetup {
-  id: string;
-  title: string;
-  date: string;
-  start_time: string | null;
-  venue_name: string | null;
-  goingCount: number;
-}
-
-interface PendingFeedback {
-  id: string;
-  title: string;
-  date: string;
-}
-
-interface CommunityStats {
-  totalMembers: number;
-  promptAnswersThisWeek: number;
-  upcomingEvents: number;
-}
-
-interface PostSessionSummary {
-  eventTitle: string;
-  venueName: string | null;
-  hours: number;
-  coworkers: string[];
-  intention: string | null;
-  accomplished: string | null;
-  propsReceived: Array<{ prop_type: string; count: number }>;
-  streak: number;
-  eventId: string;
-}
-
-interface WeeklyDigest {
-  sessions: number;
-  hours: number;
-  propsGiven: number;
-  propsReceived: number;
-  streak: number;
-  topPercent: number | null;
-}
-
-function getFirstName(name: string | null) {
-  return name?.split(" ")[0] || "there";
-}
-
-function getNextAction(p: Profile): string | null {
-  // Return highest-value missing field
-  if (!p.what_i_do) return "Add what you do to reach higher completion";
-  if (!p.display_name) return "Add your name";
-  if (!p.avatar_url) return "Upload a profile photo";
-  if (!p.tagline) return "Add a tagline";
-  if ((p.looking_for ?? []).length === 0) return "Add what you're looking for";
-  if ((p.can_offer ?? []).length === 0) return "Share what you can offer";
-  if (!p.linkedin_url && !p.instagram_handle && !p.twitter_handle) return "Add a social link";
-  if ((p.interests ?? []).length === 0) return "Add your interests";
-  if (!p.work_vibe) return "Set your work vibe";
-  if (!p.gender) return "Set your gender";
-  if (!p.neighborhood) return "Pick your neighborhood";
-  return null;
-}
+import type { Profile, ActivePrompt, NextMeetup, PendingFeedback, CommunityStats, PostSessionSummary, WeeklyDigestData } from "./types";
+import { getFirstName, getNextAction } from "./helpers";
+import { StreakIndicator } from "./StreakIndicator";
+import { PushOptInCard } from "./PushOptInCard";
 
 export default function Home() {
   const personality = usePersonality();
@@ -148,7 +80,7 @@ export default function Home() {
   const [pendingFeedback, setPendingFeedback] = useState<PendingFeedback[]>([]);
   const [showPropsForEvent, setShowPropsForEvent] = useState<string | null>(null);
   const [postSessionSummary, setPostSessionSummary] = useState<PostSessionSummary | null>(null);
-  const [weeklyDigest, setWeeklyDigest] = useState<WeeklyDigest | null>(null);
+  const [weeklyDigest, setWeeklyDigest] = useState<WeeklyDigestData | null>(null);
   const [celebrateMilestone, setCelebrateMilestone] = useState<MilestoneDef | null>(null);
   const [enhancedDigest, setEnhancedDigest] = useState<any>(null);
   const [nearbySessions, setNearbySessions] = useState<any[]>([]);
@@ -287,7 +219,7 @@ export default function Home() {
       const { data: yesterdayFeedback } = await supabase.from("event_feedback")
         .select("event_id, events:event_id(id, title, venue_name, start_time, end_time, session_format)")
         .eq("user_id", user.id).eq("attended", true);
-      
+
       if (yesterdayFeedback) {
         const yesterdayEvent = yesterdayFeedback.find((f: any) => {
           const ev = f.events;
@@ -300,17 +232,17 @@ export default function Home() {
             .select("profiles:user_id(display_name)")
             .eq("event_id", ev.id).eq("status", "going").neq("user_id", user.id).limit(5);
           const coworkers = (coworkerRsvps || []).map((r: any) => r.profiles?.display_name?.split(" ")[0] || "").filter(Boolean);
-          
+
           // Get intention
           const { data: intentionData } = await supabase.from("session_intentions")
             .select("intention, accomplished").eq("event_id", ev.id).eq("user_id", user.id).maybeSingle();
-          
+
           // Get props received
           const { data: props } = await supabase.from("peer_props")
             .select("prop_type").eq("to_user", user.id).eq("event_id", ev.id);
           const propCounts: Record<string, number> = {};
           (props || []).forEach((p: any) => { propCounts[p.prop_type] = (propCounts[p.prop_type] || 0) + 1; });
-          
+
           setPostSessionSummary({
             eventTitle: ev.title,
             venueName: ev.venue_name,
@@ -330,21 +262,21 @@ export default function Home() {
       if (isMonday(now)) {
         const weekStart = startOfWeek(subDays(now, 7), { weekStartsOn: 1 }).toISOString();
         const weekEnd = endOfWeek(subDays(now, 7), { weekStartsOn: 1 }).toISOString();
-        
+
         const [weekFeedback, weekPropsGiven, weekPropsReceived, allProfs] = await Promise.all([
           supabase.from("event_feedback").select("id").eq("user_id", user.id).eq("attended", true).gte("created_at", weekStart).lte("created_at", weekEnd),
           supabase.from("peer_props").select("id", { count: "exact", head: true }).eq("from_user", user.id).gte("created_at", weekStart).lte("created_at", weekEnd),
           supabase.from("peer_props").select("id", { count: "exact", head: true }).eq("to_user", user.id).gte("created_at", weekStart).lte("created_at", weekEnd),
           supabase.from("profiles").select("focus_hours").eq("onboarding_completed", true),
         ]);
-        
+
         const sessionsCount = weekFeedback.data?.length || 0;
         if (sessionsCount > 0) {
           const myHours = Number(profile.focus_hours ?? 0);
           const allHours = (allProfs.data || []).map(p => Number(p.focus_hours ?? 0)).sort((a, b) => b - a);
           const myRank = allHours.findIndex(h => h <= myHours) + 1;
           const topPercent = allHours.length > 0 ? Math.round((myRank / allHours.length) * 100) : null;
-          
+
           setWeeklyDigest({
             sessions: sessionsCount,
             hours: sessionsCount * 2, // approximate
@@ -487,75 +419,6 @@ export default function Home() {
       </div>
     </AppShell>
   );
-
-function StreakIndicator({ userId }: { userId: string }) {
-  const [streakDays, setStreakDays] = useState(0);
-
-  useEffect(() => {
-    supabase
-      .from("user_engagement_scores")
-      .select("streak_days")
-      .eq("user_id", userId)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) setStreakDays(data.streak_days || 0);
-      });
-  }, [userId]);
-
-  if (streakDays <= 0) return null;
-
-  return (
-    <p className="text-xs text-muted-foreground">
-      🔥 {streakDays}-day streak{streakDays >= 7 ? " — You're on fire!" : ""}
-    </p>
-  );
-}
-
-function PushOptInCard() {
-  const { isPushSupported, isPushEnabled, requestPushPermission } = usePushNotifications();
-  const [dismissed, setDismissed] = useState(() => localStorage.getItem("fc_push_dismissed") === "true");
-  const [totalCheckins, setTotalCheckins] = useState(0);
-
-  useEffect(() => {
-    supabase.from("check_ins").select("id", { count: "exact", head: true })
-      .then(({ count }) => setTotalCheckins(count || 0));
-  }, []);
-
-  if (!isPushSupported || isPushEnabled || dismissed || totalCheckins < 2) return null;
-
-  const handleEnable = async () => {
-    const success = await requestPushPermission();
-    if (success) {
-      toast.success("Push notifications enabled!");
-    }
-  };
-
-  const handleDismiss = () => {
-    localStorage.setItem("fc_push_dismissed", "true");
-    setDismissed(true);
-  };
-
-  return (
-    <Card className="border-primary/20 bg-primary/5">
-      <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          <Bell className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-          <div className="flex-1 space-y-2">
-            <p className="text-sm font-medium text-foreground">Never miss a coffee match ☕</p>
-            <p className="text-xs text-muted-foreground">Get notified about matches, props, and session updates even when you're away.</p>
-            <div className="flex gap-2">
-              <Button size="sm" className="text-xs" onClick={handleEnable}>Enable notifications</Button>
-              <Button size="sm" variant="ghost" className="text-xs text-muted-foreground" onClick={handleDismiss}>Not now</Button>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-
-
 
   return (
     <AppShell>
@@ -1026,14 +889,14 @@ function PushOptInCard() {
                         if (error) throw error;
                         const { data: prof } = await supabase.from("profiles").select("events_attended").eq("id", user!.id).single();
                         await supabase.from("profiles").update({ events_attended: (prof?.events_attended || 0) + 1 }).eq("id", user!.id);
-                        
+
                         // Add focus hours
                         const { data: eventData } = await supabase.from("events").select("title, start_time, end_time, session_format").eq("id", ev.id).single();
                         if (eventData) {
                           const hours = calculateSessionHours(eventData.start_time, eventData.end_time, eventData.title, eventData.session_format);
                           await addFocusHours(user!.id, hours);
                         }
-                        
+
                         setPendingFeedback((p) => p.filter((e) => e.id !== ev.id));
                         setShowPropsForEvent(ev.id);
                       } catch (error) {
