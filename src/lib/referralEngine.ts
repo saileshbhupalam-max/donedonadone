@@ -12,6 +12,7 @@
  * Tables: referral_rewards, profiles, focus_credits
  */
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { awardCredits } from "@/lib/focusCredits";
 import { getGrowthConfig } from "@/lib/growthConfig";
 
@@ -109,6 +110,10 @@ export async function checkReferralMilestones(
     creditAmount,
     { referral_user_id: refereeId }
   );
+
+  if (result.success) {
+    toast(`\u{1F91D} +${result.awarded} FC \u2014 Referral bonus!`);
+  }
 
   // Record the milestone
   await supabase

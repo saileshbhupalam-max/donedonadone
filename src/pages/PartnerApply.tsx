@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, MapPin, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, MapPin, CheckCircle2, Loader2, Users, Clock, BadgeIndianRupee, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const VENUE_TYPES = [
@@ -275,6 +275,29 @@ export default function PartnerApply() {
       <div className="px-4 py-4 max-w-lg mx-auto space-y-4">
         <h1 className="font-serif text-2xl text-foreground">List Your Venue</h1>
         <p className="text-xs text-muted-foreground">Join donedonadone as a partner venue and attract focused professionals to your space.</p>
+
+        {/* Revenue model — brief explainer so venue owners understand the deal upfront */}
+        {step === 0 && (
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="p-4 space-y-3">
+              <p className="text-sm font-medium text-foreground">How it works</p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { icon: Users, text: "We send groups of 3\u20135 focused professionals to your venue" },
+                  { icon: Clock, text: "Sessions run 2\u20134 hours during your regular hours" },
+                  { icon: BadgeIndianRupee, text: "No commission on your sales \u2014 we charge members directly" },
+                  { icon: TrendingUp, text: "Average venue sees 10\u201315 sessions/week within 3 months" },
+                ].map((item) => (
+                  <div key={item.text} className="flex items-start gap-2">
+                    <item.icon className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-primary" />
+                    <p className="text-xs text-muted-foreground leading-snug">{item.text}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground/70">You set your own pricing for food and drinks. We handle matching, check-ins, and logistics.</p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Progress */}
         <div className="space-y-2">

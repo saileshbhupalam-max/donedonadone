@@ -15,6 +15,7 @@
  * Tables: focus_credits (ledger), profiles (session counts)
  */
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { getGrowthConfig } from "@/lib/growthConfig";
 
 // ─── Types ──────────────────────────────────
@@ -332,7 +333,13 @@ export async function checkAndAwardStreak(userId: string): Promise<AwardResult> 
     return { success: false, awarded: 0, reason: 'not_enough_sessions' };
   }
 
-  return awardCredits(userId, 'streak_bonus', config.streakBonus, {
+  const streakResult = await awardCredits(userId, 'streak_bonus', config.streakBonus, {
     sessions_this_month: sessionCount,
   } as CreditMetadata);
+
+  if (streakResult.success) {
+    toast(`\u{1F525} +${streakResult.awarded} FC \u2014 Streak bonus!`);
+  }
+
+  return streakResult;
 }

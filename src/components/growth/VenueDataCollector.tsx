@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { cn } from "@/lib/utils";
 import { submitVenueContribution, type ContributionType, type ContributionData } from "@/lib/venueContributions";
 import { awardCredits } from "@/lib/focusCredits";
+import { toast } from "sonner";
 
 type SectionContribution = {
   type: ContributionType;
@@ -201,6 +202,19 @@ export function VenueDataCollector({ venueId, venueName, userId, trigger, onComp
     const result = await submitSectionData(userId, venueId, key, contributions);
     setCompletedSections((prev) => new Set(prev).add(key));
     setEarnedFC((prev) => prev + result.creditsEarned);
+    // Show FC toast based on contribution type
+    if (result.creditsEarned > 0) {
+      const sectionToastMap: Record<string, string> = {
+        photos: `\u{1F4F8} +${result.creditsEarned} FC \u2014 Photo uploaded!`,
+        noise: `\u2728 +${result.creditsEarned} FC earned!`,
+        wifi: `\u2728 +${result.creditsEarned} FC earned!`,
+        basic: `\u2728 +${result.creditsEarned} FC earned!`,
+        amenities: `\u2728 +${result.creditsEarned} FC earned!`,
+        food: `\u2728 +${result.creditsEarned} FC earned!`,
+        companies: `\u2728 +${result.creditsEarned} FC earned!`,
+      };
+      toast(sectionToastMap[key] || `\u2728 +${result.creditsEarned} FC earned!`);
+    }
     if (result.bonusMultiplier > 1) {
       setLastBonus(`${result.bonusMultiplier}x bonus!`);
       setTimeout(() => setLastBonus(null), 3000);

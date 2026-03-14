@@ -152,7 +152,7 @@ export default function NominateVenue() {
 
     if (result.success) {
       trackFunnelStep("venue_nomination", 2, "submit_nomination");
-      toast.success(`Venue nominated! +${result.creditsAwarded} FC`);
+      toast.success(`\u{1F3E0} +${result.creditsAwarded} FC \u2014 Venue nominated!`);
       setForm({ venue_name: "", address: "", google_maps_url: "", wifi_available: true });
       setPhotoFile(null);
       setPhotoPreview(null);
@@ -182,9 +182,9 @@ export default function NominateVenue() {
       trackFunnelStep("venue_nomination", 3, "vouch_cast", { nomination_id: selectedNomination.id });
       if (result.activated) {
         trackFunnelStep("venue_nomination", 4, "venue_activated", { nomination_id: selectedNomination.id });
-        toast.success("Venue verified and activated! This venue is now live.");
+        toast.success(`\u2705 +${result.creditsAwarded} FC \u2014 Vouch submitted! Venue is now live.`);
       } else {
-        toast.success(`Vouch recorded! +${result.creditsAwarded} FC`);
+        toast.success(`\u2705 +${result.creditsAwarded} FC \u2014 Vouch submitted!`);
       }
       setView("list");
       const r = await getNeighborhoodReadiness(userNeighborhood);

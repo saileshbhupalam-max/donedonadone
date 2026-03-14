@@ -43,6 +43,7 @@ import { usePersonality } from "@/contexts/PersonalityContext";
 import { motion } from "framer-motion";
 import { PullToRefresh } from "@/components/ui/PullToRefresh";
 import { PrimaryActionCard } from "@/components/home/PrimaryActionCard";
+import { NextMilestoneIndicator } from "@/components/home/NextMilestone";
 import { ProfilePromptCard } from "@/components/home/ProfilePromptCard";
 import { GratitudeEchoCard } from "@/components/home/GratitudeEchoCard";
 import { CommunityRitualCard } from "@/components/home/CommunityRitualCard";
@@ -462,6 +463,11 @@ export default function Home() {
           pendingFeedback={pendingFeedback}
           upcomingEvent={upcomingEvent}
         />
+
+        {/* Next milestone progression — shows closest achievable goal */}
+        {(profile.events_attended || 0) >= 1 && (
+          <NextMilestoneIndicator profile={profile} />
+        )}
 
         {/* Milestone Celebration */}
         {celebrateMilestone && (

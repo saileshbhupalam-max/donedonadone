@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { submitVenueContribution, ContributionType } from "@/lib/venueContributions";
 import { awardCredits } from "@/lib/focusCredits";
 import { getGrowthConfig } from "@/lib/growthConfig";
+import { toast } from "sonner";
 
 const SECTION_CONTRIBUTION_MAP: Record<string, ContributionType | null> = {
   groupRating: null, // uses awardCredits directly
@@ -118,6 +119,17 @@ export function PostSessionContribution({ sessionId, venueId, userId, onComplete
     newCompleted.add(key);
     setCompleted(newCompleted);
     setEarnedFC((prev) => prev + result.creditsEarned);
+    // Show FC toast based on contribution type
+    if (result.creditsEarned > 0) {
+      const sectionToastMap: Record<string, string> = {
+        groupRating: `\u{1F3AF} +${result.creditsEarned} FC \u2014 Session complete!`,
+        noise: `\u2728 +${result.creditsEarned} FC earned!`,
+        wifi: `\u2728 +${result.creditsEarned} FC earned!`,
+        seating: `\u2728 +${result.creditsEarned} FC earned!`,
+        photo: `\u{1F4F8} +${result.creditsEarned} FC \u2014 Photo uploaded!`,
+      };
+      toast(sectionToastMap[key] || `\u2728 +${result.creditsEarned} FC earned!`);
+    }
     if (result.bonusMultiplier > 1) {
       setBonusHistory((prev) => [...prev, `${result.bonusMultiplier}x bonus on ${key}!`]);
     }

@@ -42,7 +42,7 @@ export function VenueHealthCheckPrompt({
 
     if (result.success) {
       setDone(true);
-      toast.success(`Venue checked! +${result.creditsAwarded} FC`);
+      toast.success(`\u2705 +${result.creditsAwarded} FC \u2014 Venue checked!`);
       if (result.venueDeactivated) {
         toast.info("This venue has been flagged for review based on recent reports.");
       }

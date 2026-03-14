@@ -1,4 +1,4 @@
-import { MapPin, Shield, Lock, Users, Coffee, UserPlus, Zap, ChevronDown, Sparkles, CalendarDays, ArrowRight } from "lucide-react";
+import { MapPin, Shield, Lock, Users, Coffee, UserPlus, Zap, ChevronDown, Sparkles, CalendarDays, ArrowRight, Clock, CheckCircle, Star, Store } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -377,6 +377,96 @@ const Index = () => {
                 {trust.label}
               </span>
             ))}
+          </div>
+        </div>
+      </section>
+
+
+      {/* ═══════════════════════════════════════════════════════════
+          VENUE PARTNERS — Targets café/coworking owners
+          Positioned before final CTA to capture a secondary audience
+          ═══════════════════════════════════════════════════════════ */}
+      <section
+        className="py-20 sm:py-28 px-6 sm:px-10"
+        style={{
+          background: 'radial-gradient(ellipse at 30% 80%, rgba(210, 120, 50, 0.06) 0%, transparent 60%), linear-gradient(175deg, #1a1410 0%, #1e1814 100%)',
+        }}
+      >
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Store className="w-5 h-5" style={{ color: '#e07830' }} />
+          </div>
+          <h3
+            className="font-display text-3xl sm:text-4xl text-center mb-4 leading-snug"
+            style={{ color: '#f5f0e8' }}
+          >
+            Own a café or coworking space?
+          </h3>
+          <p
+            className="text-center text-sm sm:text-base mb-14 font-body max-w-md mx-auto leading-relaxed"
+            style={{ color: 'rgba(245, 240, 232, 0.45)' }}
+          >
+            Turn empty seats into a community hub. We send focused professionals to your door — you keep doing what you do best.
+          </p>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              {
+                icon: Clock,
+                title: "Fill off-peak hours",
+                desc: "We match professionals to your quieter slots. More covers, zero marketing spend.",
+              },
+              {
+                icon: CheckCircle,
+                title: "Zero setup required",
+                desc: "We handle matching, check-ins, and payments. You just welcome great people.",
+              },
+              {
+                icon: Star,
+                title: "Community-powered quality",
+                desc: "Members rate every session. Top-rated venues get more bookings automatically.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-xl p-5 sm:p-6 transition-shadow hover:shadow-md"
+                style={{
+                  background: 'rgba(245, 240, 232, 0.04)',
+                  border: '1px solid rgba(245, 240, 232, 0.06)',
+                }}
+              >
+                <item.icon className="w-5 h-5 mb-3" style={{ color: '#e07830' }} />
+                <h4 className="font-display text-base mb-2" style={{ color: '#f5f0e8' }}>
+                  {item.title}
+                </h4>
+                <p className="text-sm leading-relaxed font-body" style={{ color: 'rgba(245, 240, 232, 0.4)' }}>
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-center mt-12">
+            <button
+              onClick={() => navigate("/partners")}
+              className="group inline-flex items-center gap-2 rounded-full px-6 py-3.5 sm:px-8 sm:py-4 text-sm sm:text-base font-medium font-body transition-all duration-300 hover:-translate-y-0.5"
+              style={{
+                background: 'transparent',
+                color: '#e8a06a',
+                border: '1px solid rgba(224, 120, 48, 0.35)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(224, 120, 48, 0.08)';
+                e.currentTarget.style.borderColor = 'rgba(224, 120, 48, 0.5)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.borderColor = 'rgba(224, 120, 48, 0.35)';
+              }}
+            >
+              List your venue
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            </button>
           </div>
         </div>
       </section>

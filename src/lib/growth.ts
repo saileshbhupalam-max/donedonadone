@@ -15,6 +15,7 @@
  * Related: MilestoneCelebration.tsx (celebration UI), GrowthCards.tsx (progressive unlock cards), badges.ts (separate badge system)
  */
 import { parseISO } from "date-fns";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 // ─── Analytics Tracking ──────────────────────────────────
@@ -272,7 +273,10 @@ export async function checkReEngagement(userId: string) {
       .gte("created_at", thirtyDaysAgo).limit(1);
     if (!recentComeback || recentComeback.length === 0) {
       const { awardCredits } = await import("@/lib/focusCredits");
-      await awardCredits(userId, "comeback_bonus" as any, 15, { days_away: daysSinceActive });
+      const comebackResult = await awardCredits(userId, "comeback_bonus" as any, 15, { days_away: daysSinceActive });
+      if (comebackResult.success) {
+        toast(`\u{1F389} +${comebackResult.awarded} FC \u2014 Welcome back!`);
+      }
       trackAnalyticsEvent("comeback_visit", userId, { days_away: daysSinceActive });
     }
   }

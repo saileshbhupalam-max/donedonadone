@@ -152,19 +152,36 @@ export async function vouchForVenue(
   data: VouchData
 ): Promise<{ success: boolean; activated: boolean; creditsAwarded: number; error?: string }> {
   // Quality gate: voucher must have attended at least 1 session (prevents fake accounts)
+  // OR be an approved venue partner (they have skin in the game already)
   const { data: voucherProfile } = await supabase
     .from("profiles")
     .select("events_attended")
     .eq("id", userId)
     .single();
 
-  if (!voucherProfile || (voucherProfile.events_attended ?? 0) < 1) {
-    return {
-      success: false,
-      activated: false,
-      creditsAwarded: 0,
-      error: "Attend at least 1 session before vouching for venues",
-    };
+  const hasAttendedSession = voucherProfile && (voucherProfile.events_attended ?? 0) >= 1;
+
+  if (!hasAttendedSession) {
+    // Check if user is an approved venue partner — they're exempt from the
+    // session attendance requirement because partner approval already
+    // establishes trust (admin-verified, venue on the line)
+    const { data: partnerApp } = await supabase
+      .from("partner_applications")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("status", "approved")
+      .maybeSingle();
+
+    const isApprovedPartner = !!partnerApp;
+
+    if (!isApprovedPartner) {
+      return {
+        success: false,
+        activated: false,
+        creditsAwarded: 0,
+        error: "Attend at least 1 session before vouching — or apply as a venue partner to get started right away.",
+      };
+    }
   }
 
   // Insert vouch (RLS prevents vouching own nomination)
