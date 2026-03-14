@@ -83,26 +83,26 @@ export function useUserContext(): UserContextReturn {
   useEffect(() => {
     if (!user) { setLoading(false); return; }
 
+    let mounted = true;
     const fetchAll = async () => {
-      // Fetch taste graph
       const { data: tg } = await supabase
         .from("taste_graph")
         .select("work_profile_complete, play_profile_complete")
         .eq("user_id", user.id)
         .maybeSingle();
 
+      if (!mounted) return;
       if (tg) {
         setWorkDnaComplete(Number(tg.work_profile_complete || 0));
         setPlayDnaComplete(Number(tg.play_profile_complete || 0));
       }
 
       await fetchCheckIn();
-      setLoading(false);
+      if (mounted) setLoading(false);
     };
 
     fetchAll();
 
-    // Realtime subscription for check-ins (auto-expire detection)
     const channel = supabase
       .channel(`check_ins_${user.id}`)
       .on("postgres_changes", {
@@ -115,7 +115,7 @@ export function useUserContext(): UserContextReturn {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { mounted = false; supabase.removeChannel(channel); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 

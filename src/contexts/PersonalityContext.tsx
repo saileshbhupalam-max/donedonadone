@@ -44,9 +44,11 @@ export function PersonalityProvider({ children }: { children: ReactNode }) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
     supabase.from("personality_config").select("*").eq("active", true).order("sort_order")
-      .then(({ data }) => {
-        if (!data) { setLoaded(true); return; }
+      .then(({ data, error }) => {
+        if (!mounted) return;
+        if (error || !data) { setLoaded(true); return; }
         const grouped: PersonalityConfig = {};
         data.forEach((row: any) => {
           if (!grouped[row.category]) grouped[row.category] = [];
@@ -55,6 +57,7 @@ export function PersonalityProvider({ children }: { children: ReactNode }) {
         setConfig(grouped);
         setLoaded(true);
       });
+    return () => { mounted = false; };
   }, []);
 
   const get = useCallback((category: string, key: string): string => {

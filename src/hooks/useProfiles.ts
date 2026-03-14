@@ -33,25 +33,26 @@ export function useProfiles() {
   const [visibleCount, setVisibleCount] = useState(20);
 
   useEffect(() => {
-    async function fetch() {
+    let mounted = true;
+    async function doFetch() {
       setLoading(true);
       const { data } = await supabase
         .from("profiles")
         .select("*")
         .eq("onboarding_completed", true);
+      if (!mounted) return;
       setAllProfiles(data ?? []);
 
-      // Fetch prompt response counts per user
       const { data: respData } = await supabase
         .from("prompt_responses")
         .select("user_id");
+      if (!mounted) return;
       if (respData) {
         const counts: Record<string, number> = {};
         respData.forEach(r => { counts[r.user_id] = (counts[r.user_id] ?? 0) + 1; });
         setPromptCounts(counts);
       }
 
-      // Fetch active users this week (prompt responders + RSVPers for upcoming events)
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
       const weekStr = oneWeekAgo.toISOString();
@@ -60,6 +61,7 @@ export function useProfiles() {
         supabase.from("prompt_responses").select("user_id").gte("created_at", weekStr),
         supabase.from("event_rsvps").select("user_id").eq("status", "going").gte("created_at", weekStr),
       ]);
+      if (!mounted) return;
 
       const ids = new Set<string>();
       recentResponders.data?.forEach(r => ids.add(r.user_id));
@@ -68,7 +70,8 @@ export function useProfiles() {
 
       setLoading(false);
     }
-    fetch();
+    doFetch();
+    return () => { mounted = false; };
   }, []);
 
   const otherProfiles = useMemo(
