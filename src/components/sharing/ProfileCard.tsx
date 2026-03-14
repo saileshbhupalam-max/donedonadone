@@ -130,7 +130,7 @@ function ProfileCardCanvas({ profile, propCounts = {}, streak = 0, recommendedBy
         fontFamily: "Inter, sans-serif", fontWeight: 600,
         letterSpacing: 0.5,
       }}>
-        Find me on donedonadone
+        Find me on DoneDonaDone
       </div>
 
       {/* Bottom bar */}
@@ -249,7 +249,7 @@ export function ShareProfileCard({ profile, propCounts, streak, referralCode, re
     
     if (navigator.share && navigator.canShare?.({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], title: `${profile.display_name} on donedonadone` });
+        await navigator.share({ files: [file], title: `${profile.display_name} on DoneDonaDone` });
         return;
       } catch { /* fallback below */ }
     }
@@ -263,7 +263,7 @@ export function ShareProfileCard({ profile, propCounts, streak, referralCode, re
     if (blob) downloadBlob(blob, "focusclub-card.png");
     
     const msg = recommendedBy
-      ? `Check out ${profile.display_name} on donedonadone${profile.tagline ? ` — ${profile.tagline}` : ""}. Join us: ${profileLink}`
+      ? `Check out ${profile.display_name} on DoneDonaDone${profile.tagline ? ` — ${profile.tagline}` : ""}. Join us: ${profileLink}`
       : `Hey! I'm on DoneDonaDone — a community for people who cowork in Bangalore. Check out my profile and join: ${profileLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   };
