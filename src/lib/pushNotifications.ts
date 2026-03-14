@@ -29,7 +29,7 @@ export async function requestPushPermission(userId: string): Promise<boolean> {
 
     if (!subscription) {
       // We need a VAPID public key to create a subscription
-      const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+      const vapidKey = (import.meta.env.VITE_VAPID_PUBLIC_KEY || '').replace(/\s+/g, '');
       if (!vapidKey) {
         console.warn("[PushNotifications] No VAPID public key configured");
         // Store a placeholder token for future use

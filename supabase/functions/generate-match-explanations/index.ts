@@ -301,7 +301,7 @@ async function tryAIGeneration(
 ): Promise<{ explanation: string; icebreaker: string | null; score: number; inputTokens: number; outputTokens: number } | null> {
   try {
     const provider = explConfig.ai_providers;
-    const apiKey = Deno.env.get(provider.api_key_env);
+    const apiKey = (Deno.env.get(provider.api_key_env) || '').trim();
     if (!apiKey) return null;
 
     const userDesc = `${user.display_name || "User"}: work vibe=${user.work_vibe || "unknown"}, looking for=${(user.looking_for || []).join(", ")}, can offer=${(user.can_offer || []).join(", ")}, industries=${userIndustries.join(", ") || "unknown"}, sessions attended=${user.events_attended || 0}`;
@@ -367,7 +367,7 @@ async function tryAIGeneration(
     if (ibConfig?.is_active && ibConfig?.ai_providers?.is_active) {
       try {
         const ibProvider = ibConfig.ai_providers;
-        const ibKey = Deno.env.get(ibProvider.api_key_env);
+        const ibKey = (Deno.env.get(ibProvider.api_key_env) || '').trim();
         if (ibKey) {
           const ibPrompt = `Person A: ${userDesc}\nPerson B: ${matchDesc}`;
           if (ibProvider.id === "anthropic") {

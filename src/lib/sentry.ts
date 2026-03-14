@@ -4,7 +4,7 @@ export function initSentry() {
   if (!import.meta.env.VITE_SENTRY_DSN) return;
 
   Sentry.init({
-    dsn: import.meta.env.VITE_SENTRY_DSN,
+    dsn: (import.meta.env.VITE_SENTRY_DSN || '').trim(),
     environment: import.meta.env.MODE,
     integrations: [
       Sentry.browserTracingIntegration(),

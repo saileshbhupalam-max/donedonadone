@@ -65,7 +65,7 @@ serve(async (req) => {
     }
 
     const provider = config.ai_providers;
-    const apiKey = Deno.env.get(provider.api_key_env);
+    const apiKey = (Deno.env.get(provider.api_key_env) || '').trim();
 
     if (!apiKey) {
       const draft = `Hi ${toCo?.name || "there"}! We're ${fromCo?.name || "a company"} and think there could be great synergy between our teams. Would love to connect!`;
