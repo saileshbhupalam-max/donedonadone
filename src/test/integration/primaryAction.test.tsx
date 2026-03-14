@@ -127,7 +127,7 @@ describe('PrimaryActionCard', () => {
       />
     );
 
-    expect(screen.getByText('Find your next session')).toBeInTheDocument();
+    expect(screen.getByText("Don't miss out")).toBeInTheDocument();
     expect(screen.getByText('Friday Cowork')).toBeInTheDocument();
     expect(screen.getByText('5 going')).toBeInTheDocument();
   });
@@ -141,7 +141,7 @@ describe('PrimaryActionCard', () => {
       />
     );
 
-    expect(screen.getByText('No sessions on the board')).toBeInTheDocument();
-    expect(screen.getByText(/Browse sessions/)).toBeInTheDocument();
+    expect(screen.getByText("You haven't booked yet this week")).toBeInTheDocument();
+    expect(screen.getByText(/Find your table/)).toBeInTheDocument();
   });
 });

@@ -93,9 +93,9 @@ describe("Pricing page", () => {
     expect(screen.getByText("Current Plan")).toBeInTheDocument();
   });
 
-  it("shows 'Upgrade' buttons for higher tiers", () => {
+  it("shows 'Get {tierName}' buttons for higher tiers", () => {
     render(<Pricing />);
-    const upgradeButtons = screen.getAllByText("Upgrade");
+    const upgradeButtons = screen.getAllByText(/^Get /);
     expect(upgradeButtons.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -117,7 +117,7 @@ describe("Pricing page", () => {
   describe("personalization from gate context", () => {
     it("shows default heading when no gate feature", () => {
       render(<Pricing />);
-      expect(screen.getByText("Choose your plan")).toBeInTheDocument();
+      expect(screen.getByText("Find the right fit")).toBeInTheDocument();
     });
 
     it("shows personalized heading when gate feature is in sessionStorage", () => {
@@ -184,7 +184,7 @@ describe("Pricing page", () => {
   });
 
   describe("pro user sees different CTA", () => {
-    it("pro user sees 'Current Plan' on Pro card and 'Upgrade' on Max", () => {
+    it("pro user sees 'Current Plan' on Pro card and 'Get Max' on Max", () => {
       mockUseSubscription.mockReturnValue({
         tier: "pro",
         allTiers: TIERS,
@@ -194,9 +194,7 @@ describe("Pricing page", () => {
       });
       render(<Pricing />);
       expect(screen.getByText("Current Plan")).toBeInTheDocument();
-      const upgradeButtons = screen.getAllByText("Upgrade");
-      // Only Max should show Upgrade
-      expect(upgradeButtons.length).toBe(1);
+      expect(screen.getByText("Get Max")).toBeInTheDocument();
     });
   });
 });
