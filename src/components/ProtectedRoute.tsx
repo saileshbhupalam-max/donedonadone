@@ -11,8 +11,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
         <h1 className="text-4xl tracking-tight animate-pulse">
-          <span className="font-serif">Focus</span>
-          <span className="font-sans font-light">Club</span>
+          <span className="font-serif text-[#e07830]">Dana</span>
+          <span className="font-sans font-bold">Done</span>
         </h1>
       </div>
     );

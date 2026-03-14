@@ -76,23 +76,38 @@ const Index = () => {
     });
   }, []);
 
+  // Check if we're returning from OAuth (hash contains access_token)
+  const hasAuthCallback = window.location.hash.includes("access_token");
+
   // Redirect if already logged in
   useEffect(() => {
     if (!loading && user) {
       if (profile?.onboarding_completed) {
-        navigate("/home");
+        navigate("/home", { replace: true });
       } else {
-        navigate("/onboarding");
+        navigate("/onboarding", { replace: true });
       }
     }
   }, [user, profile, loading, navigate]);
+
+  // Show loading while processing OAuth callback
+  if (hasAuthCallback || (loading && !user)) {
+    return (
+      <div className="min-h-screen bg-[#1a1108] flex items-center justify-center">
+        <h1 className="text-4xl tracking-tight animate-pulse">
+          <span className="font-serif text-[#e07830]">Dana</span>
+          <span className="font-sans font-bold text-[#f5f0e8]">Done</span>
+        </h1>
+      </div>
+    );
+  }
 
   const handleGoogleSignIn = async () => {
     setSigningIn(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${window.location.origin}/home` },
+        options: { redirectTo: `${window.location.origin}` },
       });
       if (error) {
         toast.error(ERROR_STATES.generic);
