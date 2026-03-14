@@ -92,8 +92,7 @@ export default function Settings() {
     setSettings((prev) => ({ ...prev, [key]: value }));
     const { error } = await supabase
       .from("user_settings")
-      .update({ [key]: value })
-      .eq("user_id", user.id);
+      .upsert({ user_id: user.id, [key]: value }, { onConflict: "user_id" });
     if (error) {
       toast.error("Failed to update setting");
       const { data } = await supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle();

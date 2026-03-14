@@ -296,7 +296,7 @@ export async function getNominations(
   const normalized = normalizeNeighborhood(neighborhood);
   let query = supabase
     .from("venue_nominations")
-    .select("*, profiles:nominated_by(display_name, avatar_url)")
+    .select("*")
     .eq("neighborhood", normalized)
     .order("created_at", { ascending: false });
 
@@ -307,10 +307,18 @@ export async function getNominations(
   const { data } = await query;
   if (!data) return [];
 
+  // Fetch nominator profiles separately (nominated_by FK targets auth.users, not profiles)
+  const nominatorIds = [...new Set(data.map((n: any) => n.nominated_by))];
+  const { data: profiles } = nominatorIds.length > 0
+    ? await supabase.from("profiles").select("id, display_name, avatar_url").in("id", nominatorIds)
+    : { data: [] };
+  const profileMap: Record<string, { display_name: string; avatar_url: string | null }> = {};
+  for (const p of profiles || []) profileMap[p.id] = p;
+
   return data.map((n: any) => ({
     ...n,
-    nominator_name: n.profiles?.display_name || "Anonymous",
-    nominator_avatar: n.profiles?.avatar_url || null,
+    nominator_name: profileMap[n.nominated_by]?.display_name || "Anonymous",
+    nominator_avatar: profileMap[n.nominated_by]?.avatar_url || null,
   }));
 }
 
@@ -385,15 +393,23 @@ export async function getVouchesForNomination(
 ): Promise<Array<VouchData & { user_id: string; display_name: string; created_at: string }>> {
   const { data } = await supabase
     .from("venue_vouches")
-    .select("*, profiles:user_id(display_name)")
+    .select("*")
     .eq("nomination_id", nominationId)
     .order("created_at", { ascending: true });
 
   if (!data) return [];
 
+  // Fetch voucher profiles separately (user_id FK targets auth.users, not profiles)
+  const voucherIds = [...new Set(data.map((v: any) => v.user_id))];
+  const { data: profiles } = voucherIds.length > 0
+    ? await supabase.from("profiles").select("id, display_name").in("id", voucherIds)
+    : { data: [] };
+  const profileMap: Record<string, string> = {};
+  for (const p of profiles || []) profileMap[p.id] = p.display_name;
+
   return data.map((v: any) => ({
     ...v,
-    display_name: v.profiles?.display_name || "Anonymous",
+    display_name: profileMap[v.user_id] || "Anonymous",
   }));
 }
 

@@ -71,8 +71,8 @@ export function TopBar() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="flex items-center justify-between h-14 px-4 max-w-lg mx-auto">
         <Link to="/home" className="flex items-baseline gap-0.5">
-          <span className="font-serif text-xl">Focus</span>
-          <span className="font-sans font-light text-xl">Club</span>
+          <span className="font-serif text-xl">Dana</span>
+          <span className="font-sans font-bold text-xl">Done</span>
         </Link>
 
         <div className="flex items-center gap-3">

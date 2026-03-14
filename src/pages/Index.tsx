@@ -1,4 +1,4 @@
-import { MapPin, Shield, Lock, Users, Coffee, UserPlus, Zap, ChevronDown, Sparkles, CalendarDays, ArrowRight, Clock, CheckCircle, Star, Store } from "lucide-react";
+import { MapPin, Shield, Lock, Users, Coffee, UserPlus, Zap, ChevronDown, Sparkles, CalendarDays, ArrowRight, Clock, CheckCircle, Star, Store, Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -41,6 +41,9 @@ const Index = () => {
   const [referrer, setReferrer] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
   const [venueInfo, setVenueInfo] = useState<{ venue_name: string; neighborhood: string | null } | null>(null);
   const [stats, setStats] = useState<{ members: number; sessions: number; props: number }>({ members: 0, sessions: 0, props: 0 });
+  const [showEmailInput, setShowEmailInput] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
 
   // Store referral code and venue from URL
   useEffect(() => {
@@ -120,28 +123,93 @@ const Index = () => {
     }
   };
 
+  const handleEmailSignIn = async () => {
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    setEmailSending(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: { emailRedirectTo: `${window.location.origin}` },
+      });
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Check your email for a magic link!");
+        setEmail("");
+        setShowEmailInput(false);
+      }
+    } catch {
+      toast.error(ERROR_STATES.generic);
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
   // --- CTA button (reused across sections, Von Restorff: single warm accent) ---
   const CTAButton = ({ className = "" }: { className?: string }) => (
-    <button
-      onClick={handleGoogleSignIn}
-      disabled={signingIn}
-      className={`group inline-flex items-center gap-3 rounded-full px-6 py-3.5 sm:px-8 sm:py-4 text-sm sm:text-base font-medium font-body transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 ${className}`}
-      style={{
-        background: '#e07830',
-        color: '#1a1410',
-        boxShadow: '0 0 30px rgba(224, 120, 48, 0.2), 0 4px 12px rgba(0,0,0,0.3)',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = '0 0 40px rgba(224, 120, 48, 0.35), 0 6px 20px rgba(0,0,0,0.3)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow = '0 0 30px rgba(224, 120, 48, 0.2), 0 4px 12px rgba(0,0,0,0.3)';
-      }}
-    >
-      <GoogleIcon />
-      {signingIn ? "One sec..." : "Join free with Google"}
-      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-    </button>
+    <div className={`flex flex-col items-start gap-3 ${className}`}>
+      <button
+        onClick={handleGoogleSignIn}
+        disabled={signingIn}
+        className="group inline-flex items-center gap-3 rounded-full px-6 py-3.5 sm:px-8 sm:py-4 text-sm sm:text-base font-medium font-body transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50"
+        style={{
+          background: '#e07830',
+          color: '#1a1410',
+          boxShadow: '0 0 30px rgba(224, 120, 48, 0.2), 0 4px 12px rgba(0,0,0,0.3)',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.boxShadow = '0 0 40px rgba(224, 120, 48, 0.35), 0 6px 20px rgba(0,0,0,0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.boxShadow = '0 0 30px rgba(224, 120, 48, 0.2), 0 4px 12px rgba(0,0,0,0.3)';
+        }}
+      >
+        <GoogleIcon />
+        {signingIn ? "One sec..." : "Join free with Google"}
+        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+      </button>
+      {!showEmailInput ? (
+        <button
+          onClick={() => setShowEmailInput(true)}
+          className="text-sm font-body transition-colors hover:underline"
+          style={{ color: 'rgba(245, 240, 232, 0.35)' }}
+        >
+          or sign in with email
+        </button>
+      ) : (
+        <div className="flex items-center gap-2 animate-fade-up">
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(245, 240, 232, 0.3)' }} />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleEmailSignIn()}
+              placeholder="you@email.com"
+              className="pl-9 pr-3 py-2.5 rounded-full text-sm font-body w-56 outline-none focus:ring-2"
+              style={{
+                background: 'rgba(245, 240, 232, 0.08)',
+                color: '#f5f0e8',
+                border: '1px solid rgba(245, 240, 232, 0.12)',
+                focusRingColor: '#e07830',
+              }}
+              autoFocus
+            />
+          </div>
+          <button
+            onClick={handleEmailSignIn}
+            disabled={emailSending}
+            className="px-4 py-2.5 rounded-full text-sm font-medium font-body transition-all disabled:opacity-50"
+            style={{ background: 'rgba(224, 120, 48, 0.15)', color: '#e8a06a', border: '1px solid rgba(224, 120, 48, 0.25)' }}
+          >
+            {emailSending ? "Sending..." : "Send link"}
+          </button>
+        </div>
+      )}
+    </div>
   );
 
   return (
@@ -223,7 +291,7 @@ const Index = () => {
           >
             {venueInfo
               ? `Join the community coworking at ${venueInfo.venue_name} and other great spots across Bangalore.`
-              : "We match you with 3\u20135 people at cafés and coworking spaces. You focus. You connect. You come back."}
+              : "We find your tribe based on what you\u2019re looking for and what you can offer. 3\u20135 people, one table, real connections."}
           </p>
 
           {/* Referrer social proof (if referred) */}
@@ -333,7 +401,7 @@ const Index = () => {
               {
                 icon: Sparkles,
                 title: "Smart Matching",
-                desc: "Matched by work style, noise preference, and communication mode.",
+                desc: "Matched by what you're looking for, what you can offer, and how you work best.",
               },
               {
                 icon: CalendarDays,

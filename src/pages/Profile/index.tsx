@@ -666,7 +666,8 @@ export default function Profile() {
                         ? [...current.filter((t: string) => t !== "mentorship"), "mentorship"]
                         : current.filter((t: string) => t !== "mentorship");
                       await supabase.from("profiles").update({ can_offer: updated }).eq("id", user!.id);
-                      setProfile((p: any) => p ? { ...p, can_offer: updated } : p);
+                      setCanOffer(updated);
+                      await refreshProfile();
                       sonnerToast.success(checked ? "You're now listed as a mentor" : "Removed from mentor directory");
                     }}
                   />
@@ -684,7 +685,8 @@ export default function Profile() {
                         ? [...current.filter((t: string) => t !== "mentorship"), "mentorship"]
                         : current.filter((t: string) => t !== "mentorship");
                       await supabase.from("profiles").update({ looking_for: updated }).eq("id", user!.id);
-                      setProfile((p: any) => p ? { ...p, looking_for: updated } : p);
+                      setLookingFor(updated);
+                      await refreshProfile();
                       sonnerToast.success(checked ? "You'll be matched with mentors" : "Mentee mode off");
                     }}
                   />
