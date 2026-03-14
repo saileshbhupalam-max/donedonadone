@@ -1,5 +1,49 @@
 {
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "redirects": [
+    {
+      "source": "/:path(.*)",
+      "has": [{ "type": "host", "value": "donadone.club" }],
+      "destination": "https://danadone.club/:path",
+      "permanent": true
+    },
+    {
+      "source": "/:path(.*)",
+      "has": [{ "type": "host", "value": "www.donadone.club" }],
+      "destination": "https://danadone.club/:path",
+      "permanent": true
+    },
+    {
+      "source": "/:path(.*)",
+      "has": [{ "type": "host", "value": "donedanadone.com" }],
+      "destination": "https://danadone.club/:path",
+      "permanent": true
+    },
+    {
+      "source": "/:path(.*)",
+      "has": [{ "type": "host", "value": "www.donedanadone.com" }],
+      "destination": "https://danadone.club/:path",
+      "permanent": true
+    },
+    {
+      "source": "/:path(.*)",
+      "has": [{ "type": "host", "value": "donedonadone.com" }],
+      "destination": "https://danadone.club/:path",
+      "permanent": true
+    },
+    {
+      "source": "/:path(.*)",
+      "has": [{ "type": "host", "value": "www.donedonadone.com" }],
+      "destination": "https://danadone.club/:path",
+      "permanent": true
+    },
+    {
+      "source": "/:path(.*)",
+      "has": [{ "type": "host", "value": "www.danadone.club" }],
+      "destination": "https://danadone.club/:path",
+      "permanent": true
+    }
   ]
 }
