@@ -23,9 +23,9 @@ export function Step1Identity({ data, updateData, userId }: Props) {
     try {
       const ext = file.name.split(".").pop();
       const path = `${userId}/avatar.${ext}`;
-      
+
       await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-      
+
       const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
       updateData({ avatar_url: `${urlData.publicUrl}?t=${Date.now()}` });
     } catch (err) {
@@ -60,11 +60,12 @@ export function Step1Identity({ data, updateData, userId }: Props) {
         <button
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
+          aria-label="Upload profile photo"
           className="absolute inset-0 flex items-center justify-center bg-foreground/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
         >
           <Camera className="w-6 h-6 text-background" />
         </button>
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} aria-label="Choose profile photo" />
       </div>
       <button
         onClick={() => fileRef.current?.click()}
@@ -76,12 +77,14 @@ export function Step1Identity({ data, updateData, userId }: Props) {
 
       {/* Display name */}
       <div className="w-full max-w-sm space-y-2">
-        <label className="text-sm font-medium text-foreground">Display Name *</label>
+        <label htmlFor="onboarding-display-name" className="text-sm font-medium text-foreground">Display Name *</label>
         <Input
+          id="onboarding-display-name"
           value={data.display_name}
           onChange={(e) => updateData({ display_name: e.target.value })}
           placeholder="The name your friends use"
           className="rounded-xl"
+          aria-required="true"
         />
       </div>
 

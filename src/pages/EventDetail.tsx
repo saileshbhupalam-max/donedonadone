@@ -24,6 +24,7 @@ import { getEventShareMessage } from "@/lib/sharing";
 import { joinWaitlist, getPopularityLabel, updateReliability, promoteWaitlist } from "@/lib/antifragile";
 import { ERROR_STATES, CONFIRMATIONS } from "@/lib/personality";
 import { trackAnalyticsEvent } from "@/lib/growth";
+import { trackFunnelStep } from "@/lib/analytics";
 import { GroupReveal } from "@/components/session/GroupReveal";
 import { YourTableCard } from "@/components/session/YourTableCard";
 import { VenueVibeSummary } from "@/components/session/VenueVibeRating";
@@ -164,6 +165,11 @@ export default function EventDetailPage() {
   const [userWaitlistPos, setUserWaitlistPos] = useState<number | null>(null);
   usePageTitle(event ? `${event.title} — donedonadone` : "Session — donedonadone");
 
+  // Track session funnel: view_event_detail step
+  useEffect(() => {
+    if (id) trackFunnelStep("session", 2, "view_event_detail", { event_id: id });
+  }, [id]);
+
   useEffect(() => {
     if (!id) return;
     (async () => {
@@ -255,6 +261,7 @@ export default function EventDetailPage() {
         toast.success(CONFIRMATIONS.rsvpSuccess(format(parseISO(event.date), "EEEE"), event.venue_name));
         updateReliability(user.id, 'rsvp').catch(() => {});
         trackAnalyticsEvent('rsvp', user.id, { event_id: event.id }).catch(() => {});
+        trackFunnelStep("session", 3, "rsvp", { event_id: event.id });
 
         // Auto-match buddy for first-timers
         if ((myProfile?.events_attended || 0) === 0) {

@@ -35,8 +35,8 @@ export function Step2WorkVibe({ data, updateData }: Props) {
       </div>
 
       {/* Work vibe */}
-      <div className="space-y-3">
-        <label className="text-sm font-medium text-foreground">Work vibe</label>
+      <fieldset className="space-y-3">
+        <legend className="text-sm font-medium text-foreground">Work vibe</legend>
         <div className="grid gap-3">
           {VIBES.map((v) => (
             <button
@@ -57,11 +57,11 @@ export function Step2WorkVibe({ data, updateData }: Props) {
             </button>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       {/* Neighborhood */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground">Neighborhood</label>
+        <label htmlFor="onboarding-neighborhood" className="text-sm font-medium text-foreground">Neighborhood</label>
         <NeighborhoodInput
           value={data.neighborhood}
           onChange={(slug) => updateData({ neighborhood: slug })}
@@ -72,8 +72,8 @@ export function Step2WorkVibe({ data, updateData }: Props) {
       </div>
 
       {/* Gender */}
-      <div className="space-y-3">
-        <label className="text-sm font-medium text-foreground">Gender</label>
+      <fieldset className="space-y-3">
+        <legend className="text-sm font-medium text-foreground">Gender</legend>
         <p className="text-xs text-muted-foreground -mt-1">For balanced tables and women-only sessions.</p>
         <div className="flex flex-wrap gap-2">
           {GENDERS.map((g) => (
@@ -114,7 +114,7 @@ export function Step2WorkVibe({ data, updateData }: Props) {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </fieldset>
     </div>
   );
 }

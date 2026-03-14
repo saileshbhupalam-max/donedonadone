@@ -21,7 +21,7 @@ export function BottomNav() {
     : baseItems;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t border-border" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+    <nav aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t border-border" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
         {navItems.map((item) => (
           <NavLink

@@ -446,17 +446,17 @@ export default function Profile() {
                   </label>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground">Display Name</label>
-                  <Input value={displayName} onChange={e => setDisplayName(e.target.value)} className="mt-1" />
+                  <label htmlFor="profile-display-name" className="text-sm font-medium text-foreground">Display Name</label>
+                  <Input id="profile-display-name" value={displayName} onChange={e => setDisplayName(e.target.value)} className="mt-1" aria-required="true" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground">Tagline</label>
-                  <Input value={tagline} onChange={e => setTagline(e.target.value.slice(0, 140))} className="mt-1" placeholder="Designer by day, guitarist by night" />
-                  <p className="text-xs text-muted-foreground text-right mt-0.5">{tagline.length}/140</p>
+                  <label htmlFor="profile-tagline" className="text-sm font-medium text-foreground">Tagline</label>
+                  <Input id="profile-tagline" value={tagline} onChange={e => setTagline(e.target.value.slice(0, 140))} className="mt-1" placeholder="Designer by day, guitarist by night" />
+                  <p className="text-xs text-muted-foreground text-right mt-0.5" aria-live="polite">{tagline.length}/140</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground">What I Do</label>
-                  <Textarea value={whatIDo} onChange={e => setWhatIDo(e.target.value.slice(0, 500))} className="mt-1" rows={3} />
+                  <label htmlFor="profile-what-i-do" className="text-sm font-medium text-foreground">What I Do</label>
+                  <Textarea id="profile-what-i-do" value={whatIDo} onChange={e => setWhatIDo(e.target.value.slice(0, 500))} className="mt-1" rows={3} />
                 </div>
               </CardContent>
             </Card>
@@ -519,7 +519,7 @@ export default function Profile() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground">Neighborhood</label>
+                  <label htmlFor="profile-neighborhood" className="text-sm font-medium text-foreground">Neighborhood</label>
                   <Select value={neighborhood} onValueChange={setNeighborhood}>
                     <SelectTrigger className="mt-1"><SelectValue placeholder="Select neighborhood" /></SelectTrigger>
                     <SelectContent>{neighborhoods.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>

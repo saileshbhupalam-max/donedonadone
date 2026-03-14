@@ -16,7 +16,23 @@
     <meta name="twitter:image" content="/og-image.png" />
 
     <meta name="theme-color" content="#18181b" />
+
+    <!-- Google Fonts: preconnect + preload for faster first paint -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" />
+
     <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Google Analytics 4 — async, non-blocking -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RB5NKWRGSF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-RB5NKWRGSF', { send_page_view: false });
+    </script>
   </head>
 
   <body>

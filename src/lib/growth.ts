@@ -261,7 +261,21 @@ export async function checkReEngagement(userId: string) {
   // Update last_active_at
   await supabase.from("profiles").update({ last_active_at: new Date().toISOString() }).eq("id", userId);
 
-  if (daysSinceActive < 7) return; // Still active
+  if (daysSinceActive < 6) return; // Still active
+
+  // ─── Comeback FC bonus: award small bonus for returning after 7+ days away ───
+  // Capped at 1 per 30 days to prevent gaming (deliberate inactivity)
+  if (daysSinceActive >= 7) {
+    const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: recentComeback } = await supabase.from("focus_credits")
+      .select("id").eq("user_id", userId).eq("action", "comeback_bonus")
+      .gte("created_at", thirtyDaysAgo).limit(1);
+    if (!recentComeback || recentComeback.length === 0) {
+      const { awardCredits } = await import("@/lib/focusCredits");
+      await awardCredits(userId, "comeback_bonus" as any, 15, { days_away: daysSinceActive });
+      trackAnalyticsEvent("comeback_visit", userId, { days_away: daysSinceActive });
+    }
+  }
 
   // Check streak at risk (6+ days since last session)
   if (profile.current_streak && profile.current_streak > 0 && daysSinceActive >= 6 && daysSinceActive < 10) {
@@ -273,6 +287,25 @@ export async function checkReEngagement(userId: string) {
       link: "/events",
     });
     return;
+  }
+
+  // ─── Streak loss notification: when user had a streak but it's now gone ───
+  if ((!profile.current_streak || profile.current_streak === 0) && daysSinceActive >= 10) {
+    // Check if they ever had a streak by looking at milestone achievements
+    const { data: hadStreak } = await supabase.from("member_milestones")
+      .select("milestone_type").eq("user_id", userId)
+      .in("milestone_type", ["streak_3", "streak_5", "streak_10"]).limit(1);
+    if (hadStreak && hadStreak.length > 0) {
+      await supabase.from("notifications").insert({
+        user_id: userId,
+        type: "re_engagement",
+        title: "Your streak ended — but you can start fresh",
+        body: "One session is all it takes. Your next streak starts now.",
+        link: "/events",
+      });
+      trackAnalyticsEvent("streak_lost", userId);
+      return;
+    }
   }
 
   if (daysSinceActive >= 7 && daysSinceActive < 10) {

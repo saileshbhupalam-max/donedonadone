@@ -161,7 +161,7 @@ function MatchCard({ match, myCompanyId, onIntroSent, introState }: {
         <button onClick={() => navigate(`/company/${match.matched_company_id}`)} className="flex items-center gap-2.5 flex-1 min-w-0 text-left">
           <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
             {match.company_logo_url ? (
-              <img src={match.company_logo_url} alt="" className="w-7 h-7 rounded object-cover" />
+              <img src={match.company_logo_url} alt="" className="w-7 h-7 rounded object-cover" loading="lazy" />
             ) : (
               <Building2 className="w-4 h-4 text-primary" />
             )}

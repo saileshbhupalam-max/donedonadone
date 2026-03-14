@@ -58,7 +58,7 @@ function ProfileCardCanvas({ profile, propCounts = {}, streak = 0, recommendedBy
         color: "#C4745A",
       }}>
         {profile.avatar_url ? (
-          <img src={profile.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
+          <img src={profile.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" loading="lazy" />
         ) : (
           <span>{(profile.display_name || "?")[0]}</span>
         )}

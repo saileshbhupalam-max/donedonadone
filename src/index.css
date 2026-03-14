@@ -1,8 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Prevent horizontal scroll on mobile — safety net after auditing root causes */
+html {
+  overflow-x: hidden;
+}
 
 @layer base {
   :root {
@@ -97,5 +100,15 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'DM Serif Display', serif;
+  }
+}
+
+/* Respect reduced-motion preference — disables framer-motion and CSS animations */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

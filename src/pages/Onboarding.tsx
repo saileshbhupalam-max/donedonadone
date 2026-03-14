@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { ArrowLeft } from "lucide-react";
 import { trackAnalyticsEvent } from "@/lib/growth";
+import { trackFunnelStep } from "@/lib/analytics";
 
 import type { OnboardingData } from "@/lib/types";
 
@@ -104,6 +105,8 @@ export default function Onboarding() {
       setDirection(1);
       const nextStep = step + 1;
       setStep(nextStep);
+      trackFunnelStep("onboarding", nextStep, `onboarding_step_${nextStep}`);
+      trackAnalyticsEvent(`onboarding_step_${nextStep}` as any, user?.id);
       try { localStorage.setItem("focusclub_onboarding_progress", JSON.stringify({ step: nextStep, data })); } catch {}
     }
   };

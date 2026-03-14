@@ -430,7 +430,7 @@ function CompanyDirectorySection() {
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
                     {c.logo_url ? (
-                      <img src={c.logo_url} alt="" className="w-full h-full object-cover" />
+                      <img src={c.logo_url} alt={c.name || "Company logo"} className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <Building2 className="w-5 h-5 text-muted-foreground" />
                     )}

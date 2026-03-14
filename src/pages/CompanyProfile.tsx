@@ -160,7 +160,7 @@ export default function CompanyProfile() {
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                   {company.logo_url ? (
-                    <img src={company.logo_url} alt={company.name} className="w-10 h-10 rounded-lg object-cover" />
+                    <img src={company.logo_url} alt={company.name} className="w-10 h-10 rounded-lg object-cover" loading="lazy" />
                   ) : (
                     <Building2 className="w-6 h-6 text-primary" />
                   )}

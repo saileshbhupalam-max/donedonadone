@@ -116,10 +116,6 @@ export default defineConfig(({ mode }) => ({
               id.includes('node_modules/qrcode')) {
             return 'vendor-media';
           }
-          // Tanstack query
-          if (id.includes('node_modules/@tanstack/')) {
-            return 'vendor-query';
-          }
         },
       },
     },

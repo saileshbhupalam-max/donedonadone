@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { getInitials } from "@/lib/utils";
+import { trackFunnelStep } from "@/lib/analytics";
 import {
   nominateVenue,
   vouchForVenue,
@@ -150,6 +151,7 @@ export default function NominateVenue() {
     });
 
     if (result.success) {
+      trackFunnelStep("venue_nomination", 2, "submit_nomination");
       toast.success(`Venue nominated! +${result.creditsAwarded} FC`);
       setForm({ venue_name: "", address: "", google_maps_url: "", wifi_available: true });
       setPhotoFile(null);
@@ -177,7 +179,9 @@ export default function NominateVenue() {
     const result = await vouchForVenue(user.id, selectedNomination.id, vouchForm);
 
     if (result.success) {
+      trackFunnelStep("venue_nomination", 3, "vouch_cast", { nomination_id: selectedNomination.id });
       if (result.activated) {
+        trackFunnelStep("venue_nomination", 4, "venue_activated", { nomination_id: selectedNomination.id });
         toast.success("Venue verified and activated! This venue is now live.");
       } else {
         toast.success(`Vouch recorded! +${result.creditsAwarded} FC`);
@@ -344,27 +348,33 @@ export default function NominateVenue() {
           <Card>
             <CardContent className="p-4 space-y-4">
               <div>
-                <Label>Venue Name</Label>
+                <Label htmlFor="nominate-venue-name">Venue Name</Label>
                 <Input
+                  id="nominate-venue-name"
                   value={form.venue_name}
                   onChange={(e) => setForm({ ...form, venue_name: e.target.value })}
                   placeholder="e.g., Third Wave Coffee"
+                  aria-required="true"
                 />
               </div>
               <div>
-                <Label>Address</Label>
+                <Label htmlFor="nominate-address">Address</Label>
                 <Input
+                  id="nominate-address"
                   value={form.address}
                   onChange={(e) => setForm({ ...form, address: e.target.value })}
                   placeholder="Full address"
+                  aria-required="true"
                 />
               </div>
               <div>
-                <Label>Google Maps Link</Label>
+                <Label htmlFor="nominate-maps-link">Google Maps Link</Label>
                 <Input
+                  id="nominate-maps-link"
                   value={form.google_maps_url}
                   onChange={(e) => setForm({ ...form, google_maps_url: e.target.value })}
                   placeholder="https://maps.google.com/..."
+                  inputMode="url"
                 />
               </div>
               {/* Photo upload */}
@@ -403,8 +413,9 @@ export default function NominateVenue() {
               </div>
 
               <div className="flex items-center justify-between">
-                <Label>WiFi Available</Label>
+                <Label htmlFor="nominate-wifi">WiFi Available</Label>
                 <Switch
+                  id="nominate-wifi"
                   checked={form.wifi_available}
                   onCheckedChange={(v) => setForm({ ...form, wifi_available: v })}
                 />

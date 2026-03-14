@@ -31,6 +31,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { trackFunnelStep } from "@/lib/analytics";
 import { calculateSessionHours, addFocusHours } from "@/lib/ranks";
 import { createSessionPhases, getFormatPhases, getFormatLabel } from "@/lib/sessionPhases";
 import { GivePropsFlow } from "@/components/session/GivePropsFlow";
@@ -48,6 +49,7 @@ const SessionMap = lazy(() => import("@/components/map/SessionMap").then(m => ({
 
 export default function Events() {
   usePageTitle("Sessions — donedonadone");
+  useEffect(() => { trackFunnelStep("session", 1, "view_events"); }, []);
   const { profile, user } = useAuth();
   const { upcoming, past, loading, toggleRsvp, getUserRsvp, fetchEvents } = useEvents();
   const [filter, setFilter] = useState<string>("all");

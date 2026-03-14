@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PersonalityProvider } from "@/contexts/PersonalityContext";
@@ -13,6 +13,13 @@ import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 import { InviteRedirect } from "@/components/InviteRedirect";
 import { PersonalityLoader } from "@/components/ui/PersonalityLoader";
 import { InstallPrompt } from "@/components/ui/InstallPrompt";
+import { usePageTracking } from "@/hooks/usePageTracking";
+
+/** Invisible component that fires page_view on every route change. */
+function PageTracker() {
+  usePageTracking();
+  return null;
+}
 
 /** Wraps a page in both auth protection and a route-level error boundary. */
 function ProtectedPage({ children }: { children: React.ReactNode }) {
@@ -55,14 +62,12 @@ const CrossSpaceNetwork = lazy(() => import("./pages/CrossSpaceNetwork"));
 const NominateVenue = lazy(() => import("./pages/NominateVenue"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-const queryClient = new QueryClient();
-
 const App = () => (
-  <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <PageTracker />
         <AuthProvider>
           <FeatureFlagsProvider>
           <SubscriptionProvider>
@@ -166,7 +171,6 @@ const App = () => (
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
-  </QueryClientProvider>
 );
 
 export default App;

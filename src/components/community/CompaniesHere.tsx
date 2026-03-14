@@ -81,7 +81,7 @@ function CompaniesHereInner() {
                 <div className="flex items-center gap-2 mb-1.5">
                   <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
                     {c.company_logo_url ? (
-                      <img src={c.company_logo_url} alt="" className="w-full h-full object-cover" />
+                      <img src={c.company_logo_url} alt={c.company_name || "Company logo"} className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <span className="text-sm font-bold text-muted-foreground">
                         {c.company_name?.[0]?.toUpperCase()}

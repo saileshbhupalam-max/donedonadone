@@ -42,7 +42,8 @@ export type CreditAction =
   | 'redeem_venue_upgrade'
   | 'redeem_pick_seat'
   | 'redeem_gift_session'
-  | 'redeem_exclusive_session';
+  | 'redeem_exclusive_session'
+  | 'comeback_bonus';
 
 export interface CreditMetadata {
   venue_id?: string;
