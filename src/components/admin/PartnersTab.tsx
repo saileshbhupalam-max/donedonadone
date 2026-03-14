@@ -56,16 +56,16 @@ interface VenuePartner {
 }
 
 const getNeighborhoodLabel = (v: string | null) => NEIGHBORHOODS.find(n => n.value === v)?.label || v || "";
-const APP_URL = typeof window !== "undefined" ? window.location.origin : "https://focusclub.app";
+const APP_URL = typeof window !== "undefined" ? window.location.origin : "https://danadone.club";
 
 function getQrLink(venueId: string) {
   return `${APP_URL}/?venue=${venueId}&utm_source=qr&utm_medium=table_tent`;
 }
 
-function getPitchMessage(partner: VenuePartner, adminName = "donedonadone Team") {
+function getPitchMessage(partner: VenuePartner, adminName = "DanaDone Team") {
   return `Hi ${partner.contact_name || "there"}! 👋
 
-I'm ${adminName} from DoneDonaDone — we organize coworking meetups in ${getNeighborhoodLabel(partner.neighborhood) || "Bangalore"}. We bring groups of 3-5 focused professionals to work at great cafes.
+I'm ${adminName} from DanaDone — we organize coworking meetups in ${getNeighborhoodLabel(partner.neighborhood) || "Bangalore"}. We bring groups of 3-5 focused professionals to work at great cafes.
 
 We'd love to feature ${partner.venue_name} as a partner venue. Here's what it means:
 
@@ -76,7 +76,7 @@ We'd love to feature ${partner.venue_name} as a partner venue. Here's what it me
 
 Interested? I can drop by to chat — takes 5 minutes.
 
-Check us out: focusclub.app`;
+Check us out: danadone.club`;
 }
 
 // ─── Dashboard Stats ──────────────────────────────────────

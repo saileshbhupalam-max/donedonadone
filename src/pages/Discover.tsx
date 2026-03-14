@@ -490,7 +490,7 @@ function CompanyDirectorySection() {
 }
 
 export default function Discover() {
-  usePageTitle("Discover — DoneDonaDone");
+  usePageTitle("Discover — DanaDone");
   const navigate = useNavigate();
   // Incrementing refreshKey forces sub-components to remount and re-fetch their data
   const [refreshKey, incrementRefreshKey] = useReducer((c: number) => c + 1, 0);

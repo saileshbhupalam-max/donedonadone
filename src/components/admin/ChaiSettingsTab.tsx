@@ -125,7 +125,7 @@ export function ChaiSettingsTab() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-serif text-lg text-foreground">Chai — The Voice</h2>
-          <p className="text-xs text-muted-foreground">Edit every word donedonadone says. The poet in the machine.</p>
+          <p className="text-xs text-muted-foreground">Edit every word DanaDone says. The poet in the machine.</p>
         </div>
       </div>
 

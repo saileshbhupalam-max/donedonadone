@@ -15,13 +15,13 @@ describe('calendar', () => {
       expect(url).toMatch(/^https:\/\/calendar\.google\.com\/calendar\/render\?/);
     });
 
-    it('contains correct title with DoneDonaDone prefix', () => {
+    it('contains correct title with DanaDone prefix', () => {
       const url = getGoogleCalendarUrl({
         title: 'Deep Work Session',
         date: '2026-03-15',
       });
       const params = new URLSearchParams(url.split('?')[1]);
-      expect(params.get('text')).toBe('DoneDonaDone: Deep Work Session');
+      expect(params.get('text')).toBe('DanaDone: Deep Work Session');
     });
 
     it('contains correct dates for AM times', () => {
@@ -73,7 +73,7 @@ describe('calendar', () => {
         date: '2026-03-15',
       });
       const params = new URLSearchParams(url.split('?')[1]);
-      expect(params.get('text')).toBe('DoneDonaDone: Session');
+      expect(params.get('text')).toBe('DanaDone: Session');
       expect(params.get('location')).toBe('');
       expect(params.get('action')).toBe('TEMPLATE');
     });
@@ -109,7 +109,7 @@ describe('calendar', () => {
       const params = new URLSearchParams(url.split('?')[1]);
       const details = params.get('details')!;
       expect(details).toContain('Cafe XYZ');
-      expect(details).toContain('Check in with the DoneDonaDone app');
+      expect(details).toContain('Check in with the DanaDone app');
     });
   });
 });

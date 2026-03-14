@@ -94,7 +94,7 @@ interface TasteGraphData {
 }
 
 export default function TasteGraphBuilder() {
-  usePageTitle("Build Your Work DNA — DoneDonaDone");
+  usePageTitle("Build Your Work DNA — DanaDone");
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);

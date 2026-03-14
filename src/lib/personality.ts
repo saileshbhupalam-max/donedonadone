@@ -1,6 +1,6 @@
 /**
  * @module personality
- * @description donedonadone brand voice and UI copy library. "The poet in the machine."
+ * @description DanaDone brand voice and UI copy library. "The poet in the machine."
  * All user-facing text should come from this file to maintain consistent brand voice.
  * Covers: loading states, empty states, error messages, confirmations, contextual greetings,
  * celebrations, notifications, onboarding conversation, community language mappings, and page titles.
@@ -18,7 +18,7 @@
  * Dependencies: None (pure data + functions)
  * Related: PersonalityContext.tsx (React context wrapper), all UI components (consume copy)
  */
-// ─── donedonadone Platform Personality ──────────────────────
+// ─── DanaDone Platform Personality ──────────────────────
 // The poet in the machine. Rumi meets Seinfeld meets your coolest friend.
 
 // ─── Loading States (rotate randomly) ──────────────────
@@ -55,7 +55,7 @@ export const ERROR_STATES = {
   network: "The internet took a coffee break. Try again in a sec.",
   generic: "Well, that didn't go as planned. Neither did my morning. Try again?",
   notFound: "You've wandered off the map. Happens to the best of us.",
-  notFoundPhilosophical: "You're lost. But you're not alone. We're all a little lost. — DoneDonaDone, accidentally philosophical",
+  notFoundPhilosophical: "You're lost. But you're not alone. We're all a little lost. — DanaDone, accidentally philosophical",
   sessionFull: "Standing room only. This one's packed — but the next one has your name on it.",
   alreadyRsvpd: "You're already on the list. Relax. We remember.",
   pastEvent: "That ship has sailed, that session has sessioned. Let's find the next one.",
@@ -132,7 +132,7 @@ export function getContextualGreeting(ctx: GreetingContext): string {
   const n = ctx.firstName || "friend";
 
   // Special overrides (priority order)
-  if (ctx.isFirstVisit) return `Welcome to donedonadone, ${n}. You just walked into the best room you didn't know existed.`;
+  if (ctx.isFirstVisit) return `Welcome to DanaDone, ${n}. You just walked into the best room you didn't know existed.`;
   if (ctx.afterFirstSession) return `${n}. First session done. You're not new anymore — you're one of us.`;
   if (ctx.daysSinceActive && ctx.daysSinceActive >= 7) return `Look who's back. We kept your seat warm, ${n}.`;
   if (ctx.attendedYesterday) {
@@ -154,16 +154,22 @@ export function getContextualGreeting(ctx: GreetingContext): string {
 }
 
 // ─── Celebration Copy ──────────────────────────────────
+// "DoneDanaDone!" is our branded celebration fanfare — the app's "ta-da!"
+// Reserve it for genuinely celebratory moments: milestones, streaks, badges, onboarding.
 export const CELEBRATIONS = {
-  firstSession: "First one done. That's the hardest part — and you nailed it.",
+  fanfare: "DoneDanaDone! 🎉",
+  onboardingComplete: "DoneDanaDone! Welcome to the community.",
+  firstSession: "DoneDanaDone! First one done. That's the hardest part — and you nailed it.",
   firstSessionSub: "You showed up. Most people just think about it.",
-  streak3: "Three for three. A habit is born.",
-  streak5: "Five straight. You don't just show up — you show up.",
-  streak10: "Ten sessions. Most people talk about productivity. You just do it.",
-  streak25: "Twenty-five. At this point, the cafe knows your order.",
-  rankUp: "New rank unlocked. You earned it with hours, not hype.",
+  streak3: "DoneDanaDone! Three for three. A habit is born.",
+  streak5: "DoneDanaDone! Five straight. You don't just show up — you show up.",
+  streak10: "DoneDanaDone! Ten sessions. Most people talk about productivity. You just do it.",
+  streak25: "DoneDanaDone! Twenty-five. At this point, the cafe knows your order.",
+  rankUp: "DoneDanaDone! New rank unlocked. You earned it with hours, not hype.",
+  badgeEarned: (emoji: string, name: string) => `DoneDanaDone! ${emoji} ${name} badge earned!`,
+  venueActivated: "DoneDanaDone! Venue is now live.",
   propsReceived: (name: string) => `${name} sees you. That's what this is about.`,
-  focusHours100: "One hundred hours of deep work. That's not a number — that's a portfolio.",
+  focusHours100: "DoneDanaDone! One hundred hours of deep work. That's not a number — that's a portfolio.",
 };
 
 // ─── Pull-to-Refresh Messages ──────────────────────────
@@ -207,7 +213,7 @@ export const NOTIFICATION_COPY = {
 // ─── Onboarding Conversation ──────────────────────────
 export const ONBOARDING = {
   welcome: {
-    headline: "donedonadone. Where strangers become\ncoworkers become friends.",
+    headline: "DanaDone. Where strangers become\ncoworkers become friends.",
     subline: "We match you with 3-5 people at great cafes. You focus. You connect. You come back.",
     button: "Sounds like my kind of thing",
   },
@@ -289,13 +295,13 @@ export const COMMUNITY_LANG = {
 
 // ─── Page Titles ──────────────────────────────────────
 export const PAGE_TITLES = {
-  home: "Home — DoneDonaDone",
-  discover: "Find Your People — DoneDonaDone",
-  events: "Sessions — DoneDonaDone",
-  prompts: "The Question — DoneDonaDone",
-  profile: "You — DoneDonaDone",
-  admin: "Mission Control — DoneDonaDone",
-  session: "Session — DoneDonaDone",
+  home: "Home — DanaDone",
+  discover: "Find Your People — DanaDone",
+  events: "Sessions — DanaDone",
+  prompts: "The Question — DanaDone",
+  profile: "You — DanaDone",
+  admin: "Mission Control — DanaDone",
+  session: "Session — DanaDone",
 };
 
 // ─── Gender-Balanced Group Indicator ──────────────────

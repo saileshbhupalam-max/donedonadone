@@ -28,7 +28,7 @@ import SubscriptionCard from "./SubscriptionCard";
 import { UserSettings, DEFAULT_SETTINGS } from "./types";
 
 export default function Settings() {
-  usePageTitle("Settings — DoneDonaDone");
+  usePageTitle("Settings — DanaDone");
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
@@ -300,7 +300,7 @@ export default function Settings() {
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Sign out?</AlertDialogTitle>
-                  <AlertDialogDescription>You'll need to sign in again to access donedonadone.</AlertDialogDescription>
+                  <AlertDialogDescription>You'll need to sign in again to access DanaDone.</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Never mind</AlertDialogCancel>

@@ -63,7 +63,7 @@ export function CommunityHighlight() {
   return (
     <Card className="border-secondary/20 bg-secondary/5">
       <CardContent className="p-4 space-y-2">
-        <p className="text-xs font-medium text-secondary">donedonadone Highlight ✨</p>
+        <p className="text-xs font-medium text-secondary">DanaDone Highlight ✨</p>
         <p className="text-sm text-foreground">
           {highlight.totalCount} members coworked{highlight.venueName ? ` at ${highlight.venueName}` : ""} {highlight.dayLabel}
         </p>
@@ -110,19 +110,19 @@ export function EnhancedWeeklyDigest(props: EnhancedWeeklyDigestProps) {
     const html2canvas = (await import("html2canvas")).default;
     const canvas = await html2canvas(cardRef.current, { scale: 2, backgroundColor: null });
     const a = document.createElement("a");
-    a.download = `focusclub-week-${format(new Date(), "yyyy-MM-dd")}.png`;
+    a.download = `danadone-week-${format(new Date(), "yyyy-MM-dd")}.png`;
     a.href = canvas.toDataURL("image/png");
     a.click();
   };
 
-  const shareMsg = `My donedonadone week: ${props.sessions} sessions, ${props.hours}h deep work, ${props.propsReceived} props received${props.streak > 0 ? `, 🔥 ${props.streak} streak` : ""}! Join me: ${window.location.origin}/invite/${props.referralCode || ""}`;
+  const shareMsg = `My DanaDone week: ${props.sessions} sessions, ${props.hours}h deep work, ${props.propsReceived} props received${props.streak > 0 ? `, 🔥 ${props.streak} streak` : ""}! Join me: ${window.location.origin}/invite/${props.referralCode || ""}`;
 
   return (
     <div className="space-y-2">
       {/* Visible card */}
       <Card className="border-secondary/20 bg-secondary/5">
         <CardContent className="p-4 space-y-3">
-          <p className="font-serif text-sm text-foreground">Your Week in donedonadone 📊</p>
+          <p className="font-serif text-sm text-foreground">Your Week in DanaDone 📊</p>
           <div className="grid grid-cols-3 gap-2 text-center">
             <div>
               <p className="text-lg font-bold text-foreground">{props.sessions}</p>
@@ -184,7 +184,7 @@ export function EnhancedWeeklyDigest(props: EnhancedWeeklyDigestProps) {
             </div>
           </div>
           <div style={{ textAlign: "center", borderTop: "1px solid rgba(0,0,0,0.1)", paddingTop: 12 }}>
-            <p style={{ fontSize: 11, color: "#888" }}>Join me on donedonadone · focusclub.app</p>
+            <p style={{ fontSize: 11, color: "#888" }}>Join me on DanaDone · danadone.club</p>
           </div>
         </div>
       </div>
@@ -207,10 +207,10 @@ export function InviteSuggestion({ matchName, workVibe, referralCode }: InviteSu
     <Card className="border-dashed border-primary/20">
       <CardContent className="p-3 space-y-2">
         <p className="text-xs text-muted-foreground">
-          Know someone like {matchName}? Members like them love donedonadone.
+          Know someone like {matchName}? Members like them love DanaDone.
         </p>
         <WhatsAppShareButton
-          message={`I found my coworking match on donedonadone! If you're into ${vibeLabel}, you'd love it too: ${window.location.origin}/invite/${referralCode || ""}`}
+          message={`I found my coworking match on DanaDone! If you're into ${vibeLabel}, you'd love it too: ${window.location.origin}/invite/${referralCode || ""}`}
           label="Invite someone similar"
           size="sm"
           variant="outline"

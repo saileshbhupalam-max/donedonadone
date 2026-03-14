@@ -19,9 +19,9 @@ export function PostEventShareCard({ hours, peopleCount, venue, referralCode, ev
   const appUrl = typeof window !== "undefined" ? window.location.origin : "";
   const inviteLink = `${appUrl}/invite/${referralCode || ""}`;
 
-  const waMessage = `Just did a ${hours}-hour coworking session with ${peopleCount} amazing people${venue ? ` at ${venue}` : ""} through donedonadone! 🎯\nIf you work remotely or freelance in Bangalore, check it out: ${inviteLink}`;
+  const waMessage = `Just did a ${hours}-hour coworking session with ${peopleCount} amazing people${venue ? ` at ${venue}` : ""} through DanaDone! 🎯\nIf you work remotely or freelance in Bangalore, check it out: ${inviteLink}`;
 
-  const linkedInText = `Just finished a focused coworking session${venue ? ` at ${venue}` : ""} with ${peopleCount} people through @donedonadone.\nIf you're a remote worker, freelancer, or founder in Bangalore — this community is amazing.\n#coworking #bangalore #remotework #focusclub`;
+  const linkedInText = `Just finished a focused coworking session${venue ? ` at ${venue}` : ""} with ${peopleCount} people through @danadone.\nIf you're a remote worker, freelancer, or founder in Bangalore — this community is amazing.\n#coworking #bangalore #remotework #danadone`;
 
   return (
     <Card className="border-primary/20 bg-primary/5">

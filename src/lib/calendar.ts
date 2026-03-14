@@ -43,9 +43,9 @@ export function getGoogleCalendarUrl(event: {
 
   const params = new URLSearchParams({
     action: 'TEMPLATE',
-    text: `DoneDonaDone: ${event.title}`,
+    text: `DanaDone: ${event.title}`,
     dates: `${start}/${end}`,
-    details: `Cowork session${event.venueName ? ` at ${event.venueName}` : ''}.\n\nCheck in with the DoneDonaDone app when you arrive.`,
+    details: `Cowork session${event.venueName ? ` at ${event.venueName}` : ''}.\n\nCheck in with the DanaDone app when you arrive.`,
     location,
     ctz: 'Asia/Kolkata',
   });
@@ -82,13 +82,13 @@ export function downloadICSFile(event: {
   const ics = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//donedonadone//EN',
+    'PRODID:-//danadone//EN',
     'BEGIN:VEVENT',
     `DTSTART;TZID=Asia/Kolkata:${start}`,
     `DTEND;TZID=Asia/Kolkata:${end}`,
-    `SUMMARY:DoneDonaDone: ${event.title}`,
+    `SUMMARY:DanaDone: ${event.title}`,
     `LOCATION:${location}`,
-    `DESCRIPTION:Cowork session. Check in with the DoneDonaDone app.`,
+    `DESCRIPTION:Cowork session. Check in with the DanaDone app.`,
     'END:VEVENT',
     'END:VCALENDAR',
   ].join('\r\n');
@@ -97,7 +97,7 @@ export function downloadICSFile(event: {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `focusclub-${event.date}.ics`;
+  link.download = `danadone-${event.date}.ics`;
   link.click();
   URL.revokeObjectURL(url);
 }

@@ -260,7 +260,7 @@ export function StatusGameTab() {
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `focusclub-members-${format(new Date(), "yyyy-MM-dd")}.csv`; a.click();
+    a.href = url; a.download = `danadone-members-${format(new Date(), "yyyy-MM-dd")}.csv`; a.click();
   };
 
   if (loading) return <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32" />)}</div>;

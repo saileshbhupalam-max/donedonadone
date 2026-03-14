@@ -1,4 +1,4 @@
-const DB_NAME = "focusclub-cache";
+const DB_NAME = "danadone-cache";
 const STORE_NAME = "api-cache";
 const DB_VERSION = 1;
 const DEFAULT_TTL = 24 * 60 * 60 * 1000; // 24 hours

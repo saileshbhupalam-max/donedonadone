@@ -41,7 +41,7 @@ test.describe("Venue nomination page structure", () => {
     const response = await page.goto("/nominate");
     expect(response?.status()).toBe(200);
     const html = await page.content();
-    expect(html).toContain("donedonadone");
+    expect(html).toContain("DanaDone");
     await expect(page.locator("#root")).toBeAttached();
   });
 });

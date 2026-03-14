@@ -16,7 +16,7 @@ test.describe("App boots and serves pages", () => {
     await expect(page.locator("#root")).toBeAttached();
   });
 
-  test("/ shows donedonadone branding (loading or landing)", async ({ page }) => {
+  test("/ shows DanaDone branding (loading or landing)", async ({ page }) => {
     await page.goto("/");
     // Both loading state and final render show "done" in the h1 logo
     await expect(page.locator("h1").first()).toContainText("done", { timeout: 10000 });
@@ -37,7 +37,7 @@ test.describe("App boots and serves pages", () => {
 });
 
 test.describe("Protected routes show loading state for unauthenticated users", () => {
-  // Protected routes show the "donedonadone" loading screen while auth resolves,
+  // Protected routes show the "DanaDone" loading screen while auth resolves,
   // then redirect to "/". We verify they at least render without crashing.
   const protectedRoutes = [
     "/home",

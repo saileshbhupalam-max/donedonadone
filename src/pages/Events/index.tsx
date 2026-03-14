@@ -48,7 +48,7 @@ import { SessionRequestSheet } from "./SessionRequestSheet";
 const SessionMap = lazy(() => import("@/components/map/SessionMap").then(m => ({ default: m.SessionMap })));
 
 export default function Events() {
-  usePageTitle("Sessions — DoneDonaDone");
+  usePageTitle("Sessions — DanaDone");
   useEffect(() => { trackFunnelStep("session", 1, "view_events"); }, []);
   const { profile, user } = useAuth();
   const { upcoming, past, loading, toggleRsvp, getUserRsvp, fetchEvents } = useEvents();

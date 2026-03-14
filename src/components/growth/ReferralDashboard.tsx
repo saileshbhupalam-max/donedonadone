@@ -95,7 +95,7 @@ export function ReferralDashboard({ userId }: ReferralDashboardProps) {
   }, [stats.referralLink]);
 
   const shareWhatsApp = useCallback(() => {
-    const text = `Join me on donedonadone! Work alongside motivated people at great cafes. Your first session is free: ${stats.referralLink}`;
+    const text = `Join me on DanaDone! Work alongside motivated people at great cafes. Your first session is free: ${stats.referralLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   }, [stats.referralLink]);
 
@@ -124,7 +124,7 @@ export function ReferralDashboard({ userId }: ReferralDashboardProps) {
             <Trophy className="w-6 h-6 text-purple-500" />
             <div>
               <p className="text-sm font-semibold text-purple-800 dark:text-purple-300">Community Builder</p>
-              <p className="text-xs text-purple-600 dark:text-purple-400">You've helped grow donedonadone!</p>
+              <p className="text-xs text-purple-600 dark:text-purple-400">You've helped grow DanaDone!</p>
             </div>
           </div>
         )}

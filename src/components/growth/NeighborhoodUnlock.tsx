@@ -78,13 +78,13 @@ export function NeighborhoodUnlock({ neighborhood, userId, referralCode }: Neigh
   const remaining = threshold - memberCount;
   const displayName = displayNeighborhood(neighborhood);
   const inviteMsg = referralCode
-    ? `Join donedonadone in ${displayName}! Use my invite: ${window.location.origin}/invite/${referralCode}`
-    : `Join donedonadone in ${displayName}!`;
+    ? `Join DanaDone in ${displayName}! Use my invite: ${window.location.origin}/invite/${referralCode}`
+    : `Join DanaDone in ${displayName}!`;
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Join donedonadone", text: inviteMsg });
+        await navigator.share({ title: "Join DanaDone", text: inviteMsg });
       } catch {
         // User cancelled
       }

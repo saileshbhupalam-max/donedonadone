@@ -397,7 +397,7 @@ function LiveConversionHero({ locationId }: { locationId: string }) {
             </Link>
           </Button>
           <span className="text-xs text-muted-foreground">
-            Powered by <span className="font-semibold text-foreground">donedonadone</span>
+            Powered by <span className="font-semibold text-foreground">DanaDone</span>
           </span>
         </div>
       </CardContent>
@@ -415,7 +415,7 @@ export default function SpaceInsights() {
   const [dateRange, setDateRange] = useState<DateRange>("quarter");
 
   usePageTitle(
-    data ? `${data.venue.name} Insights -- donedonadone` : "Space Insights -- donedonadone"
+    data ? `${data.venue.name} Insights -- DanaDone` : "Space Insights -- DanaDone"
   );
 
   useEffect(() => {
@@ -485,7 +485,7 @@ export default function SpaceInsights() {
                 </div>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   Powered by{" "}
-                  <span className="font-semibold text-foreground">donedonadone</span>
+                  <span className="font-semibold text-foreground">DanaDone</span>
                 </div>
               </div>
 
@@ -668,7 +668,7 @@ export default function SpaceInsights() {
                   href="/"
                   className="text-primary hover:underline font-medium"
                 >
-                  donedonadone
+                  DanaDone
                 </a>{" "}
                 -- Group coworking at cafes in Bangalore
               </p>

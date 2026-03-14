@@ -45,118 +45,118 @@ export interface MilestoneDef {
   shareMessage: (referralCode?: string | null) => string;
 }
 
-const APP_URL = typeof window !== "undefined" ? window.location.origin : "https://focusclub.app";
+const APP_URL = typeof window !== "undefined" ? window.location.origin : "https://danadone.club";
 
 export const MILESTONES: Record<string, MilestoneDef> = {
   first_event: {
     type: "first_event", emoji: "🎉", title: "First Session!",
-    description: "You attended your first DoneDonaDone session. Welcome to the community!",
-    shareMessage: (ref) => `Just attended my first coworking session on DoneDonaDone! 🎉 Join the community: ${APP_URL}/invite/${ref || ""}`,
+    description: "You attended your first DanaDone session. Welcome to the community!",
+    shareMessage: (ref) => `Just attended my first coworking session on DanaDone! 🎉 Join the community: ${APP_URL}/invite/${ref || ""}`,
   },
   events_3: {
     type: "events_3", emoji: "🎯", title: "Committed!",
     description: "3 sessions down. You're officially a regular.",
-    shareMessage: (ref) => `I've hit 3 coworking sessions on DoneDonaDone! 🎯 Officially a regular. Join us: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `I've hit 3 coworking sessions on DanaDone! 🎯 Officially a regular. Join us: ${APP_URL}/invite/${ref || ""}`,
   },
   events_5: {
     type: "events_5", emoji: "⭐", title: "High Five!",
     description: "5 sessions. You're in the top 20% of active members.",
-    shareMessage: (ref) => `5 coworking sessions on DoneDonaDone! ⭐ In the top 20% of active members. Join: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `5 coworking sessions on DanaDone! ⭐ In the top 20% of active members. Join: ${APP_URL}/invite/${ref || ""}`,
   },
   events_10: {
     type: "events_10", emoji: "🏆", title: "Double Digits!",
     description: "10 sessions. You're now eligible to host events!",
-    shareMessage: (ref) => `10 sessions on DoneDonaDone! 🏆 Now I can host my own events. Join the community: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `10 sessions on DanaDone! 🏆 Now I can host my own events. Join the community: ${APP_URL}/invite/${ref || ""}`,
   },
   events_25: {
     type: "events_25", emoji: "💎", title: "Quarter Century!",
-    description: "25 sessions. You're a DoneDonaDone legend.",
-    shareMessage: (ref) => `25 coworking sessions on DoneDonaDone! 💎 Legend status achieved. Join: ${APP_URL}/invite/${ref || ""}`,
+    description: "25 sessions. You're a DanaDone legend.",
+    shareMessage: (ref) => `25 coworking sessions on DanaDone! 💎 Legend status achieved. Join: ${APP_URL}/invite/${ref || ""}`,
   },
   events_50: {
     type: "events_50", emoji: "👑", title: "Hall of Fame!",
     description: "50 sessions. The community is better because of you.",
-    shareMessage: (ref) => `50 sessions on DoneDonaDone! 👑 Hall of Fame. This community is amazing: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `50 sessions on DanaDone! 👑 Hall of Fame. This community is amazing: ${APP_URL}/invite/${ref || ""}`,
   },
   first_prop_given: {
     type: "first_prop_given", emoji: "🙌", title: "First Props Given!",
     description: "You recognized someone's contribution. That's what community is about.",
-    shareMessage: (ref) => `Just gave my first props on DoneDonaDone! 🙌 Love this community: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `Just gave my first props on DanaDone! 🙌 Love this community: ${APP_URL}/invite/${ref || ""}`,
   },
   first_prop_received: {
     type: "first_prop_received", emoji: "💛", title: "Got Props!",
     description: "Someone recognized you! Your presence matters.",
-    shareMessage: (ref) => `Got my first props on DoneDonaDone! 💛 People appreciate working together: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `Got my first props on DanaDone! 💛 People appreciate working together: ${APP_URL}/invite/${ref || ""}`,
   },
   props_received_25: {
     type: "props_received_25", emoji: "💛", title: "Loved by Many!",
     description: "25 props received. People really enjoy working with you.",
-    shareMessage: (ref) => `25 props received on DoneDonaDone! 💛 People enjoy coworking with me: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `25 props received on DanaDone! 💛 People enjoy coworking with me: ${APP_URL}/invite/${ref || ""}`,
   },
   props_received_50: {
     type: "props_received_50", emoji: "🌟", title: "Community Star!",
     description: "50 props. You make every session better.",
-    shareMessage: (ref) => `50 props on DoneDonaDone! 🌟 Community star status: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `50 props on DanaDone! 🌟 Community star status: ${APP_URL}/invite/${ref || ""}`,
   },
   first_prompt_answer: {
     type: "first_prompt_answer", emoji: "💬", title: "Voice Heard!",
     description: "You shared your first prompt answer. The community is listening.",
-    shareMessage: (ref) => `Shared my first answer on DoneDonaDone! 💬 Join the conversation: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `Shared my first answer on DanaDone! 💬 Join the conversation: ${APP_URL}/invite/${ref || ""}`,
   },
   prompts_5: {
     type: "prompts_5", emoji: "📝", title: "5 Prompts!",
     description: "You've answered 5 prompts. Your profile is really coming to life.",
-    shareMessage: (ref) => `Answered 5 community prompts on DoneDonaDone! 📝 Building connections: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `Answered 5 community prompts on DanaDone! 📝 Building connections: ${APP_URL}/invite/${ref || ""}`,
   },
   streak_3: {
     type: "streak_3", emoji: "🔥", title: "On Fire!",
     description: "3 sessions in a row. Keep the momentum.",
-    shareMessage: (ref) => `3 session streak on DoneDonaDone! 🔥 Momentum is everything: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `3 session streak on DanaDone! 🔥 Momentum is everything: ${APP_URL}/invite/${ref || ""}`,
   },
   streak_5: {
     type: "streak_5", emoji: "🔥", title: "Unstoppable!",
     description: "5 session streak. That's serious dedication.",
-    shareMessage: (ref) => `5 session streak! 🔥🔥 Unstoppable on DoneDonaDone: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `5 session streak! 🔥🔥 Unstoppable on DanaDone: ${APP_URL}/invite/${ref || ""}`,
   },
   streak_10: {
     type: "streak_10", emoji: "🔥", title: "Legendary!",
     description: "10 session streak. You're inspiring others.",
-    shareMessage: (ref) => `10 session streak! 🔥🔥🔥 Legendary dedication on DoneDonaDone: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `10 session streak! 🔥🔥🔥 Legendary dedication on DanaDone: ${APP_URL}/invite/${ref || ""}`,
   },
   referral_1: {
     type: "referral_1", emoji: "🤝", title: "First Recruit!",
-    description: "You brought someone new to DoneDonaDone.",
-    shareMessage: (ref) => `Recruited my first member to DoneDonaDone! 🤝 Growing the community: ${APP_URL}/invite/${ref || ""}`,
+    description: "You brought someone new to DanaDone.",
+    shareMessage: (ref) => `Recruited my first member to DanaDone! 🤝 Growing the community: ${APP_URL}/invite/${ref || ""}`,
   },
   referral_3: {
     type: "referral_3", emoji: "🌱", title: "Community Builder!",
     description: "3 people joined through you.",
-    shareMessage: (ref) => `3 people joined DoneDonaDone through me! 🌱 Community builder: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `3 people joined DanaDone through me! 🌱 Community builder: ${APP_URL}/invite/${ref || ""}`,
   },
   referral_10: {
     type: "referral_10", emoji: "🚀", title: "Growth Engine!",
     description: "10 referrals. You're building this community.",
-    shareMessage: (ref) => `10 people joined DoneDonaDone through me! 🚀 Growth engine: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `10 people joined DanaDone through me! 🚀 Growth engine: ${APP_URL}/invite/${ref || ""}`,
   },
   member_1_month: {
     type: "member_1_month", emoji: "📅", title: "One Month In!",
-    description: "Thanks for being part of DoneDonaDone.",
-    shareMessage: (ref) => `One month on DoneDonaDone! 📅 Loving this coworking community: ${APP_URL}/invite/${ref || ""}`,
+    description: "Thanks for being part of DanaDone.",
+    shareMessage: (ref) => `One month on DanaDone! 📅 Loving this coworking community: ${APP_URL}/invite/${ref || ""}`,
   },
   member_3_months: {
     type: "member_3_months", emoji: "📅", title: "Quarter Year!",
     description: "3 months of focused coworking.",
-    shareMessage: (ref) => `3 months on DoneDonaDone! 📅 Best coworking community in Bangalore: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `3 months on DanaDone! 📅 Best coworking community in Bangalore: ${APP_URL}/invite/${ref || ""}`,
   },
   member_6_months: {
     type: "member_6_months", emoji: "📅", title: "Half Year!",
     description: "6 months. You've been here since the early days.",
-    shareMessage: (ref) => `6 months on DoneDonaDone! 📅 OG member status: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `6 months on DanaDone! 📅 OG member status: ${APP_URL}/invite/${ref || ""}`,
   },
   member_1_year: {
     type: "member_1_year", emoji: "🎂", title: "One Year!",
     description: "A full year of focused coworking. Thank you!",
-    shareMessage: (ref) => `One year on DoneDonaDone! 🎂 What a journey: ${APP_URL}/invite/${ref || ""}`,
+    shareMessage: (ref) => `One year on DanaDone! 🎂 What a journey: ${APP_URL}/invite/${ref || ""}`,
   },
 };
 

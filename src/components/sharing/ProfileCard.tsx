@@ -130,7 +130,7 @@ function ProfileCardCanvas({ profile, propCounts = {}, streak = 0, recommendedBy
         fontFamily: "Inter, sans-serif", fontWeight: 600,
         letterSpacing: 0.5,
       }}>
-        Find me on DoneDonaDone
+        Find me on DanaDone
       </div>
 
       {/* Bottom bar */}
@@ -143,7 +143,7 @@ function ProfileCardCanvas({ profile, propCounts = {}, streak = 0, recommendedBy
         alignItems: "center",
       }}>
         <span style={{ fontSize: 18, color: "#C4745A", fontFamily: "Inter, sans-serif", fontWeight: 600 }}>
-          focusclub.app
+          danadone.club
         </span>
         <span style={{ fontSize: 16, color: "#7A7A7A", fontFamily: "Inter, sans-serif" }}>
           Find your people. Focus together.
@@ -166,7 +166,7 @@ function ProfileCardCanvas({ profile, propCounts = {}, streak = 0, recommendedBy
         fontSize: 14, color: "rgba(196,116,90,0.3)",
         fontFamily: "'DM Serif Display', serif",
       }}>
-        donedonadone
+        DanaDone
       </div>
     </div>
   );
@@ -245,11 +245,11 @@ export function ShareProfileCard({ profile, propCounts, streak, referralCode, re
     const blob = await handleGenerate();
     if (!blob) return;
     
-    const file = new File([blob], `focusclub-${profile.display_name?.replace(/\s+/g, "-").toLowerCase()}.png`, { type: "image/png" });
+    const file = new File([blob], `danadone-${profile.display_name?.replace(/\s+/g, "-").toLowerCase()}.png`, { type: "image/png" });
     
     if (navigator.share && navigator.canShare?.({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], title: `${profile.display_name} on DoneDonaDone` });
+        await navigator.share({ files: [file], title: `${profile.display_name} on DanaDone` });
         return;
       } catch { /* fallback below */ }
     }
@@ -260,11 +260,11 @@ export function ShareProfileCard({ profile, propCounts, streak, referralCode, re
 
   const handleWhatsApp = async () => {
     const blob = await handleGenerate();
-    if (blob) downloadBlob(blob, "focusclub-card.png");
+    if (blob) downloadBlob(blob, "danadone-card.png");
     
     const msg = recommendedBy
-      ? `Check out ${profile.display_name} on DoneDonaDone${profile.tagline ? ` — ${profile.tagline}` : ""}. Join us: ${profileLink}`
-      : `Hey! I'm on DoneDonaDone — a community for people who cowork in Bangalore. Check out my profile and join: ${profileLink}`;
+      ? `Check out ${profile.display_name} on DanaDone${profile.tagline ? ` — ${profile.tagline}` : ""}. Join us: ${profileLink}`
+      : `Hey! I'm on DanaDone — a community for people who cowork in Bangalore. Check out my profile and join: ${profileLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -276,7 +276,7 @@ export function ShareProfileCard({ profile, propCounts, streak, referralCode, re
   const handleDownload = async () => {
     const blob = await handleGenerate();
     if (blob) {
-      downloadBlob(blob, `focusclub-${profile.display_name?.replace(/\s+/g, "-").toLowerCase() || "card"}.png`);
+      downloadBlob(blob, `danadone-${profile.display_name?.replace(/\s+/g, "-").toLowerCase() || "card"}.png`);
       toast.success("Card downloaded!");
     }
   };

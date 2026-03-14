@@ -83,7 +83,7 @@ test.describe("Asset loading", () => {
 test.describe("SPA routing performance", () => {
   test("client-side navigation is fast (no full page reload)", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("h1")).toContainText("donedonadone", { timeout: 15000 });
+    await expect(page.locator("h1")).toContainText("Done", { timeout: 15000 });
 
     // Navigate via client-side link
     const link = page.locator("a", { hasText: "Partner Venues" });

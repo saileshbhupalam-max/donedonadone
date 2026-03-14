@@ -1,6 +1,6 @@
 /* DESIGN: Profile restructured into 3 tabs:
    - Profile: What others see (screenshot-worthy)
-   - Journey: Your donedonadone story (timeline)
+   - Journey: Your DanaDone story (timeline)
    - Settings: Edit everything */
 
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
@@ -30,7 +30,7 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton as UISkeleton } from "@/components/ui/skeleton";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { ERROR_STATES, CONFIRMATIONS } from "@/lib/personality";
+import { ERROR_STATES, CONFIRMATIONS, CELEBRATIONS } from "@/lib/personality";
 import { format, parseISO } from "date-fns";
 import { ShareProfileCard } from "@/components/sharing/ProfileCard";
 import { WhatsAppShareButton, CopyLinkButton } from "@/components/sharing/WhatsAppButton";
@@ -59,7 +59,7 @@ const LocationPicker = lazy(() => import("@/components/map/LocationPicker").then
 
 // ─── Main Profile Page ──────────────────────────────────
 export default function Profile() {
-  usePageTitle("You — DoneDonaDone");
+  usePageTitle("You — DanaDone");
   const { profile, user, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -201,7 +201,7 @@ export default function Profile() {
       if (newBadges.length > 0) {
         newBadges.forEach(bt => {
           const def = getBadgeDef(bt);
-          if (def) sonnerToast.success(`🎉 Badge earned: ${def.emoji} ${def.name}!`);
+          if (def) sonnerToast.success(CELEBRATIONS.badgeEarned(def.emoji, def.name));
         });
         const { data } = await supabase.from("member_badges").select("badge_type, earned_at").eq("user_id", user.id);
         setEarnedBadges(data || []);
@@ -736,7 +736,7 @@ export default function Profile() {
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>Sign out?</AlertDialogTitle>
-                    <AlertDialogDescription>You'll need to sign in again to access donedonadone.</AlertDialogDescription>
+                    <AlertDialogDescription>You'll need to sign in again to access DanaDone.</AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Never mind</AlertDialogCancel>

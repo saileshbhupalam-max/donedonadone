@@ -5,7 +5,7 @@ import { Download, Copy } from "lucide-react";
 
 const QRCodeSVG = lazy(() => import("qrcode.react").then(m => ({ default: m.QRCodeSVG })));
 
-const APP_URL = typeof window !== "undefined" ? window.location.origin : "https://focusclub.app";
+const APP_URL = typeof window !== "undefined" ? window.location.origin : "https://danadone.club";
 
 function getQrLink(venueId: string) {
   return `${APP_URL}/?venue=${venueId}&utm_source=qr&utm_medium=table_tent`;
@@ -72,7 +72,7 @@ export function VenueQrSection({ venueId, venueName }: VenueQrSectionProps) {
       <div className="overflow-hidden h-0">
         <div ref={tableTentRef} style={{ width: 420, padding: 32, background: "linear-gradient(135deg, #F5F0EB, #F0D5C5)", fontFamily: "Inter, sans-serif", textAlign: "center" }}>
           <div style={{ fontSize: 28, fontFamily: "DM Serif Display, serif", marginBottom: 8 }}>
-            <span>Focus</span><span style={{ fontWeight: 300 }}>Club</span>
+            <span>Dana</span><span style={{ fontWeight: 300 }}>Done</span>
           </div>
           <p style={{ fontSize: 13, color: "#666", marginBottom: 20 }}>Find your people. Focus together.</p>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
@@ -81,9 +81,9 @@ export function VenueQrSection({ venueId, venueName }: VenueQrSectionProps) {
             </Suspense>
           </div>
           <p style={{ fontSize: 15, fontWeight: 600, color: "#2D2D2D", marginBottom: 6 }}>Scan to join the coworking community</p>
-          <p style={{ fontSize: 11, color: "#888" }}>Free to join · {venueName} is a donedonadone partner</p>
+          <p style={{ fontSize: 11, color: "#888" }}>Free to join · {venueName} is a DanaDone partner</p>
           <div style={{ borderTop: "1px solid #ddd", marginTop: 16, paddingTop: 12 }}>
-            <p style={{ fontSize: 10, color: "#999" }}>focusclub.app</p>
+            <p style={{ fontSize: 10, color: "#999" }}>danadone.club</p>
           </div>
         </div>
       </div>

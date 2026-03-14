@@ -1,7 +1,7 @@
 // Push notification service worker
 self.addEventListener('push', function(event) {
   const data = event.data ? event.data.json() : {};
-  const title = data.title || 'donedonadone';
+  const title = data.title || 'DanaDone';
   const options = {
     body: data.body || '',
     icon: '/icons/icon-192.png',

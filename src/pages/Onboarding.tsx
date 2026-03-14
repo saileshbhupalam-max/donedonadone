@@ -3,7 +3,7 @@
    Preferences (noise, schedule, location, socials) collected progressively after sessions. */
 
 import { AppShell } from "@/components/layout/AppShell";
-import { ERROR_STATES } from "@/lib/personality";
+import { ERROR_STATES, CELEBRATIONS } from "@/lib/personality";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,14 +33,14 @@ const STEP_CTA: Record<number, string> = {
 };
 
 export default function Onboarding() {
-  usePageTitle("Join — DoneDonaDone");
+  usePageTitle("Join — DanaDone");
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   // Restore saved progress from localStorage
   const savedProgress = (() => {
     try {
-      const raw = localStorage.getItem("focusclub_onboarding_progress");
+      const raw = localStorage.getItem("danadone_onboarding_progress");
       return raw ? JSON.parse(raw) : null;
     } catch { return null; }
   })();
@@ -86,7 +86,7 @@ export default function Onboarding() {
     setData((prev) => {
       const next = { ...prev, ...partial };
       try {
-        localStorage.setItem("focusclub_onboarding_progress", JSON.stringify({ step, data: next }));
+        localStorage.setItem("danadone_onboarding_progress", JSON.stringify({ step, data: next }));
       } catch {}
       return next;
     });
@@ -107,7 +107,7 @@ export default function Onboarding() {
       setStep(nextStep);
       trackFunnelStep("onboarding", nextStep, `onboarding_step_${nextStep}`);
       trackAnalyticsEvent(`onboarding_step_${nextStep}` as any, user?.id);
-      try { localStorage.setItem("focusclub_onboarding_progress", JSON.stringify({ step: nextStep, data })); } catch {}
+      try { localStorage.setItem("danadone_onboarding_progress", JSON.stringify({ step: nextStep, data })); } catch {}
     }
   };
 
@@ -116,7 +116,7 @@ export default function Onboarding() {
       setDirection(-1);
       const prevStep = step - 1;
       setStep(prevStep);
-      try { localStorage.setItem("focusclub_onboarding_progress", JSON.stringify({ step: prevStep, data })); } catch {}
+      try { localStorage.setItem("danadone_onboarding_progress", JSON.stringify({ step: prevStep, data })); } catch {}
     }
   };
 
@@ -167,7 +167,7 @@ export default function Onboarding() {
           await supabase.from("profiles").update({ referred_by: referrer.id }).eq("id", user.id);
           await supabase.rpc("create_system_notification", {
             p_user_id: referrer.id,
-            p_title: `${data.display_name} joined donedonadone through your invite! 🎉`,
+            p_title: `${data.display_name} joined DanaDone through your invite! 🎉`,
             p_body: "Your community is growing!",
             p_type: "referral",
             p_link: `/profile/${user.id}`,
@@ -192,7 +192,8 @@ export default function Onboarding() {
 
       const confetti = (await import("canvas-confetti")).default;
       confetti({ particleCount: 120, spread: 80, origin: { y: 0.7 } });
-      localStorage.removeItem("focusclub_onboarding_progress");
+      toast.success(CELEBRATIONS.onboardingComplete);
+      localStorage.removeItem("danadone_onboarding_progress");
       await refreshProfile();
       setTimeout(() => navigate(goTo === "events" ? "/events" : "/home"), 1200);
     } catch (error) {

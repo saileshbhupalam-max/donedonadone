@@ -1,7 +1,7 @@
 import { Page } from "@playwright/test";
 
 /**
- * The Supabase auth loading state shows a "donedonadone" pulsing text.
+ * The Supabase auth loading state shows a "DanaDone" pulsing text.
  * This can take 10-30+ seconds to resolve when Supabase backend is slow/unreachable.
  *
  * For E2E tests, we need strategies that don't depend on auth resolving quickly.

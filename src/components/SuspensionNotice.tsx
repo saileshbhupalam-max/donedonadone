@@ -35,7 +35,7 @@ export function SuspensionNotice({ suspendedUntil, reason }: SuspensionNoticePro
       </p>
 
       <Button variant="outline" size="sm" asChild>
-        <a href="mailto:support@focusclub.co">
+        <a href="mailto:support@danadone.club">
           <Mail className="w-4 h-4 mr-2" /> Contact Support
         </a>
       </Button>

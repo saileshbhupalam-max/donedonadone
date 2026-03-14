@@ -14,9 +14,9 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("Landing page branding and hero", () => {
-  test("shows donedonadone heading", async ({ page }) => {
+  test("shows DanaDone heading", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("h1")).toContainText("donedonadone", { timeout: 15000 });
+    await expect(page.locator("h1")).toContainText("Done", { timeout: 15000 });
   });
 
   test("shows tagline", async ({ page }) => {
@@ -111,13 +111,13 @@ test.describe("Landing page footer", () => {
 test.describe("Landing page meta", () => {
   test("has correct page title", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle(/donedonadone/i);
+    await expect(page).toHaveTitle(/danadone/i);
   });
 
   test("viewport renders at mobile width", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
-    await expect(page.locator("h1")).toContainText("donedonadone", { timeout: 15000 });
+    await expect(page.locator("h1")).toContainText("Done", { timeout: 15000 });
     // Content should not overflow horizontally
     const isOverflowing = await page.evaluate(() => {
       return document.documentElement.scrollWidth > document.documentElement.clientWidth;

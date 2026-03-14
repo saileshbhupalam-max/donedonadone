@@ -85,12 +85,12 @@ export function ScrapbookCard({ entry, compact = false, onNoteUpdated }: Scrapbo
       canvas.toBlob(blob => {
         if (!blob) return;
         if (navigator.share) {
-          const file = new File([blob], "focusclub-session.png", { type: "image/png" });
-          navigator.share({ files: [file], title: entry.highlight || "My donedonadone Session" }).catch(() => {});
+          const file = new File([blob], "danadone-session.png", { type: "image/png" });
+          navigator.share({ files: [file], title: entry.highlight || "My DanaDone Session" }).catch(() => {});
         } else {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
-          a.href = url; a.download = "focusclub-session.png"; a.click();
+          a.href = url; a.download = "danadone-session.png"; a.click();
           URL.revokeObjectURL(url);
           toast.success("Downloaded!");
         }

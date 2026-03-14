@@ -11,10 +11,10 @@ import { test, expect } from "@playwright/test";
 test.describe("Landing page", () => {
   test("has correct page title", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle(/donedonadone/i);
+    await expect(page).toHaveTitle(/danadone/i);
   });
 
-  test("shows donedonadone branding immediately", async ({ page }) => {
+  test("shows DanaDone branding immediately", async ({ page }) => {
     await page.goto("/");
     // Both loading state and final render show "done" in the h1 logo
     await expect(page.locator("h1").first()).toContainText("done", { timeout: 10000 });

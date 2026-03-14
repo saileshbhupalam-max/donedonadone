@@ -49,7 +49,7 @@ export default function SessionPage() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  usePageTitle("Session — DoneDonaDone");
+  usePageTitle("Session — DanaDone");
 
   const [event, setEvent] = useState<any>(null);
   const [phases, setPhases] = useState<Phase[]>([]);

@@ -21,7 +21,7 @@ export default function SpaceLive() {
   const [data, setData] = useState<LiveData | null>(null);
   const [statIdx, setStatIdx] = useState(0);
 
-  usePageTitle(data ? `${data.venueName} Live` : "donedonadone Live");
+  usePageTitle(data ? `${data.venueName} Live` : "DanaDone Live");
 
   const fetchData = async () => {
     if (!id) return;
@@ -114,7 +114,7 @@ export default function SpaceLive() {
           </p>
         </div>
         <p className="text-sm text-muted-foreground">
-          Powered by <span className="font-semibold text-foreground">donedonadone</span>
+          Powered by <span className="font-semibold text-foreground">DanaDone</span>
         </p>
       </div>
 

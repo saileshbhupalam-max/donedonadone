@@ -5,6 +5,8 @@ import { MilestoneDef, MILESTONES } from "@/lib/growth";
 import { supabase } from "@/integrations/supabase/client";
 import { WhatsAppShareButton, LinkedInShareButton } from "@/components/sharing/WhatsAppButton";
 import { X, Share2 } from "lucide-react";
+import { toast } from "sonner";
+import { CELEBRATIONS } from "@/lib/personality";
 
 interface MilestoneCelebrationProps {
   milestone: MilestoneDef;
@@ -23,6 +25,7 @@ export function MilestoneCelebration({ milestone, userId, referralCode, onDismis
       (async () => {
         const confetti = (await import("canvas-confetti")).default;
         confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+        toast.success(CELEBRATIONS.fanfare);
       })();
     }
 

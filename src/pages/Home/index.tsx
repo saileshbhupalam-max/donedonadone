@@ -75,7 +75,7 @@ import { PushOptInCard } from "./PushOptInCard";
 
 export default function Home() {
   const personality = usePersonality();
-  usePageTitle("Home — DoneDonaDone");
+  usePageTitle("Home — DanaDone");
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { currentState, dnaComplete, refreshCheckIn } = useUserContext();
@@ -646,7 +646,7 @@ export default function Home() {
             ) : weeklyDigest && (
               <Card className="border-secondary/20 bg-secondary/5">
                 <CardContent className="p-4 space-y-2">
-                  <p className="font-serif text-sm text-foreground">Your Week in donedonadone</p>
+                  <p className="font-serif text-sm text-foreground">Your Week in DanaDone</p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <span className="text-muted-foreground">Sessions: <span className="font-medium text-foreground">{weeklyDigest.sessions}</span></span>
                     <span className="text-muted-foreground">Deep work: <span className="font-medium text-foreground">{weeklyDigest.hours}h</span></span>
@@ -906,7 +906,7 @@ export default function Home() {
                 <p className="text-xs font-medium text-primary">🔥 {postSessionSummary.streak} session streak!</p>
               )}
               <WhatsAppShareButton
-                message={`Just did a ${postSessionSummary.hours}-hour coworking session with ${postSessionSummary.coworkers.length} amazing people${postSessionSummary.venueName ? ` at ${postSessionSummary.venueName}` : ""} through donedonadone! 🎯\nIf you work remotely or freelance in Bangalore, check it out: ${window.location.origin}/invite/${profile.referral_code || ""}`}
+                message={`Just did a ${postSessionSummary.hours}-hour coworking session with ${postSessionSummary.coworkers.length} amazing people${postSessionSummary.venueName ? ` at ${postSessionSummary.venueName}` : ""} through DanaDone! 🎯\nIf you work remotely or freelance in Bangalore, check it out: ${window.location.origin}/invite/${profile.referral_code || ""}`}
                 label="Share your experience"
                 size="sm"
                 variant="outline"

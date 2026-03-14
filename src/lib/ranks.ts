@@ -54,7 +54,7 @@ export const RANK_TIERS: RankTier[] = [
     name: "Deep Worker", emoji: "💎", minHours: 35, maxHours: 75,
     ringColor: "#C47B5A", ringWidth: 3, glow: false,
     cardBorder: "border-l-3 border-l-[#C47B5A]", cardBg: "bg-gradient-to-r from-[#C47B5A]/5 to-transparent",
-    motivation: "Top 20% of donedonadone. You're inspiring others.",
+    motivation: "Top 20% of DanaDone. You're inspiring others.",
   },
   {
     name: "Elite", emoji: "🏆", minHours: 75, maxHours: 150,
@@ -237,7 +237,7 @@ export interface AchievementDef {
 }
 
 export const ACHIEVEMENT_DEFS: AchievementDef[] = [
-  { type: "og_member", emoji: "🌱", name: "OG Member", description: "Joined donedonadone before June 2026", hint: "Join in the first 3 months", exclusive: false },
+  { type: "og_member", emoji: "🌱", name: "OG Member", description: "Joined DanaDone before June 2026", hint: "Join in the first 3 months", exclusive: false },
   { type: "summer_grinder_2026", emoji: "🏖️", name: "Summer Grinder 2026", description: "30+ focus hours Jun-Aug 2026", hint: "Log 30+ hours in summer 2026", exclusive: false },
   { type: "first_to_50", emoji: "🥇", name: "First to 50", description: "First person to reach 50 focus hours", hint: "Be the first to 50 hours", exclusive: true },
   { type: "first_to_100", emoji: "🥇", name: "First to 100", description: "First person to reach 100 focus hours", hint: "Be the first to 100 hours", exclusive: true },

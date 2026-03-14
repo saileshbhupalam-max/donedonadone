@@ -42,7 +42,7 @@ export function InviteSection({ userId, referralCode }: { userId?: string; refer
         <Input value={inviteLink} readOnly className="text-xs flex-1" />
         <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(inviteLink); sonnerToast.success("Link copied!"); }}>Copy</Button>
       </div>
-      <WhatsAppShareButton message={`Hey! I've been coworking with people at cafes through DoneDonaDone — it's way better than working alone. Join me: ${inviteLink}`} label="Share on WhatsApp" fullWidth />
+      <WhatsAppShareButton message={`Hey! I've been coworking with people at cafes through DanaDone — it's way better than working alone. Join me: ${inviteLink}`} label="Share on WhatsApp" fullWidth />
     </div>
   );
 }
