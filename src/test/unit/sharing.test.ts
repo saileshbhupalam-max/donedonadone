@@ -106,9 +106,9 @@ describe('sharing', () => {
       expect(msg).toContain('/profile/user-123');
     });
 
-    it('mentions donedonadone and Bangalore', () => {
+    it('mentions DoneDonaDone and Bangalore', () => {
       const msg = getProfileShareMessage('Alice', 'user-123');
-      expect(msg).toContain('donedonadone');
+      expect(msg).toContain('DoneDonaDone');
       expect(msg).toContain('Bangalore');
     });
 
@@ -126,8 +126,8 @@ describe('sharing', () => {
     });
 
     it('includes badge description', () => {
-      const msg = getBadgeShareMessage('🌱', 'Early Adopter', 'Joined donedonadone early');
-      expect(msg).toContain('Joined donedonadone early');
+      const msg = getBadgeShareMessage('🌱', 'Early Adopter', 'Joined DoneDonaDone early');
+      expect(msg).toContain('Joined DoneDonaDone early');
     });
 
     it('appends referral code to link', () => {

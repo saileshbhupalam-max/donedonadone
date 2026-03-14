@@ -22,7 +22,7 @@ describe("getGoogleCalendarUrl edge cases", () => {
       date: "2026-06-15",
     });
     // URLSearchParams encodes spaces as + not %20
-    expect(url).toContain("donedonadone");
+    expect(url).toContain("DoneDonaDone");
     expect(url).toContain("A".repeat(50)); // title is present in full
     // URL should be valid (no unencoded special chars breaking it)
     expect(() => new URL(url)).not.toThrow();

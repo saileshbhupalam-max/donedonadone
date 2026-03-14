@@ -154,7 +154,7 @@ describe("tryTemplateMatch", () => {
       const result = tryTemplateMatch(baseUser, match, [], [], 0, TEMPLATES);
       expect(result).not.toBeNull();
       expect(result!.explanation).toContain("Bob");
-      expect(result!.explanation).toContain("new to donedonadone");
+      expect(result!.explanation).toContain("new to DoneDonaDone");
     });
 
     it("does not match when match is experienced", () => {
