@@ -5,11 +5,93 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-// DEBUG: Log what the client is configured with
+// ─── DEBUG: Exhaustive env var inspection ───
 console.log("[supabase:client] ═══════════════════════════════════════════");
-console.log("[supabase:client] URL:", SUPABASE_URL);
-console.log("[supabase:client] Key:", SUPABASE_PUBLISHABLE_KEY ? `${SUPABASE_PUBLISHABLE_KEY.substring(0, 20)}...` : "MISSING!");
-console.log("[supabase:client] flowType: pkce, detectSessionInUrl: false");
+console.log("[supabase:client] SUPABASE_URL:", JSON.stringify(SUPABASE_URL));
+console.log("[supabase:client] SUPABASE_URL type:", typeof SUPABASE_URL);
+console.log("[supabase:client] SUPABASE_URL length:", SUPABASE_URL?.length);
+console.log("[supabase:client] KEY type:", typeof SUPABASE_PUBLISHABLE_KEY);
+console.log("[supabase:client] KEY length:", SUPABASE_PUBLISHABLE_KEY?.length);
+console.log("[supabase:client] KEY first 30:", SUPABASE_PUBLISHABLE_KEY?.substring(0, 30));
+console.log("[supabase:client] KEY last 10:", SUPABASE_PUBLISHABLE_KEY?.substring(SUPABASE_PUBLISHABLE_KEY.length - 10));
+
+// Check for hidden characters in env vars
+function inspectString(label: string, s: string | undefined) {
+  if (!s) { console.error(`[supabase:client] ${label} is ${s}`); return; }
+  // Check first and last few chars
+  for (let i = 0; i < Math.min(5, s.length); i++) {
+    const code = s.charCodeAt(i);
+    if (code < 32 || code > 126) {
+      console.error(`[supabase:client] ⚠️ ${label} has non-printable char at START index ${i}: charCode=${code}`);
+    }
+  }
+  for (let i = Math.max(0, s.length - 5); i < s.length; i++) {
+    const code = s.charCodeAt(i);
+    if (code < 32 || code > 126) {
+      console.error(`[supabase:client] ⚠️ ${label} has non-printable char at END index ${i}: charCode=${code}`);
+    }
+  }
+  // Check if trimming changes it
+  if (s !== s.trim()) {
+    console.error(`[supabase:client] ⚠️ ${label} has leading/trailing whitespace! trimmed length: ${s.trim().length} vs ${s.length}`);
+  }
+}
+inspectString("URL", SUPABASE_URL);
+inspectString("KEY", SUPABASE_PUBLISHABLE_KEY);
+
+// ─── DEBUG: Intercept fetch to catch the exact failing header ───
+const _originalFetch = window.fetch.bind(window);
+(window as any).__debugFetchEnabled = true;
+window.fetch = async function(input: RequestInfo | URL, init?: RequestInit) {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url;
+
+  // Only intercept auth-related requests
+  if (url?.includes('/auth/')) {
+    console.log("[fetch:auth] ──────────────────────────────────────");
+    console.log("[fetch:auth] URL:", url);
+    console.log("[fetch:auth] method:", init?.method || "GET");
+
+    if (init?.headers) {
+      const entries: [string, string][] =
+        init.headers instanceof Headers
+          ? [...(init.headers as any).entries()]
+          : Array.isArray(init.headers)
+            ? init.headers
+            : Object.entries(init.headers as Record<string, string>);
+
+      for (const [name, value] of entries) {
+        const sv = String(value);
+        const display = sv.length > 60 ? sv.substring(0, 30) + "..." + sv.substring(sv.length - 30) : sv;
+        console.log(`[fetch:auth]   ${name}: "${display}" (type=${typeof value}, len=${sv.length})`);
+
+        // Test this specific header in isolation
+        try {
+          new Headers({ [name]: sv });
+        } catch (e: any) {
+          console.error(`[fetch:auth] ⚠️⚠️⚠️ INVALID HEADER FOUND: "${name}" → ${e.message}`);
+          console.error(`[fetch:auth]   value type: ${typeof value}`);
+          console.error(`[fetch:auth]   value JSON: ${JSON.stringify(sv)}`);
+          // Dump char codes around the problem
+          for (let i = 0; i < sv.length; i++) {
+            const code = sv.charCodeAt(i);
+            if (code < 32 || code > 126) {
+              console.error(`[fetch:auth]   charCode[${i}] = ${code} (non-printable!)`);
+            }
+          }
+        }
+      }
+    }
+
+    if (init?.body) {
+      const bodyStr = typeof init.body === 'string' ? init.body : '(non-string body)';
+      console.log("[fetch:auth] body:", bodyStr.substring(0, 300));
+    }
+    console.log("[fetch:auth] ──────────────────────────────────────");
+  }
+
+  return _originalFetch(input, init);
+};
+console.log("[supabase:client] fetch interceptor installed");
 console.log("[supabase:client] ═══════════════════════════════════════════");
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
