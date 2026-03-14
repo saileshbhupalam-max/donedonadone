@@ -76,18 +76,12 @@ const Index = () => {
     });
   }, []);
 
-  // DEBUG: Log every render's auth state
-  console.log("[Index] render — loading:", loading, "user:", user?.id || "null", "profile:", profile ? `onboarding=${profile.onboarding_completed}` : "null");
-
   // Redirect if already logged in
   useEffect(() => {
-    console.log("[Index:redirect] effect — loading:", loading, "user:", user?.id || "null", "profile:", profile?.onboarding_completed);
     if (!loading && user) {
       if (profile?.onboarding_completed) {
-        console.log("[Index:redirect] → navigating to /home");
         navigate("/home", { replace: true });
       } else {
-        console.log("[Index:redirect] → navigating to /onboarding");
         navigate("/onboarding", { replace: true });
       }
     }
@@ -97,7 +91,6 @@ const Index = () => {
   // `loading` covers: initial session restore, OAuth callback token processing.
   // `user` covers: auth resolved but navigate() hasn't fired yet.
   if (loading || user) {
-    console.log("[Index] showing LOADER — loading:", loading, "user:", !!user);
     return (
       <div className="min-h-screen bg-[#1a1108] flex items-center justify-center">
         <h1 className="text-4xl tracking-tight animate-pulse">
@@ -110,24 +103,18 @@ const Index = () => {
 
   const handleGoogleSignIn = async () => {
     setSigningIn(true);
-    console.log("[auth:signIn] ═══ Starting Google OAuth ═══");
-    console.log("[auth:signIn] redirectTo:", window.location.origin);
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo: `${window.location.origin}` },
       });
-      console.log("[auth:signIn] signInWithOAuth returned");
-      console.log("[auth:signIn] data:", JSON.stringify(data));
-      console.log("[auth:signIn] error:", error?.message || "none");
-      console.log("[auth:signIn] redirect URL:", data?.url || "none");
       if (error) {
         toast.error(ERROR_STATES.generic);
-        console.error("[auth:signIn] ERROR:", error);
+        console.error("Sign in error:", error);
       }
     } catch (error) {
       toast.error(ERROR_STATES.generic);
-      console.error("[auth:signIn] CATCH ERROR:", error);
+      console.error("Sign in error:", error);
     } finally {
       setSigningIn(false);
     }

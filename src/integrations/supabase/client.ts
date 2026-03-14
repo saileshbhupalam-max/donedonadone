@@ -2,91 +2,17 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || '').trim();
+// Strip any whitespace/newlines that may have been introduced during
+// copy-paste of the key into environment variable config (e.g. Vercel).
+// A newline in the middle of the JWT causes "Invalid value" in fetch()
+// because HTTP header values cannot contain control characters.
+const SUPABASE_PUBLISHABLE_KEY = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '').replace(/\s+/g, '');
 
-// ─── DEBUG: Inspect env vars for hidden characters ───
-console.log("[supabase:client] ═══════════════════════════════════════════");
-console.log("[supabase:client] URL:", JSON.stringify(SUPABASE_URL));
-console.log("[supabase:client] URL length:", SUPABASE_URL?.length);
-console.log("[supabase:client] KEY length:", SUPABASE_PUBLISHABLE_KEY?.length);
-console.log("[supabase:client] KEY first 30:", SUPABASE_PUBLISHABLE_KEY?.substring(0, 30));
-console.log("[supabase:client] KEY last 10:", SUPABASE_PUBLISHABLE_KEY?.substring(SUPABASE_PUBLISHABLE_KEY.length - 10));
-if (SUPABASE_PUBLISHABLE_KEY && SUPABASE_PUBLISHABLE_KEY !== SUPABASE_PUBLISHABLE_KEY.trim()) {
-  console.error("[supabase:client] ⚠️ KEY has whitespace! trimmed:", SUPABASE_PUBLISHABLE_KEY.trim().length, "vs", SUPABASE_PUBLISHABLE_KEY.length);
-}
-if (SUPABASE_URL && SUPABASE_URL !== SUPABASE_URL.trim()) {
-  console.error("[supabase:client] ⚠️ URL has whitespace!");
-}
-
-// ─── Custom fetch that logs auth requests and tests headers ───
-// We MUST pass this via global.fetch because the bundler captures native
-// fetch by reference — patching window.fetch doesn't reach auth-js.
-const debugFetch: typeof fetch = async (input, init) => {
-  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url;
-
-  if (url?.includes('/auth/')) {
-    console.log("[fetch:auth] ══════════════════════════════════════");
-    console.log("[fetch:auth] URL:", url);
-    console.log("[fetch:auth] method:", init?.method || "GET");
-
-    if (init?.headers) {
-      let entries: [string, string][];
-      if (init.headers instanceof Headers) {
-        entries = [...(init.headers as any).entries()];
-      } else if (Array.isArray(init.headers)) {
-        entries = init.headers as [string, string][];
-      } else {
-        entries = Object.entries(init.headers as Record<string, string>);
-      }
-
-      for (const [name, value] of entries) {
-        const sv = String(value);
-        const display = sv.length > 80 ? sv.substring(0, 40) + "..." + sv.substring(sv.length - 40) : sv;
-        console.log(`[fetch:auth]   header "${name}": "${display}" (type=${typeof value}, len=${sv.length})`);
-
-        // Test this header in isolation
-        try {
-          new Headers({ [name]: sv });
-        } catch (e: any) {
-          console.error(`[fetch:auth] ⚠️⚠️⚠️ INVALID HEADER: "${name}"`);
-          console.error(`[fetch:auth]   error: ${e.message}`);
-          console.error(`[fetch:auth]   value (JSON): ${JSON.stringify(sv)}`);
-          // Dump ALL char codes
-          const codes: string[] = [];
-          for (let i = 0; i < sv.length; i++) {
-            const code = sv.charCodeAt(i);
-            if (code < 32 || code > 126) {
-              codes.push(`[${i}]=\\x${code.toString(16).padStart(2, '0')}`);
-            }
-          }
-          if (codes.length) {
-            console.error(`[fetch:auth]   non-printable chars: ${codes.join(', ')}`);
-          } else {
-            console.error(`[fetch:auth]   all chars printable — issue might be value=${value} (raw type: ${typeof value})`);
-          }
-        }
-      }
-    } else {
-      console.log("[fetch:auth]   (no headers)");
-    }
-
-    if (init?.body) {
-      const bodyStr = typeof init.body === 'string' ? init.body : '(non-string body)';
-      console.log("[fetch:auth]   body:", bodyStr.substring(0, 300));
-    }
-    console.log("[fetch:auth] ══════════════════════════════════════");
-  }
-
-  return fetch(input, init);
-};
-console.log("[supabase:client] custom debugFetch created");
-console.log("[supabase:client] ═══════════════════════════════════════════");
+// Import the supabase client like this:
+// import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  global: {
-    fetch: debugFetch,
-  },
   auth: {
     persistSession: true,
     autoRefreshToken: true,
@@ -94,5 +20,3 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     detectSessionInUrl: false,
   }
 });
-
-console.log("[supabase:client] createClient() complete");
