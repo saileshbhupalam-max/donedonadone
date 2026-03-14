@@ -17,13 +17,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Module-level check: capture auth callback tokens BEFORE Supabase's async
-// _initialize() can consume/clear them. This runs at import time (synchronous),
-// guaranteeing the URL hasn't been modified yet.
-const HAD_AUTH_CALLBACK =
-  window.location.hash.includes("access_token") ||
-  window.location.hash.includes("error") ||
-  new URLSearchParams(window.location.search).has("code");
+// Module-level check: with PKCE flow, the only valid OAuth callback indicator
+// is ?code= in query params. Hash fragments (#access_token=) are stale from
+// previous implicit-flow attempts and will be cleaned up, not processed.
+const HAD_AUTH_CALLBACK = new URLSearchParams(window.location.search).has("code");
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -86,6 +83,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     );
+
+    // Manual PKCE callback handling: detectSessionInUrl is false (to prevent
+    // the _getSessionFromURL crash), so we exchange the code ourselves.
+    const callbackUrl = new URL(window.location.href);
+    const code = callbackUrl.searchParams.get("code");
+    if (code) {
+      // Clean the URL immediately to prevent double-processing on re-render
+      callbackUrl.searchParams.delete("code");
+      window.history.replaceState(null, "", callbackUrl.pathname + callbackUrl.search);
+
+      supabase.auth.exchangeCodeForSession(code).catch((err) => {
+        console.error("[auth] PKCE code exchange failed:", err);
+        if (mountedRef.current) setLoading(false);
+      });
+    }
+
+    // Clear stale implicit-flow hash fragments from previous failed attempts
+    if (window.location.hash.includes("access_token") || window.location.hash.includes("error")) {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
 
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       if (!mountedRef.current) return;

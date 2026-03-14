@@ -13,5 +13,10 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     autoRefreshToken: true,
     flowType: 'pkce',
+    // Disable automatic URL token detection — we handle the PKCE code exchange
+    // manually in AuthContext. This prevents the _getSessionFromURL() crash
+    // (TypeError: Invalid value in fetch) that occurs when Supabase tries to
+    // parse implicit-flow hash tokens during _initialize().
+    detectSessionInUrl: false,
   }
 });
