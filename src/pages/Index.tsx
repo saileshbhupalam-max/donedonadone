@@ -76,8 +76,11 @@ const Index = () => {
     });
   }, []);
 
-  // Check if we're returning from OAuth (hash contains access_token)
-  const hasAuthCallback = window.location.hash.includes("access_token");
+  // Check if we're returning from OAuth — implicit flow uses hash,
+  // PKCE flow uses query param. Either way, show a loader until auth resolves.
+  const hasAuthCallback =
+    window.location.hash.includes("access_token") ||
+    new URLSearchParams(window.location.search).has("code");
 
   // Redirect if already logged in
   useEffect(() => {
