@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Component, ReactNode } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,37 @@ import { CONFIRMATIONS, ERROR_STATES } from "@/lib/personality";
 import NotificationSettingsCard from "./NotificationSettingsCard";
 import SubscriptionCard from "./SubscriptionCard";
 import { UserSettings, DEFAULT_SETTINGS } from "./types";
+
+// ─── Runtime diagnostics: log any undefined imports ───
+const _imports = {
+  AppShell, Card, CardContent, Button, Input, Textarea, Switch,
+  RadioGroup, RadioGroupItem, Avatar, AvatarImage, AvatarFallback,
+  Label, Separator, AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+  Camera, LogOut, Trash2, ExternalLink, Minus, Plus, Building2,
+  Link, NotificationSettingsCard, SubscriptionCard, motion,
+} as Record<string, unknown>;
+for (const [name, val] of Object.entries(_imports)) {
+  if (val === undefined || val === null) {
+    console.error(`[Settings] UNDEFINED IMPORT: ${name} is ${val}`);
+  }
+}
+
+// ─── Section error boundary to isolate which card crashes ───
+class SectionBoundary extends Component<{ name: string; children: ReactNode }, { err: Error | null }> {
+  state: { err: Error | null } = { err: null };
+  static getDerivedStateFromError(err: Error) { return { err }; }
+  componentDidCatch(err: Error) { console.error(`[Settings:${this.props.name}] CRASH:`, err); }
+  render() {
+    if (this.state.err) return (
+      <div className="p-4 border border-destructive/30 rounded-lg bg-destructive/5 text-sm text-destructive">
+        Section "{this.props.name}" failed: {this.state.err.message}
+      </div>
+    );
+    return this.props.children;
+  }
+}
 
 export default function Settings() {
   usePageTitle("Settings — DanaDone");
@@ -149,6 +180,7 @@ export default function Settings() {
         <h1 className="font-serif text-2xl text-foreground">Settings</h1>
 
         {/* ═══ Section 1: Profile ═══ */}
+        <SectionBoundary name="Profile">
         <Card>
           <CardContent className="pt-5 space-y-4">
             <h2 className="font-serif text-base text-foreground">Profile</h2>
@@ -194,11 +226,15 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+        </SectionBoundary>
 
         {/* ═══ Section: Subscription ═══ */}
+        <SectionBoundary name="Subscription">
         <SubscriptionCard />
+        </SectionBoundary>
 
         {/* ═══ Section 2: My Company ═══ */}
+        <SectionBoundary name="MyCompany">
         <Card>
           <CardContent className="pt-5 space-y-3">
             <h2 className="font-serif text-base text-foreground">My Company</h2>
@@ -221,11 +257,15 @@ export default function Settings() {
             )}
           </CardContent>
         </Card>
+        </SectionBoundary>
 
         {/* ═══ Section 3: Notifications ═══ */}
+        <SectionBoundary name="Notifications">
         <NotificationSettingsCard settings={settings} settingsLoaded={settingsLoaded} updateSetting={updateSetting} />
+        </SectionBoundary>
 
-        {/* ═══ Section 3: Preferences ═══ */}
+        {/* ═══ Section 4: Preferences ═══ */}
+        <SectionBoundary name="Preferences">
         <Card>
           <CardContent className="pt-5 space-y-5">
             <h2 className="font-serif text-base text-foreground">Preferences</h2>
@@ -284,8 +324,10 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+        </SectionBoundary>
 
-        {/* ═══ Section 4: Account ═══ */}
+        {/* ═══ Section 5: Account ═══ */}
+        <SectionBoundary name="Account">
         <Card>
           <CardContent className="pt-5 space-y-4">
             <h2 className="font-serif text-base text-foreground">Account</h2>
@@ -329,6 +371,7 @@ export default function Settings() {
             </AlertDialog>
           </CardContent>
         </Card>
+        </SectionBoundary>
       </motion.div>
     </AppShell>
   );
