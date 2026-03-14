@@ -5,18 +5,20 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
+// DEBUG: Log what the client is configured with
+console.log("[supabase:client] ═══════════════════════════════════════════");
+console.log("[supabase:client] URL:", SUPABASE_URL);
+console.log("[supabase:client] Key:", SUPABASE_PUBLISHABLE_KEY ? `${SUPABASE_PUBLISHABLE_KEY.substring(0, 20)}...` : "MISSING!");
+console.log("[supabase:client] flowType: pkce, detectSessionInUrl: false");
+console.log("[supabase:client] ═══════════════════════════════════════════");
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     flowType: 'pkce',
-    // Disable automatic URL token detection — we handle the PKCE code exchange
-    // manually in AuthContext. This prevents the _getSessionFromURL() crash
-    // (TypeError: Invalid value in fetch) that occurs when Supabase tries to
-    // parse implicit-flow hash tokens during _initialize().
     detectSessionInUrl: false,
   }
 });
+
+console.log("[supabase:client] createClient() complete");
