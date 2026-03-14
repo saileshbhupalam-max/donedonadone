@@ -76,12 +76,6 @@ const Index = () => {
     });
   }, []);
 
-  // Check if we're returning from OAuth — implicit flow uses hash,
-  // PKCE flow uses query param. Either way, show a loader until auth resolves.
-  const hasAuthCallback =
-    window.location.hash.includes("access_token") ||
-    new URLSearchParams(window.location.search).has("code");
-
   // Redirect if already logged in
   useEffect(() => {
     if (!loading && user) {
@@ -93,8 +87,10 @@ const Index = () => {
     }
   }, [user, profile, loading, navigate]);
 
-  // Show loading while processing OAuth callback
-  if (hasAuthCallback || (loading && !user)) {
+  // Show branded loader while auth is resolving.
+  // `loading` covers: initial session restore, OAuth callback token processing.
+  // `user` covers: auth resolved but navigate() hasn't fired yet.
+  if (loading || user) {
     return (
       <div className="min-h-screen bg-[#1a1108] flex items-center justify-center">
         <h1 className="text-4xl tracking-tight animate-pulse">
@@ -123,21 +119,6 @@ const Index = () => {
       setSigningIn(false);
     }
   };
-
-  // --- Loading state ---
-  if (loading) {
-    return (
-      <div
-        className="min-h-screen flex flex-col items-center justify-center gap-3"
-        style={{ background: '#1a1410' }}
-      >
-        <h1 className="font-display text-4xl tracking-tight animate-pulse" style={{ color: '#f5f0e8' }}>
-          <span style={{ fontWeight: 300 }}>Dana</span>
-          <span className="font-bold">Done</span>
-        </h1>
-      </div>
-    );
-  }
 
   // --- CTA button (reused across sections, Von Restorff: single warm accent) ---
   const CTAButton = ({ className = "" }: { className?: string }) => (
