@@ -65,7 +65,7 @@ function CompanyCreateTeaser() {
 }
 
 export default function CompanyCreate() {
-  usePageTitle("Create Company — donedonadone");
+  usePageTitle("Create Company — DoneDonaDone");
   const { user } = useAuth();
   const navigate = useNavigate();
 

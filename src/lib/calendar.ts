@@ -43,9 +43,9 @@ export function getGoogleCalendarUrl(event: {
 
   const params = new URLSearchParams({
     action: 'TEMPLATE',
-    text: `donedonadone: ${event.title}`,
+    text: `DoneDonaDone: ${event.title}`,
     dates: `${start}/${end}`,
-    details: `Cowork session${event.venueName ? ` at ${event.venueName}` : ''}.\n\nCheck in with the donedonadone app when you arrive.`,
+    details: `Cowork session${event.venueName ? ` at ${event.venueName}` : ''}.\n\nCheck in with the DoneDonaDone app when you arrive.`,
     location,
     ctz: 'Asia/Kolkata',
   });
@@ -86,9 +86,9 @@ export function downloadICSFile(event: {
     'BEGIN:VEVENT',
     `DTSTART;TZID=Asia/Kolkata:${start}`,
     `DTEND;TZID=Asia/Kolkata:${end}`,
-    `SUMMARY:donedonadone: ${event.title}`,
+    `SUMMARY:DoneDonaDone: ${event.title}`,
     `LOCATION:${location}`,
-    `DESCRIPTION:Cowork session. Check in with the donedonadone app.`,
+    `DESCRIPTION:Cowork session. Check in with the DoneDonaDone app.`,
     'END:VEVENT',
     'END:VCALENDAR',
   ].join('\r\n');

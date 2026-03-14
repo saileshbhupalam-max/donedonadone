@@ -57,7 +57,7 @@ export default function CompanyProfile() {
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
 
-  usePageTitle(company ? `${company.name} — donedonadone` : "Company — donedonadone");
+  usePageTitle(company ? `${company.name} — DoneDonaDone` : "Company — DoneDonaDone");
 
   useEffect(() => {
     if (!id || !user) return;

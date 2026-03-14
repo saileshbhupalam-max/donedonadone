@@ -208,7 +208,7 @@ function Step4({ form }: { form: FormData }) {
 }
 
 export default function PartnerApply() {
-  usePageTitle("Partner Application — donedonadone");
+  usePageTitle("Partner Application — DoneDonaDone");
   const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);

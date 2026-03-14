@@ -55,7 +55,7 @@ export const ERROR_STATES = {
   network: "The internet took a coffee break. Try again in a sec.",
   generic: "Well, that didn't go as planned. Neither did my morning. Try again?",
   notFound: "You've wandered off the map. Happens to the best of us.",
-  notFoundPhilosophical: "You're lost. But you're not alone. We're all a little lost. — donedonadone, accidentally philosophical",
+  notFoundPhilosophical: "You're lost. But you're not alone. We're all a little lost. — DoneDonaDone, accidentally philosophical",
   sessionFull: "Standing room only. This one's packed — but the next one has your name on it.",
   alreadyRsvpd: "You're already on the list. Relax. We remember.",
   pastEvent: "That ship has sailed, that session has sessioned. Let's find the next one.",
@@ -289,13 +289,13 @@ export const COMMUNITY_LANG = {
 
 // ─── Page Titles ──────────────────────────────────────
 export const PAGE_TITLES = {
-  home: "Home — donedonadone",
-  discover: "Find Your People — donedonadone",
-  events: "Sessions — donedonadone",
-  prompts: "The Question — donedonadone",
-  profile: "You — donedonadone",
-  admin: "Mission Control — donedonadone",
-  session: "Session — donedonadone",
+  home: "Home — DoneDonaDone",
+  discover: "Find Your People — DoneDonaDone",
+  events: "Sessions — DoneDonaDone",
+  prompts: "The Question — DoneDonaDone",
+  profile: "You — DoneDonaDone",
+  admin: "Mission Control — DoneDonaDone",
+  session: "Session — DoneDonaDone",
 };
 
 // ─── Gender-Balanced Group Indicator ──────────────────

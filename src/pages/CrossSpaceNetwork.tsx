@@ -179,7 +179,7 @@ function NetworkContent() {
 }
 
 export default function CrossSpaceNetwork() {
-  usePageTitle("Network — donedonadone");
+  usePageTitle("Network — DoneDonaDone");
 
   return (
     <AppShell>

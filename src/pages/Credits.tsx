@@ -77,7 +77,7 @@ interface RedeemOption {
 }
 
 export default function Credits() {
-  usePageTitle("Focus Credits — donedonadone");
+  usePageTitle("Focus Credits — DoneDonaDone");
   const { user } = useAuth();
   const [balance, setBalance] = useState(0);
   const [history, setHistory] = useState<LedgerEntry[]>([]);

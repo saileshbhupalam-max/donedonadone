@@ -34,7 +34,7 @@ interface WhosHerePerson {
 }
 
 export default function PartnerDashboard() {
-  usePageTitle("Partner Dashboard — donedonadone");
+  usePageTitle("Partner Dashboard — DoneDonaDone");
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);

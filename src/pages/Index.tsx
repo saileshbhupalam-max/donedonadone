@@ -34,7 +34,7 @@ const GoogleIcon = () => (
 );
 
 const Index = () => {
-  usePageTitle("donedonadone — work. connect. grow.");
+  usePageTitle("DoneDonaDone — work. connect. grow.");
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
   const [signingIn, setSigningIn] = useState(false);
@@ -114,9 +114,9 @@ const Index = () => {
         style={{ background: '#1a1410' }}
       >
         <h1 className="font-display text-4xl tracking-tight animate-pulse" style={{ color: '#f5f0e8' }}>
-          <span className="font-bold">done</span>
-          <span style={{ fontWeight: 300 }}>done</span>
-          <span className="font-bold">done</span>
+          <span className="font-bold">Done</span>
+          <span style={{ fontWeight: 300 }}>Dona</span>
+          <span className="font-bold">Done</span>
         </h1>
       </div>
     );
@@ -171,9 +171,9 @@ const Index = () => {
         {/* Z-pattern start: Logo top-left, Location top-right */}
         <nav className="relative z-10 flex items-center justify-between px-6 pt-6 sm:px-10 sm:pt-8">
           <h1 className="font-display text-2xl sm:text-3xl tracking-tight" style={{ color: '#f5f0e8' }}>
-            <span className="font-bold">done</span>
-            <span style={{ fontWeight: 300, opacity: 0.5 }}>done</span>
-            <span className="font-bold">done</span>
+            <span className="font-bold">Done</span>
+            <span style={{ fontWeight: 300, opacity: 0.5 }}>Dona</span>
+            <span className="font-bold">Done</span>
           </h1>
 
           <div
@@ -434,9 +434,9 @@ const Index = () => {
       {/* Footer */}
       <footer className="py-8 px-6 text-center" style={{ background: '#1a1410' }}>
         <p className="font-display text-lg mb-3" style={{ color: 'rgba(245, 240, 232, 0.25)' }}>
-          <span className="font-bold">done</span>
-          <span style={{ fontWeight: 300 }}>done</span>
-          <span className="font-bold">done</span>
+          <span className="font-bold">Done</span>
+          <span style={{ fontWeight: 300 }}>Dona</span>
+          <span className="font-bold">Done</span>
         </p>
         <div className="flex items-center justify-center gap-4 text-xs font-body" style={{ color: 'rgba(245, 240, 232, 0.15)' }}>
           <a href="/partners" className="hover:opacity-60 transition-opacity">Partner Venues</a>

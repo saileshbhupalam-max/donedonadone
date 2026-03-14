@@ -48,5 +48,5 @@ export function getBadgeShareMessage(emoji: string, name: string, description: s
 
 export function getProfileShareMessage(displayName: string, profileId: string, referralCode?: string | null) {
   const link = getRefLink(`/profile/${profileId}`, referralCode);
-  return `Hey! I'm on donedonadone — a community for people who cowork in Bangalore. Check out my profile and join: ${link}`;
+  return `Hey! I'm on DoneDonaDone — a community for people who cowork in Bangalore. Check out my profile and join: ${link}`;
 }

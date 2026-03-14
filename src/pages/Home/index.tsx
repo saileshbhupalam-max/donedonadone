@@ -74,7 +74,7 @@ import { PushOptInCard } from "./PushOptInCard";
 
 export default function Home() {
   const personality = usePersonality();
-  usePageTitle("Home — donedonadone");
+  usePageTitle("Home — DoneDonaDone");
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { currentState, dnaComplete, refreshCheckIn } = useUserContext();

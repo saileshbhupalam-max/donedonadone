@@ -133,7 +133,7 @@ export default function ProfileView() {
   const [engagementScore, setEngagementScore] = useState<number | null>(null);
 
   const isOwnProfile = user?.id === id;
-  usePageTitle(profileData ? `${profileData.display_name}'s Profile — donedonadone` : "Profile — donedonadone");
+  usePageTitle(profileData ? `${profileData.display_name}'s Profile — DoneDonaDone` : "Profile — DoneDonaDone");
 
   useEffect(() => {
     if (!id || !user) return;

@@ -163,7 +163,7 @@ export default function EventDetailPage() {
   const [notFound, setNotFound] = useState(false);
   const [waitlistCount, setWaitlistCount] = useState(0);
   const [userWaitlistPos, setUserWaitlistPos] = useState<number | null>(null);
-  usePageTitle(event ? `${event.title} — donedonadone` : "Session — donedonadone");
+  usePageTitle(event ? `${event.title} — DoneDonaDone` : "Session — DoneDonaDone");
 
   // Track session funnel: view_event_detail step
   useEffect(() => {

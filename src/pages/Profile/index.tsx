@@ -59,7 +59,7 @@ const LocationPicker = lazy(() => import("@/components/map/LocationPicker").then
 
 // ─── Main Profile Page ──────────────────────────────────
 export default function Profile() {
-  usePageTitle("You — donedonadone");
+  usePageTitle("You — DoneDonaDone");
   const { profile, user, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();

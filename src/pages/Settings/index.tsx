@@ -28,7 +28,7 @@ import SubscriptionCard from "./SubscriptionCard";
 import { UserSettings, DEFAULT_SETTINGS } from "./types";
 
 export default function Settings() {
-  usePageTitle("Settings — donedonadone");
+  usePageTitle("Settings — DoneDonaDone");
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
 

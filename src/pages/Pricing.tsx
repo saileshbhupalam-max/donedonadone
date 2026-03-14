@@ -32,7 +32,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default function Pricing() {
-  usePageTitle("Plans — donedonadone");
+  usePageTitle("Plans — DoneDonaDone");
   const { tier, allTiers, allFeatures, allLimits, loading } = useSubscription();
 
   useEffect(() => { trackConversion("viewed_pricing"); }, []);

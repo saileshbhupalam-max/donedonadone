@@ -14,7 +14,7 @@ const NEIGHBORHOODS: Record<string, string> = {
 };
 
 export default function Partners() {
-  usePageTitle("Partner Venues — donedonadone");
+  usePageTitle("Partner Venues — DoneDonaDone");
   const [venues, setVenues] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

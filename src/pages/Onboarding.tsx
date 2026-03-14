@@ -33,7 +33,7 @@ const STEP_CTA: Record<number, string> = {
 };
 
 export default function Onboarding() {
-  usePageTitle("Join — donedonadone");
+  usePageTitle("Join — DoneDonaDone");
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
