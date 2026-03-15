@@ -50,6 +50,7 @@ import { GratitudeEchoCard } from "@/components/home/GratitudeEchoCard";
 import { CommunityRitualCard } from "@/components/home/CommunityRitualCard";
 import { CaptainDashboardCard } from "@/components/home/CaptainDashboardCard";
 import { CompanyHomeCard } from "@/components/home/CompanyHomeCard";
+import { NeedsMatchCard } from "@/components/home/NeedsMatchCard";
 import { MapSwapToggle } from "@/components/map/MapSwapToggle";
 
 const SessionMap = lazy(() => import("@/components/map/SessionMap").then(m => ({ default: m.SessionMap })));
@@ -495,6 +496,9 @@ export default function Home() {
 
         {/* Company quick-glance card */}
         <CompanyHomeCard />
+
+        {/* Needs board — matching requests from the community */}
+        <NeedsMatchCard />
 
         {/* Neighborhood Unlock / Nomination CTA */}
         {profile.neighborhood && (
