@@ -17,6 +17,7 @@
 import { parseISO } from "date-fns";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import type { ProgressionStats } from "@/lib/progressionStats";
 
 // ─── Analytics Tracking ──────────────────────────────────
 export async function trackAnalyticsEvent(
@@ -161,28 +162,54 @@ export const MILESTONES: Record<string, MilestoneDef> = {
 };
 
 // ─── Check and Award Milestones ──────────────────────────
-export async function checkMilestones(userId: string): Promise<MilestoneDef | null> {
-  // Get existing milestones
-  const { data: existing } = await supabase.from("member_milestones").select("milestone_type").eq("user_id", userId);
-  const earned = new Set((existing || []).map((m: any) => m.milestone_type));
+export async function checkMilestones(
+  userId: string,
+  preFetchedStats?: ProgressionStats,
+): Promise<MilestoneDef | null> {
+  // If pre-fetched stats are provided (from checkAllProgression), use them
+  // to avoid redundant Supabase queries. Otherwise, fetch independently
+  // for backward compatibility with existing callers.
+  let earned: Set<string>;
+  let attended: number;
+  let streak: number;
+  let propsRx: number;
+  let propsTx: number;
+  let prompts: number;
+  let refs: number;
+  let createdAt: Date;
 
-  // Get user stats
-  const [{ data: profile }, { count: propsReceived }, { count: propsGiven }, { count: promptAnswers }, { count: referrals }] = await Promise.all([
-    supabase.from("profiles").select("events_attended, current_streak, created_at").eq("id", userId).single(),
-    supabase.from("peer_props").select("id", { count: "exact", head: true }).eq("to_user", userId),
-    supabase.from("peer_props").select("id", { count: "exact", head: true }).eq("from_user", userId),
-    supabase.from("prompt_responses").select("id", { count: "exact", head: true }).eq("user_id", userId),
-    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("referred_by", userId),
-  ]);
+  if (preFetchedStats) {
+    earned = new Set(preFetchedStats.existingMilestoneTypes);
+    attended = preFetchedStats.profile.events_attended || 0;
+    streak = preFetchedStats.profile.current_streak || 0;
+    propsRx = preFetchedStats.totalPropsReceived;
+    propsTx = preFetchedStats.propsGivenCount;
+    prompts = preFetchedStats.promptAnswerCount;
+    refs = preFetchedStats.referralCount;
+    createdAt = preFetchedStats.profile.created_at ? parseISO(preFetchedStats.profile.created_at) : new Date();
+  } else {
+    // Legacy path: fetch everything independently
+    const { data: existing } = await supabase.from("member_milestones").select("milestone_type").eq("user_id", userId);
+    earned = new Set((existing || []).map((m: any) => m.milestone_type));
 
-  if (!profile) return null;
-  const attended = profile.events_attended || 0;
-  const streak = profile.current_streak || 0;
-  const propsRx = propsReceived || 0;
-  const propsTx = propsGiven || 0;
-  const prompts = promptAnswers || 0;
-  const refs = referrals || 0;
-  const createdAt = profile.created_at ? parseISO(profile.created_at) : new Date();
+    const [{ data: profile }, { count: propsReceived }, { count: propsGiven }, { count: promptAnswers }, { count: referrals }] = await Promise.all([
+      supabase.from("profiles").select("events_attended, current_streak, created_at").eq("id", userId).single(),
+      supabase.from("peer_props").select("id", { count: "exact", head: true }).eq("to_user", userId),
+      supabase.from("peer_props").select("id", { count: "exact", head: true }).eq("from_user", userId),
+      supabase.from("prompt_responses").select("id", { count: "exact", head: true }).eq("user_id", userId),
+      supabase.from("profiles").select("id", { count: "exact", head: true }).eq("referred_by", userId),
+    ]);
+
+    if (!profile) return null;
+    attended = profile.events_attended || 0;
+    streak = profile.current_streak || 0;
+    propsRx = propsReceived || 0;
+    propsTx = propsGiven || 0;
+    prompts = promptAnswers || 0;
+    refs = referrals || 0;
+    createdAt = profile.created_at ? parseISO(profile.created_at) : new Date();
+  }
+
   const monthsSince = Math.floor((Date.now() - createdAt.getTime()) / (30 * 24 * 60 * 60 * 1000));
 
   // Check milestones in priority order (newest first)

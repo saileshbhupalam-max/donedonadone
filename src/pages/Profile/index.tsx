@@ -157,8 +157,7 @@ export default function Profile() {
       setMonthlyTitles(titles.data || []);
       setScrapbookEntries((scrapbook.data || []) as unknown as ScrapbookEntry[]);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user]);
 
   const completion = useMemo(() => calculateProfileCompletion({
     ...profile!,

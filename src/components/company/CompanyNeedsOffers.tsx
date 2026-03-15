@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -136,17 +136,16 @@ export function CompanyNeedsOffers({ companyId, isAdmin }: { companyId: string; 
   const [needs, setNeeds] = useState<NeedOffer[]>([]);
   const [offers, setOffers] = useState<NeedOffer[]>([]);
 
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     const [needsRes, offersRes] = await Promise.all([
       supabase.from("company_needs").select("*").eq("company_id", companyId).eq("is_active", true).order("created_at"),
       supabase.from("company_offers").select("*").eq("company_id", companyId).eq("is_active", true).order("created_at"),
     ]);
     if (needsRes.data) setNeeds(needsRes.data as NeedOffer[]);
     if (offersRes.data) setOffers(offersRes.data as NeedOffer[]);
-  };
+  }, [companyId]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchAll(); }, [companyId]);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const hasContent = needs.length > 0 || offers.length > 0 || isAdmin;
   if (!hasContent) return null;

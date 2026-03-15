@@ -105,7 +105,10 @@ export function useVenueBadgesBatch(venueNames: string[]): {
     })();
 
     return () => { cancelled = true; };
-  }, [sortedKey]); // eslint-disable-line react-hooks/exhaustive-deps
+    // sortedKey is a stable string derived from venueNames — using venueNames directly
+    // would re-fetch on every render since the array has a new identity each time.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortedKey]);
 
   return { badgeMap, loading };
 }

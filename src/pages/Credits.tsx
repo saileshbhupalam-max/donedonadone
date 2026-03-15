@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -68,6 +68,19 @@ const ACTION_LABELS: Record<string, string> = {
   redeem_gift_session: "Gift a session",
   redeem_exclusive_session: "Exclusive session",
   redeem_session_boost: "Session boost",
+  // Gamification v2
+  welcome_bonus: "Welcome bonus",
+  first_session_bonus: "First session bonus",
+  mystery_double: "Mystery double!",
+  group_chemistry_bonus: "Great group vibes",
+  golden_session: "Golden session",
+  group_streak_bonus: "Group streak",
+  reliability_bonus: "Reliability streak",
+  venue_variety_bonus: "Venue explorer",
+  streak_freeze_purchase: "Streak freeze",
+  streak_milestone: "Streak milestone",
+  no_show_penalty: "No-show penalty",
+  late_cancel_penalty: "Late cancel penalty",
 };
 
 interface RedeemOption {
@@ -145,7 +158,7 @@ export default function Credits() {
     },
   ];
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
 
@@ -162,12 +175,11 @@ export default function Credits() {
     setBalance(bal);
     setHistory((entries as LedgerEntry[]) || []);
     setLoading(false);
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [fetchData]);
 
   const handleRedeem = async () => {
     if (!user || !redeemTarget) return;

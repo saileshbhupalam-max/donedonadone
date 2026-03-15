@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,7 @@ export function NotificationsTab() {
   const [triggeringStreaks, setTriggeringStreaks] = useState(false);
   const [triggeringReminders, setTriggeringReminders] = useState(false);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     const since = new Date();
     since.setDate(since.getDate() - parseInt(dateRange));
     const sinceStr = since.toISOString();
@@ -70,12 +70,11 @@ export function NotificationsTab() {
       setStatusStats(Object.entries(statusMap).map(([status, count]) => ({ status, count })));
     }
     setLoading(false);
-  };
+  }, [dateRange]);
 
   useEffect(() => {
     fetchStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateRange]);
+  }, [fetchStats]);
 
   const searchUsers = async (query: string) => {
     setUserSearch(query);

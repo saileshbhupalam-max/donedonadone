@@ -22,7 +22,7 @@ interface AutoSession {
   start_time: string;
   neighborhood: string;
   demand_cluster_key: string;
-  max_attendees: number;
+  max_spots: number;
   created_at: string;
 }
 
@@ -68,7 +68,7 @@ export function DemandClustersTab() {
     // Fetch auto-created sessions
     const { data: sessions } = await supabase
       .from("events")
-      .select("id, title, date, start_time, neighborhood, demand_cluster_key, max_attendees, created_at")
+      .select("id, title, date, start_time, neighborhood, demand_cluster_key, max_spots, created_at")
       .eq("auto_created", true)
       .order("created_at", { ascending: false })
       .limit(20);
@@ -237,7 +237,7 @@ export function DemandClustersTab() {
                   </div>
                   <Badge variant="outline" className="text-xs">
                     <Users className="w-3 h-3 mr-1" />
-                    max {session.max_attendees}
+                    max {session.max_spots}
                   </Badge>
                 </CardContent>
               </Card>

@@ -138,11 +138,13 @@ src/
 │   ├── antifragile.ts   — Smart group formation, reliability, waitlist, flagging, captain nudges
 │   ├── badges.ts        — 17 badge definitions + eligibility checking + auto-award via Supabase RPCs
 │   ├── calendar.ts      — Google Calendar URL + ICS file generation
+│   ├── checkAllProgression.ts — Unified entry point: runs badges + milestones + ranks + engagement with shared stats
 │   ├── growth.ts        — 22 milestones + analytics tracking + re-engagement logic
 │   ├── haptics.ts       — Device vibration patterns (light, success, warning)
 │   ├── icebreakers.ts   — Icebreaker question selection by group experience level
 │   ├── matchUtils.ts    — User compatibility scoring (0-100) + profile completion calculation
 │   ├── personality.ts   — Brand voice: greetings, empty states, error copy, onboarding text, community language
+│   ├── progressionStats.ts — Shared stats fetcher for badges/milestones/ranks/engagement (60s cache, parallel fetch)
 │   ├── ranks.ts         — 6-tier rank system (Newcomer to Grandmaster), focus hours tracking, monthly titles, achievements
 │   ├── sessionMatch.ts  — Session recommendation scoring (day, time, radius, vibe, duration)
 │   ├── sessionPhases.ts — Phase templates for 2hr/4hr structured sessions

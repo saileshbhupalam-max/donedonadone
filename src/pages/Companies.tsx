@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -66,7 +66,7 @@ export default function Companies() {
     new Set()
   );
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
 
@@ -100,12 +100,11 @@ export default function Companies() {
     }
 
     setLoading(false);
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [fetchData]);
 
   const filtered = companies.filter((c) => {
     if (stageFilter && c.stage !== stageFilter) return false;

@@ -415,7 +415,7 @@ BEGIN
 
   -- Create event
   INSERT INTO events (title, date, start_time, session_format, location_id, neighborhood,
-                      max_attendees, auto_created, demand_cluster_key, created_by, status)
+                      max_spots, auto_created, demand_cluster_key, created_by, status)
   VALUES ('Auto-Session at ' || v_venue.name,
           v_session_date,
           CASE p_preferred_time WHEN 'morning' THEN '09:00' WHEN 'afternoon' THEN '14:00' ELSE '18:00' END,

@@ -227,7 +227,7 @@ Deno.serve(async (_req) => {
           start_time: timeSlot.start, end_time: timeSlot.end,
           session_format: timeSlot.format,
           location_id: venueId, neighborhood,
-          max_attendees: Math.min(reqs.length + 2, maxSeats),
+          max_spots: Math.min(reqs.length + 2, maxSeats),
           auto_created: true, demand_cluster_key: clusterKey,
           created_by: captainId, status: eventStatus,
         }).select("id").single();

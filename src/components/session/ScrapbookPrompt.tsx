@@ -2,7 +2,7 @@
    and shows "Your session story is ready!" preview card.
    Users don't manually create memories — we gather everything automatically. */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,9 +34,16 @@ export function ScrapbookPrompt({
   const navigate = useNavigate();
   const [entry, setEntry] = useState<ScrapbookEntry | null>(null);
   const [generating, setGenerating] = useState(true);
+  const generatedRef = useRef(false);
 
   useEffect(() => {
+    // Guard against StrictMode double-invoke — scrapbook generation has side effects (upsert)
+    if (generatedRef.current) return;
+    generatedRef.current = true;
     generateScrapbook();
+    // generateScrapbook reads from props that are fixed for the lifetime of this component
+    // (rendered once at session wrap-up). Adding all props as deps would be noisy and misleading
+    // since this should only ever run once per mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

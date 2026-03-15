@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,7 +30,7 @@ export function CompanyIntros({ companyId, isAdmin }: { companyId: string; isAdm
   const [received, setReceived] = useState<Intro[]>([]);
   const [sent, setSent] = useState<Intro[]>([]);
 
-  const fetchIntros = async () => {
+  const fetchIntros = useCallback(async () => {
     const [recvRes, sentRes] = await Promise.all([
       supabase
         .from("company_intros")
@@ -52,10 +52,9 @@ export function CompanyIntros({ companyId, isAdmin }: { companyId: string; isAdm
       ...d,
       to_company: d.to_company,
     })));
-  };
+  }, [companyId]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchIntros(); }, [companyId]);
+  useEffect(() => { fetchIntros(); }, [fetchIntros]);
 
   const handleRespond = async (introId: string, status: "accepted" | "declined") => {
     const { error } = await supabase.from("company_intros").update({ status }).eq("id", introId);

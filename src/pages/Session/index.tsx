@@ -165,8 +165,7 @@ export default function SessionPage() {
         if (rounds.length > 0) setIcebreakerActive(true);
       })();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionStarted, currentPhaseIdx, phases, icebreakerDone]);
+  }, [sessionStarted, currentPhaseIdx, phases, icebreakerDone, icebreakerRounds.length, groupStatuses]);
 
   // Load group statuses + realtime
   useEffect(() => {
@@ -241,8 +240,7 @@ export default function SessionPage() {
     if (!isFocusOnlyFormat(event?.session_format) && isActingCaptain && CAPTAIN_NUDGES[phase.phase_type]) {
       toast(CAPTAIN_NUDGES[phase.phase_type], { duration: 6000 });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPhaseIdx, sessionStarted]);
+  }, [currentPhaseIdx, sessionStarted, phases, user, event, isActingCaptain, updateMyStatus]);
 
   // Energy check timing (2 min into social break)
   useEffect(() => {
@@ -255,10 +253,9 @@ export default function SessionPage() {
     if (phase?.phase_type === "social_break" && !photoMomentShown) {
       if (timeLeft <= 120 && timeLeft > 0) setPhotoMomentShown(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft, currentPhaseIdx, phases]);
+  }, [timeLeft, currentPhaseIdx, phases, energyCheckShown, photoMomentShown]);
 
-  const updateMyStatus = async (status: string, ut?: string, tp?: string) => {
+  const updateMyStatus = useCallback(async (status: string, ut?: string, tp?: string) => {
     if (!user || !eventId) return;
     setMyStatus(status);
     const { error } = await supabase.from("member_status").upsert({
@@ -270,7 +267,7 @@ export default function SessionPage() {
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id" });
     if (error) captureSupabaseError("SessionUpdateStatus", error, { eventId, status });
-  };
+  }, [user, eventId]);
 
   const saveIntention = async (intentionText?: string) => {
     const text = intentionText || intention.trim();

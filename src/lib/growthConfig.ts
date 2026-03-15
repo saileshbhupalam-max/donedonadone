@@ -29,6 +29,82 @@ export interface QualityGatesConfig {
   peerRatingConsensus: number;
 }
 
+// ─── Tier System (Starbucks model: lifetime-earned based, never demotes) ───
+export interface TierDefinition {
+  minLifetimeFC: number;
+  earnMultiplier: number;
+  label: string;
+}
+
+export interface TierConfig {
+  explorer: TierDefinition;
+  regular: TierDefinition;
+  insider: TierDefinition;
+  champion: TierDefinition;
+}
+
+// ─── Streak System (Duolingo model: weekly cadence, freeze purchasable) ───
+export interface StreakConfig {
+  /** Minimum sessions per week to maintain streak */
+  sessionsPerWeek: number;
+  /** FC cost to purchase a streak freeze */
+  freezeCost: number;
+  /** Max streak freezes a user can hold at once */
+  maxFreezes: number;
+  /** Week milestones that award bonus FC (e.g. [4, 8, 12, 26, 52]) */
+  milestones: number[];
+  /** Bonus FC awarded at each milestone (parallel to milestones array) */
+  milestoneBonuses: number[];
+  /** Streak length thresholds → earn rate multiplier.
+   * Keys are week counts; multiplier applies from that week onward.
+   * Example: { 1: 1.0, 4: 1.1, 8: 1.2, 12: 1.3 } */
+  multipliers: Record<number, number>;
+}
+
+// ─── Variable Rewards (ethical dopamine: unpredictable bonuses) ───
+export interface VariableRewardConfig {
+  /** Chance (0-1) of earning 2x FC after any session */
+  mysteryDoubleChance: number;
+  /** Bonus FC when ALL group members rate session 4+ stars */
+  groupChemistryBonus: number;
+  /** Earn multiplier for admin-designated "golden sessions" */
+  goldenSessionMultiplier: number;
+}
+
+// ─── Penalties (ClassPass model: sting because FC have real value) ───
+export interface PenaltyConfig {
+  /** FC deducted for no-show */
+  noShow: number;
+  /** FC deducted for late cancellation */
+  lateCancel: number;
+  /** Hours before session start — cancels after this are "late" */
+  lateCancelWindowHours: number;
+}
+
+// ─── Social Bonuses (Habitica/Strava: group accountability) ───
+export interface SocialBonusConfig {
+  /** Consecutive weeks same 3+ people must attend for group streak */
+  groupStreakWeeks: number;
+  /** FC bonus for each member when group streak triggers */
+  groupStreakBonus: number;
+  /** FC bonus for N consecutive attended sessions (no no-shows) */
+  reliabilityBonus: number;
+  /** Sessions needed for reliability bonus */
+  reliabilityThreshold: number;
+  /** FC bonus for trying N different venues in a month */
+  venueVarietyBonus: number;
+  /** Venues needed for variety bonus */
+  venueVarietyThreshold: number;
+}
+
+// ─── Endowed Progress (Nunes & Dreze: pre-filled progress = 2x completion) ───
+export interface EndowedProgressConfig {
+  /** FC awarded on completing onboarding (first taste, immediate) */
+  welcomeBonus: number;
+  /** Extra FC on top of sessionComplete for very first session */
+  firstSessionBonus: number;
+}
+
 export interface CreditsConfig {
   // Earning (faucets)
   sessionComplete: number;
@@ -62,6 +138,14 @@ export interface CreditsConfig {
   diminishingReturns: DiminishingReturnsConfig;
   bonusCreditExpiryDays: number;
   qualityGates: QualityGatesConfig;
+
+  // Gamification systems
+  tiers: TierConfig;
+  streak: StreakConfig;
+  variableRewards: VariableRewardConfig;
+  penalties: PenaltyConfig;
+  social: SocialBonusConfig;
+  endowedProgress: EndowedProgressConfig;
 }
 
 export interface ReferralConfig {
@@ -150,7 +234,7 @@ export const DEFAULT_GROWTH_CONFIG: GrowthConfig = {
     exclusiveSession: 40,
 
     // Anti-inflation
-    dailyEarnCap: 50,
+    dailyEarnCap: 40,
     diminishingReturns: {
       sameVenueReviewCap: 3,
       sameVenuePhotoCap: 5,
@@ -162,6 +246,72 @@ export const DEFAULT_GROWTH_CONFIG: GrowthConfig = {
       minReviewLength: 50,
       minPhotoSizeKB: 50,
       peerRatingConsensus: 2,
+    },
+
+    // ─── Tier System ───
+    // Based on lifetime FC earned (never demotes on spending).
+    // Starbucks model: 1x → 1.15x → 1.3x → 1.5x earn rates.
+    // "Explorer" starts day one so nobody feels like a nobody.
+    tiers: {
+      explorer:  { minLifetimeFC: 0,    earnMultiplier: 1.0,  label: 'Explorer' },
+      regular:   { minLifetimeFC: 100,  earnMultiplier: 1.15, label: 'Regular' },
+      insider:   { minLifetimeFC: 500,  earnMultiplier: 1.3,  label: 'Insider' },
+      champion:  { minLifetimeFC: 1500, earnMultiplier: 1.5,  label: 'Champion' },
+    },
+
+    // ─── Streak System ───
+    // Weekly cadence (not daily — sessions are weekly rituals).
+    // Duolingo data: 7-day streak = 3.6x long-term retention.
+    // Streak Freeze reduces churn 21% for at-risk users.
+    streak: {
+      sessionsPerWeek: 1,
+      freezeCost: 15,
+      maxFreezes: 2,
+      milestones: [4, 8, 12, 26, 52],
+      milestoneBonuses: [10, 25, 40, 75, 150],
+      multipliers: { 1: 1.0, 4: 1.1, 8: 1.2, 12: 1.3 },
+    },
+
+    // ─── Variable Rewards ───
+    // Ethical dopamine: unpredictable bonuses tied to real session quality.
+    // VR schedules are most resistant to extinction (Skinner).
+    // 10% mystery double = enough to be exciting, rare enough to stay surprising.
+    variableRewards: {
+      mysteryDoubleChance: 0.10,
+      groupChemistryBonus: 5,
+      goldenSessionMultiplier: 3,
+    },
+
+    // ─── Penalties ───
+    // Loss aversion coefficient ~2.25x (Kahneman/Tversky).
+    // Penalties sting because FC have real redemption value.
+    // ClassPass model: no-show = full credit cost + penalty.
+    penalties: {
+      noShow: 15,
+      lateCancel: 10,
+      lateCancelWindowHours: 2,
+    },
+
+    // ─── Social Bonuses ───
+    // Habitica: small-group accountability = 65% higher completion.
+    // Strava: club members 2x more likely to exercise weekly.
+    // Peloton: cross-discipline engagement = 60% lower churn.
+    social: {
+      groupStreakWeeks: 3,
+      groupStreakBonus: 10,
+      reliabilityBonus: 25,
+      reliabilityThreshold: 10,
+      venueVarietyBonus: 10,
+      venueVarietyThreshold: 3,
+    },
+
+    // ─── Endowed Progress ───
+    // Nunes & Dreze car wash study: pre-filled progress = 2x completion.
+    // Starbucks: first redemption at 25 Stars (1-2 visits).
+    // Users who feel they've "already started" are dramatically more motivated.
+    endowedProgress: {
+      welcomeBonus: 25,
+      firstSessionBonus: 15,
     },
   },
 

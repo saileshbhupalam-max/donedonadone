@@ -226,7 +226,7 @@ async function createAutoEvent(
       session_format: timeSlot.format,
       location_id: venue.id,
       neighborhood: cluster.neighborhood,
-      max_attendees: Math.min(cluster.requests.length + 2, 8), // room for walk-ins
+      max_spots: Math.min(cluster.requests.length + 2, 8), // room for walk-ins
       auto_created: true,
       demand_cluster_key: cluster.clusterKey,
       created_by: captainId,

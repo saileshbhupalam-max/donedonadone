@@ -136,7 +136,7 @@ Deno.serve(async () => {
     const { data: admins } = await supabase
       .from("profiles")
       .select("id")
-      .eq("role", "admin");
+      .eq("user_type", "admin");
 
     if (admins && admins.length > 0) {
       const alertSummary = alerts

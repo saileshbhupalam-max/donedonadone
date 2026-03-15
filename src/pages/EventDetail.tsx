@@ -261,8 +261,7 @@ export default function EventDetailPage() {
 
       setLoading(false);
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, user]);
 
   const today = new Date().toISOString().split("T")[0];
   const isPast = event ? event.date < today : false;

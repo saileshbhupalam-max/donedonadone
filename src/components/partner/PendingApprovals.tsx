@@ -22,7 +22,7 @@ interface PendingEvent {
   date: string;
   start_time: string | null;
   end_time: string | null;
-  max_attendees: number | null;
+  max_spots: number | null;
   rsvp_count: number;
 }
 
@@ -40,7 +40,7 @@ export function PendingApprovals({ locationId }: PendingApprovalsProps) {
     (async () => {
       const { data } = await supabase
         .from("events")
-        .select("id, title, date, start_time, end_time, max_attendees")
+        .select("id, title, date, start_time, end_time, max_spots")
         .eq("location_id", locationId)
         .eq("status", "pending_venue_approval")
         .gte("date", new Date().toISOString().split("T")[0])
@@ -119,7 +119,7 @@ export function PendingApprovals({ locationId }: PendingApprovalsProps) {
                 </span>
                 <span className="flex items-center gap-1">
                   <Users className="w-3 h-3" />
-                  {e.rsvp_count}{e.max_attendees ? ` / ${e.max_attendees}` : ""} people
+                  {e.rsvp_count}{e.max_spots ? ` / ${e.max_spots}` : ""} people
                 </span>
               </div>
               <Input

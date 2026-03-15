@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -49,7 +49,7 @@ function CoffeeRouletteInner() {
   const queueIdRef = useRef<string | null>(null);
   const weeklyLimit = getLimit("roulette_per_week");
 
-  // Check weekly usage
+  // Check weekly usage — only re-runs when the user identity changes
   useEffect(() => {
     if (!user) return;
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -63,8 +63,7 @@ function CoffeeRouletteInner() {
         setWeeklyUsed(count || 0);
         setLimitChecked(true);
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user]);
 
   const atLimit = weeklyLimit > 0 && weeklyUsed >= weeklyLimit;
 
@@ -74,7 +73,9 @@ function CoffeeRouletteInner() {
     if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
   };
 
-  // Check for existing queue entry on mount
+  // Check for existing queue entry on mount — reconnects to active queue if user refreshes.
+  // Uses user (not user?.id) to satisfy exhaustive-deps. The auth context's user object
+  // identity is stable in state and only changes on login/logout.
   useEffect(() => {
     if (!user) return;
     const check = async () => {
@@ -99,8 +100,11 @@ function CoffeeRouletteInner() {
     };
     check();
     return () => clearTimers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchMatchedUser, startPolling,
+    // startTimeout, clearTimers are all stable functions that reference refs/setters only,
+    // but cannot be wrapped in useCallback without a circular dependency chain.
+    // This effect should only run when the user identity changes (login/logout).
+  }, [user]);
 
   const fetchMatchedUser = async (matchedUserId: string) => {
     const { data: mp } = await supabase

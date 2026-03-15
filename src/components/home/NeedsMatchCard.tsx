@@ -58,7 +58,7 @@ export function NeedsMatchCard() {
     };
 
     fetchAndScore();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-run when identity changes, not on auth token refresh
   }, [user?.id, profile?.id]);
 
   // Don't render if loading or no matches

@@ -95,7 +95,7 @@ BEGIN
 
   -- Create event
   INSERT INTO events (title, date, start_time, session_format, location_id, neighborhood,
-                      max_attendees, auto_created, demand_cluster_key, created_by, status)
+                      max_spots, auto_created, demand_cluster_key, created_by, status)
   VALUES (
     'Auto-Session at ' || v_venue_name,
     v_tomorrow,

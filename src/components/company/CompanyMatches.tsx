@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -213,7 +213,7 @@ export function CompanyMatches({ companyId }: { companyId: string }) {
   const [monthlyUsed, setMonthlyUsed] = useState(0);
   const [credits, setCredits] = useState(0);
 
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase.rpc("get_company_matches", { p_company_id: companyId });
     if (!error && data) setMatches(data as Match[]);
@@ -239,10 +239,9 @@ export function CompanyMatches({ companyId }: { companyId: string }) {
       setCredits(creditData?.credits_remaining || 0);
     }
     setLoading(false);
-  };
+  }, [companyId, user]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchMatches(); }, [companyId]);
+  useEffect(() => { fetchMatches(); }, [fetchMatches]);
 
   const monthlyLimit = getLimit("company_intros_per_month");
 

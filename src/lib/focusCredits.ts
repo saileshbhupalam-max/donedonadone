@@ -7,16 +7,25 @@
  *
  * Key exports:
  * - awardCredits() — Call server RPC to create earning ledger entry
+ * - awardWithMultipliers() — Award with tier + streak multipliers applied
  * - spendCredits() — Call server RPC to deduct credits
  * - getBalance() — Current balance from ledger sum (read-only, client-safe)
  * - getTodayEarnings() — Today's total earnings (read-only, client-safe)
+ * - getLifetimeEarnings() — Total positive FC ever earned (for tier calculation)
+ * - getUserTier() — Current tier based on lifetime earnings
+ * - getStreakMultiplier() — Earn multiplier from current weekly streak length
  * - checkAndAwardStreak() — Award streak bonus if 5+ sessions this month
+ * - purchaseStreakFreeze() — Spend FC to buy a streak freeze
+ * - rollVariableReward() — Roll for mystery double after session
+ * - penalizeNoShow() — Deduct FC for no-show
+ * - penalizeLateCancel() — Deduct FC for late cancellation
  *
- * Dependencies: Supabase client (calls RPCs, reads focus_credits)
+ * Dependencies: Supabase client (calls RPCs, reads focus_credits), growthConfig
  * Tables: focus_credits (read-only from client), server RPCs handle writes
  */
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getGrowthConfig, type TierDefinition } from "@/lib/growthConfig";
 
 // ─── Types ──────────────────────────────────
 
@@ -48,7 +57,18 @@ export type CreditAction =
   | 'taste_answer'
   | 'no_show_penalty'
   | 'late_cancel_penalty'
-  | 'redeem_session_boost';
+  | 'redeem_session_boost'
+  // Gamification v2
+  | 'welcome_bonus'
+  | 'first_session_bonus'
+  | 'mystery_double'
+  | 'group_chemistry_bonus'
+  | 'golden_session'
+  | 'group_streak_bonus'
+  | 'reliability_bonus'
+  | 'venue_variety_bonus'
+  | 'streak_freeze_purchase'
+  | 'streak_milestone';
 
 export interface CreditMetadata {
   venue_id?: string;
@@ -263,4 +283,381 @@ export async function checkAndAwardStreak(userId: string): Promise<AwardResult> 
   }
 
   return streakResult;
+}
+
+// ─── Tier System ──────────────────────────────────
+// Starbucks model: tiers based on lifetime earnings, never demotes on spend.
+// Explorer → Regular → Insider → Champion with escalating earn multipliers.
+
+export type UserTierKey = 'explorer' | 'regular' | 'insider' | 'champion';
+
+export interface UserTierInfo {
+  key: UserTierKey;
+  label: string;
+  earnMultiplier: number;
+  lifetimeFC: number;
+  /** FC needed to reach next tier, or null if at max */
+  fcToNextTier: number | null;
+  nextTierLabel: string | null;
+}
+
+/**
+ * Get total positive FC ever earned (ignoring spends and penalties).
+ * This number only goes up — spending doesn't reduce it.
+ */
+export async function getLifetimeEarnings(userId: string): Promise<number> {
+  const { data, error } = await supabase
+    .from('focus_credits')
+    .select('amount')
+    .eq('user_id', userId)
+    .gt('amount', 0);
+
+  if (error || !data) return 0;
+  return (data as Array<{ amount: number }>).reduce((sum, e) => sum + e.amount, 0);
+}
+
+/**
+ * Calculate the user's current tier based on lifetime earnings.
+ * Tiers never demote — once you earn 500 lifetime FC, you're an Insider
+ * even if you spend down to 0 balance.
+ */
+export function getUserTier(lifetimeFC: number): UserTierInfo {
+  const { tiers } = getGrowthConfig().credits;
+  const tierOrder: Array<{ key: UserTierKey; def: TierDefinition }> = [
+    { key: 'champion', def: tiers.champion },
+    { key: 'insider', def: tiers.insider },
+    { key: 'regular', def: tiers.regular },
+    { key: 'explorer', def: tiers.explorer },
+  ];
+
+  for (let i = 0; i < tierOrder.length; i++) {
+    const { key, def } = tierOrder[i];
+    if (lifetimeFC >= def.minLifetimeFC) {
+      const nextTier = i > 0 ? tierOrder[i - 1] : null;
+      return {
+        key,
+        label: def.label,
+        earnMultiplier: def.earnMultiplier,
+        lifetimeFC,
+        fcToNextTier: nextTier ? nextTier.def.minLifetimeFC - lifetimeFC : null,
+        nextTierLabel: nextTier ? nextTier.def.label : null,
+      };
+    }
+  }
+
+  // Fallback (should never hit — Explorer has minLifetimeFC: 0)
+  return {
+    key: 'explorer',
+    label: tiers.explorer.label,
+    earnMultiplier: tiers.explorer.earnMultiplier,
+    lifetimeFC,
+    fcToNextTier: tiers.regular.minLifetimeFC - lifetimeFC,
+    nextTierLabel: tiers.regular.label,
+  };
+}
+
+// ─── Streak Multiplier ──────────────────────────────────
+// Duolingo data: 7-day streak = 3.6x long-term retention.
+// Weekly cadence (not daily) because sessions are a weekly ritual.
+
+/**
+ * Get the earn rate multiplier for a given weekly streak length.
+ * Multipliers stack with tier multipliers (multiplicative).
+ */
+export function getStreakMultiplier(streakWeeks: number): number {
+  const { multipliers } = getGrowthConfig().credits.streak;
+  const thresholds = Object.keys(multipliers)
+    .map(Number)
+    .sort((a, b) => b - a);
+
+  for (const threshold of thresholds) {
+    if (streakWeeks >= threshold) return multipliers[threshold];
+  }
+  return 1.0;
+}
+
+/**
+ * Get combined earn multiplier (tier × streak). Both are independent
+ * reward systems that compound — a Champion with a 12-week streak earns
+ * 1.5 × 1.3 = 1.95x base rate.
+ */
+export function getEffectiveMultiplier(lifetimeFC: number, streakWeeks: number): number {
+  const tier = getUserTier(lifetimeFC);
+  const streak = getStreakMultiplier(streakWeeks);
+  return tier.earnMultiplier * streak;
+}
+
+/**
+ * Award FC with tier + streak multipliers automatically applied.
+ * Convenience wrapper around awardCredits() for session-related earnings.
+ */
+export async function awardWithMultipliers(
+  userId: string,
+  action: CreditAction,
+  baseAmount: number,
+  lifetimeFC: number,
+  streakWeeks: number,
+  metadata: CreditMetadata = {}
+): Promise<AwardResult> {
+  const multiplier = getEffectiveMultiplier(lifetimeFC, streakWeeks);
+  const finalAmount = Math.round(baseAmount * multiplier);
+  return awardCredits(userId, action, finalAmount, {
+    ...metadata,
+    base_amount: baseAmount,
+    multiplier: multiplier,
+    tier: getUserTier(lifetimeFC).key,
+    streak_weeks: streakWeeks,
+  });
+}
+
+// ─── Streak Freeze ──────────────────────────────────
+// Duolingo: streak freeze reduced churn 21% for at-risk users.
+// Loss aversion (2.25x) makes protecting a streak worth more than earning new FC.
+
+/**
+ * Purchase a streak freeze. The user spends FC to protect one missed week.
+ * Max freezes enforced by counting existing unused freezes.
+ */
+export async function purchaseStreakFreeze(
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
+  const config = getGrowthConfig().credits.streak;
+
+  // Count existing unused freezes (streak_freeze_purchase without a matching use)
+  const { data: freezes } = await supabase
+    .from('focus_credits')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('action', 'streak_freeze_purchase')
+    .gt('amount', -config.freezeCost - 1)
+    .lt('amount', -config.freezeCost + 1);
+
+  const currentFreezes = freezes?.length ?? 0;
+  if (currentFreezes >= config.maxFreezes) {
+    return { success: false, error: `You already have ${config.maxFreezes} streak freezes.` };
+  }
+
+  const result = await spendCredits(userId, 'streak_freeze_purchase', config.freezeCost, {
+    idempotency_key: `streak_freeze_${userId}_${Date.now()}`,
+  });
+
+  if (result.success) {
+    toast(`\u{2744}\u{FE0F} Streak freeze purchased! (${config.freezeCost} FC)`);
+  }
+  return { success: result.success, error: result.reason };
+}
+
+// ─── Variable Rewards ──────────────────────────────────
+// Skinner's VR schedule: most resistant to extinction.
+// 10% mystery double = exciting but rare enough to stay surprising.
+
+/**
+ * Roll for a mystery double after a session. Returns the bonus amount
+ * (0 if the roll fails, baseAmount if it succeeds — effectively doubling).
+ */
+export async function rollVariableReward(
+  userId: string,
+  baseAmount: number,
+  sessionId: string
+): Promise<{ won: boolean; bonusAmount: number }> {
+  const { mysteryDoubleChance } = getGrowthConfig().credits.variableRewards;
+  const roll = Math.random();
+
+  if (roll >= mysteryDoubleChance) {
+    return { won: false, bonusAmount: 0 };
+  }
+
+  // Won the mystery double — award the bonus
+  const result = await awardCredits(userId, 'mystery_double', baseAmount, {
+    session_id: sessionId,
+    idempotency_key: `mystery_double_${userId}_${sessionId}`,
+    roll: roll,
+  });
+
+  if (result.success) {
+    toast(`\u{2728} Mystery Double! +${result.awarded} bonus FC!`);
+  }
+
+  return { won: result.success, bonusAmount: result.awarded };
+}
+
+/**
+ * Award group chemistry bonus when ALL group members rate session 4+ stars.
+ */
+export async function awardGroupChemistryBonus(
+  userId: string,
+  sessionId: string
+): Promise<AwardResult> {
+  const { groupChemistryBonus } = getGrowthConfig().credits.variableRewards;
+  return awardCredits(userId, 'group_chemistry_bonus', groupChemistryBonus, {
+    session_id: sessionId,
+    idempotency_key: `group_chemistry_${userId}_${sessionId}`,
+  });
+}
+
+// ─── Penalties ──────────────────────────────────
+// Kahneman/Tversky: loss aversion coefficient ~2.25x.
+// A 15 FC no-show penalty feels as bad as missing a 34 FC reward.
+
+/**
+ * Deduct FC for a no-show. Uses spendCredits so the server enforces
+ * it can't take balance below zero.
+ */
+export async function penalizeNoShow(
+  userId: string,
+  sessionId: string
+): Promise<AwardResult> {
+  const { noShow } = getGrowthConfig().credits.penalties;
+  return spendCredits(userId, 'no_show_penalty', noShow, {
+    session_id: sessionId,
+    idempotency_key: `no_show_${userId}_${sessionId}`,
+  });
+}
+
+/**
+ * Deduct FC for a late cancellation (within lateCancelWindowHours of start).
+ */
+export async function penalizeLateCancel(
+  userId: string,
+  sessionId: string
+): Promise<AwardResult> {
+  const { lateCancel } = getGrowthConfig().credits.penalties;
+  return spendCredits(userId, 'late_cancel_penalty', lateCancel, {
+    session_id: sessionId,
+    idempotency_key: `late_cancel_${userId}_${sessionId}`,
+  });
+}
+
+// ─── Endowed Progress ──────────────────────────────────
+// Nunes & Dreze: pre-filled loyalty cards = 2x completion rate (34% vs 19%).
+// The first reward must come within 1-2 interactions.
+
+/**
+ * Award welcome bonus on onboarding completion.
+ * Gives new users their first FC immediately — endowed progress effect.
+ */
+export async function awardWelcomeBonus(userId: string): Promise<AwardResult> {
+  const { welcomeBonus } = getGrowthConfig().credits.endowedProgress;
+  return awardCredits(userId, 'welcome_bonus', welcomeBonus, {
+    idempotency_key: `welcome_bonus_${userId}`,
+  });
+}
+
+/**
+ * Award first-session bonus (on top of normal sessionComplete FC).
+ * Makes the first session feel extra rewarding.
+ */
+export async function awardFirstSessionBonus(userId: string): Promise<AwardResult> {
+  const { firstSessionBonus } = getGrowthConfig().credits.endowedProgress;
+
+  // Check if they've ever completed a session before
+  const { data: pastSessions } = await supabase
+    .from('focus_credits')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('action', 'session_complete')
+    .limit(2);
+
+  // Only award if this is their very first session_complete (0 or 1 existing)
+  if (pastSessions && pastSessions.length > 1) {
+    return { success: false, awarded: 0, reason: 'not_first_session' };
+  }
+
+  const result = await awardCredits(userId, 'first_session_bonus', firstSessionBonus, {
+    idempotency_key: `first_session_bonus_${userId}`,
+  });
+
+  if (result.success) {
+    toast(`\u{1F389} First session bonus! +${result.awarded} FC`);
+  }
+  return result;
+}
+
+// ─── Social Bonuses ──────────────────────────────────
+// Habitica parties: small-group accountability = 65% higher completion.
+// Strava clubs: members 2x more likely to exercise weekly.
+
+/**
+ * Award venue variety bonus if the user attended N different venues this month.
+ */
+export async function checkVenueVarietyBonus(userId: string): Promise<AwardResult> {
+  const { venueVarietyBonus, venueVarietyThreshold } = getGrowthConfig().credits.social;
+
+  const d = new Date();
+  d.setDate(1);
+  d.setHours(0, 0, 0, 0);
+  const monthStart = d.toISOString();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+
+  // Check if already awarded this month
+  const idempotencyKey = `venue_variety_${userId}_${year}-${month}`;
+  const { data: existing } = await supabase
+    .from('focus_credits')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('action', 'venue_variety_bonus')
+    .gte('created_at', monthStart)
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    return { success: false, awarded: 0, reason: 'already_awarded_this_month' };
+  }
+
+  // Count unique venues this month via session metadata
+  const { data: sessions } = await supabase
+    .from('focus_credits')
+    .select('metadata')
+    .eq('user_id', userId)
+    .eq('action', 'session_complete')
+    .gte('created_at', monthStart);
+
+  if (!sessions) return { success: false, awarded: 0, reason: 'no_sessions' };
+
+  const uniqueVenues = new Set(
+    sessions
+      .map((s: any) => s.metadata?.venue_id)
+      .filter(Boolean)
+  );
+
+  if (uniqueVenues.size < venueVarietyThreshold) {
+    return { success: false, awarded: 0, reason: 'not_enough_venues' };
+  }
+
+  const result = await awardCredits(userId, 'venue_variety_bonus', venueVarietyBonus, {
+    idempotency_key: idempotencyKey,
+    unique_venues: uniqueVenues.size,
+  } as CreditMetadata);
+
+  if (result.success) {
+    toast(`\u{1F30D} Venue explorer! +${result.awarded} FC for trying ${uniqueVenues.size} venues`);
+  }
+  return result;
+}
+
+/**
+ * Check and award streak milestone bonuses (4, 8, 12, 26, 52 weeks).
+ */
+export async function checkStreakMilestone(
+  userId: string,
+  currentStreakWeeks: number
+): Promise<AwardResult> {
+  const { milestones, milestoneBonuses } = getGrowthConfig().credits.streak;
+
+  for (let i = milestones.length - 1; i >= 0; i--) {
+    if (currentStreakWeeks >= milestones[i]) {
+      const idempotencyKey = `streak_milestone_${userId}_${milestones[i]}w`;
+      const result = await awardCredits(userId, 'streak_milestone', milestoneBonuses[i], {
+        idempotency_key: idempotencyKey,
+        milestone_weeks: milestones[i],
+      });
+
+      if (result.success) {
+        toast(`\u{1F525} ${milestones[i]}-week streak! +${result.awarded} FC milestone bonus!`);
+      }
+      return result;
+    }
+  }
+
+  return { success: false, awarded: 0, reason: 'no_milestone_reached' };
 }

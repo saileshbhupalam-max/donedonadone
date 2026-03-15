@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,9 +25,21 @@ export function EnergyCheck({ eventId, phase }: Props) {
   const [groupAvg, setGroupAvg] = useState<number | null>(null);
   const [groupCount, setGroupCount] = useState(0);
 
+  const loadGroupAvg = useCallback(async () => {
+    const { data } = await supabase
+      .from("energy_checks")
+      .select("energy_level")
+      .eq("event_id", eventId)
+      .eq("phase", phase);
+    if (data && data.length > 0) {
+      const avg = data.reduce((a: number, b: any) => a + b.energy_level, 0) / data.length;
+      setGroupAvg(Math.round(avg * 20)); // Convert 1-5 to percentage
+      setGroupCount(data.length);
+    }
+  }, [eventId, phase]);
+
   useEffect(() => {
     if (!user || !eventId) return;
-    // Check if already submitted
     (async () => {
       const { data } = await supabase
         .from("energy_checks")
@@ -42,21 +54,7 @@ export function EnergyCheck({ eventId, phase }: Props) {
         loadGroupAvg();
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, eventId, phase]);
-
-  const loadGroupAvg = async () => {
-    const { data } = await supabase
-      .from("energy_checks")
-      .select("energy_level")
-      .eq("event_id", eventId)
-      .eq("phase", phase);
-    if (data && data.length > 0) {
-      const avg = data.reduce((a: number, b: any) => a + b.energy_level, 0) / data.length;
-      setGroupAvg(Math.round(avg * 20)); // Convert 1-5 to percentage
-      setGroupCount(data.length);
-    }
-  };
+  }, [user, eventId, phase, loadGroupAvg]);
 
   const submit = async (level: number) => {
     if (!user) return;

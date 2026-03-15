@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -54,7 +54,7 @@ export function useUserContext(): UserContextReturn {
   const [playDnaComplete, setPlayDnaComplete] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const fetchCheckIn = async () => {
+  const fetchCheckIn = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from("check_ins")
@@ -78,7 +78,7 @@ export function useUserContext(): UserContextReturn {
       }
     }
     setActiveCheckIn(data || null);
-  };
+  }, [user]);
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
@@ -116,8 +116,7 @@ export function useUserContext(): UserContextReturn {
       .subscribe();
 
     return () => { mounted = false; supabase.removeChannel(channel); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user, fetchCheckIn]);
 
   const level = useMemo(() => getLevel(profile?.events_attended || 0), [profile?.events_attended]);
 

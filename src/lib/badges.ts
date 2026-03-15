@@ -15,6 +15,7 @@
 import { parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
+import type { ProgressionStats } from "@/lib/progressionStats";
 
 type Profile = Tables<"profiles">;
 
@@ -144,14 +145,39 @@ export async function fetchBadgeStats(userId: string): Promise<BadgeCheckStats> 
 export async function checkAndAwardBadges(
   userId: string,
   profile: Profile,
+  preFetchedStats?: ProgressionStats,
 ): Promise<string[]> {
   try {
-    const [stats, { data: existingBadges }] = await Promise.all([
-      fetchBadgeStats(userId),
-      supabase.from("member_badges").select("badge_type").eq("user_id", userId),
-    ]);
+    // If pre-fetched stats are provided (from checkAllProgression), use them
+    // to avoid redundant Supabase queries. Otherwise, fetch independently
+    // for backward compatibility with existing callers.
+    let stats: BadgeCheckStats;
+    let existingTypes: string[];
 
-    const existingTypes = (existingBadges || []).map((b) => b.badge_type);
+    if (preFetchedStats) {
+      stats = {
+        promptAnswerCount: preFetchedStats.promptAnswerCount,
+        totalPromptCount: preFetchedStats.totalPromptCount,
+        eventGoingCount: preFetchedStats.eventGoingCount,
+        totalFiresReceived: preFetchedStats.totalFiresReceived,
+        maxSingleFireCount: preFetchedStats.maxSingleFireCount,
+        referralCount: preFetchedStats.referralCount,
+        totalPropsReceived: preFetchedStats.totalPropsReceived,
+        energyPropsReceived: preFetchedStats.energyPropsReceived,
+        helpfulPropsReceived: preFetchedStats.helpfulPropsReceived,
+        focusedPropsReceived: preFetchedStats.focusedPropsReceived,
+        uniquePropGivers: preFetchedStats.uniquePropGivers,
+      };
+      existingTypes = preFetchedStats.existingBadgeTypes;
+    } else {
+      const [fetchedStats, { data: existingBadges }] = await Promise.all([
+        fetchBadgeStats(userId),
+        supabase.from("member_badges").select("badge_type").eq("user_id", userId),
+      ]);
+      stats = fetchedStats;
+      existingTypes = (existingBadges || []).map((b) => b.badge_type);
+    }
+
     const newBadges = checkEarnedBadges(profile, stats, existingTypes);
 
     if (newBadges.length > 0) {

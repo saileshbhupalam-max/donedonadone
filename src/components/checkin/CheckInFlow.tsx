@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGeolocation } from "@/hooks/useGeolocation";
@@ -72,10 +72,9 @@ export function CheckInFlow({ open, onClose, onCheckIn }: CheckInFlowProps) {
       return;
     }
     detectLocation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, detectLocation]);
 
-  const detectLocation = async () => {
+  const detectLocation = useCallback(async () => {
     setLocationsLoading(true);
     const pos = await requestPosition();
     if (!pos) {
@@ -100,7 +99,7 @@ export function CheckInFlow({ open, onClose, onCheckIn }: CheckInFlowProps) {
     }
     setLocationsLoading(false);
     setStep(1);
-  };
+  }, [requestPosition]);
 
   const fetchAllLocations = async () => {
     const { data } = await supabase.from("locations").select("id, name, location_type, neighborhood").order("name");

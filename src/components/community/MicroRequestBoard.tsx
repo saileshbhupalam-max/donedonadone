@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -63,7 +63,7 @@ function MicroRequestBoardInner() {
   const [submitting, setSubmitting] = useState(false);
   const activeLimit = getLimit("micro_requests_active");
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     if (!user) return;
     const [othersRes, mineRes] = await Promise.all([
       supabase
@@ -84,10 +84,9 @@ function MicroRequestBoardInner() {
     setRequests((othersRes.data as unknown as MicroRequest[]) || []);
     setMyRequests(mineRes.data || []);
     setLoading(false);
-  };
+  }, [user]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchRequests(); }, [user?.id]);
+  useEffect(() => { fetchRequests(); }, [fetchRequests]);
 
   const handleClaim = async (requestId: string) => {
     if (!user) return;

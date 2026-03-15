@@ -42,7 +42,6 @@ export function IcebreakerEngine({ rounds, onComplete, onIntentionSet }: Props) 
     }, 1000);
 
     return () => clearInterval(timerRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roundIdx, rounds]);
 
   // Halfway alert for pair_share

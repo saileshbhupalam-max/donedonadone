@@ -194,6 +194,10 @@ export default function Onboarding() {
         trackAnalyticsEvent('referral_signup', user.id, { referral_code: refCodeUsed }).catch(() => {});
       }
 
+      // Endowed progress: award welcome bonus FC (Nunes & Dreze: 2x completion rate)
+      const { awardWelcomeBonus } = await import("@/lib/focusCredits");
+      await awardWelcomeBonus(user.id).catch(console.error);
+
       const confetti = (await import("canvas-confetti")).default;
       confetti({ particleCount: 120, spread: 80, origin: { y: 0.7 } });
       toast.success(CELEBRATIONS.onboardingComplete);
