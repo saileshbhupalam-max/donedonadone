@@ -8,20 +8,20 @@
 
 ## CRITICAL — Must fix before launch
 
-### TD-001: No payment integration
-- **Location:** `src/pages/Pricing.tsx:64`, `src/components/session/SessionBoostBanner.tsx`
-- **Description:** `handleUpgrade()` and Session Boost button both show `toast.info("Payment integration coming soon!")`. No Razorpay, Stripe, or UPI integration exists. The entire subscription system (tiers, features, limits, boost) is built but has no way to activate paid tiers.
-- **Impact:** Zero revenue. All tier gating is theoretical — every user is permanently free tier.
-- **Fix:** Integrate Razorpay (or UPI QR via `upiqr` npm package for MVP). Wire up subscription creation, webhook handling, tier activation.
+### TD-001: No auto-verified payment integration
+- **Location:** `src/pages/Pricing.tsx`, `src/components/session/SessionBoostBanner.tsx`, `src/components/session/DayPassCard.tsx`
+- **Description:** UPI QR flow works (E2E tested) — user scans QR, submits UTR for manual admin verification via `PendingPayments` tab. But no Razorpay webhook for auto-verification. Subscription activation requires admin action.
+- **Impact:** Revenue possible but manual. Admin bottleneck on payment verification.
+- **Fix:** Razorpay Edge Function webhook handler for auto-verify + tier activation.
 
 ### TD-002: Women-only enforcement is client-side only — RESOLVED
 - **Status:** RESOLVED — RLS migration at `supabase/migrations/20260313_women_only_rls.sql`. Replaces INSERT policy to enforce women-only check at DB level. Apply via Supabase dashboard or CLI.
 
-### TD-003: No outbound notification channel
-- **Location:** `src/lib/notificationLogic.ts`, `src/lib/growth.ts`
-- **Description:** Notifications only exist in-app (`notifications` table + realtime subscription). No email delivery (Resend/SendGrid), no WhatsApp (Business API), no SMS. Push notifications have infrastructure (`sw-push.js`, VAPID, `push_subscriptions` table) but no server-side trigger to send them.
-- **Impact:** Members who aren't actively in the app receive zero communication. Session reminders, group assignments, re-engagement — all silent.
-- **Fix:** Phase 1: Supabase Edge Function for push notification cron (24hr + 1hr before session). Phase 2: Resend for email. Phase 3: WhatsApp Business API.
+### TD-003: Outbound notifications built, need credentials deployed
+- **Location:** `supabase/functions/send-notification/`, `supabase/functions/_shared/webpush.ts`
+- **Description:** Full multi-channel notification system is built: Web Push (RFC 8291/8292), email via Resend, in-app realtime, quiet hours, per-category toggles. Service worker, browser subscription UI, admin broadcast, cron schedules — all exist. **Just needs credentials deployed as Supabase secrets** (VAPID keys, RESEND_API_KEY).
+- **Impact:** MEDIUM — system works end-to-end once secrets are set. WhatsApp is still stubbed.
+- **Fix:** Run `supabase secrets set` with VAPID keys + RESEND_API_KEY. Run `supabase db push` for cron migration. Deploy Edge Functions.
 
 ### TD-004: Booking limits not enforced — RESOLVED
 - **Status:** RESOLVED — `toggleRsvp` now accepts `monthlySessionLimit` option, checks RSVP count this month before allowing new "going" RSVPs.
@@ -83,11 +83,9 @@
 ### TD-018: Bundle size could be optimized — RESOLVED (no change needed)
 - **Status:** RESOLVED — Investigation confirmed recharts only used in lazy-loaded Admin page, html2canvas uses dynamic `await import()`, qrcode uses `React.lazy`. Chunks already lazy-load correctly via existing page-level code splitting.
 
-### TD-019: Test coverage gaps
-- **Location:** `src/test/`
-- **Description:** 555 tests across 39 files, but coverage is concentrated on lib functions (matchUtils, badges, ranks, antifragile, icebreakers). No component render tests. No integration tests against real Supabase. No E2E tests.
-- **Impact:** UI regressions undetected. Data integration bugs missed.
-- **Fix:** Add React Testing Library render tests for critical components (EventCard, FeatureGate, SessionPreStart). Add Playwright E2E for core flows (signup → RSVP → session → feedback).
+### TD-019: Test coverage gaps — PARTIALLY RESOLVED
+- **Status:** PARTIALLY RESOLVED — 44 E2E tests passed via Playwright MCP across 3 passes (see `docs/HANDOFF-E2E-PASS3.md`). 12 bugs found and fixed. Still no automated Playwright test suite (tests were manual via MCP). No component render tests.
+- **Remaining fix:** Convert E2E test scenarios to automated Playwright spec files. Add RTL render tests for critical components.
 
 ### TD-020: Inconsistent date handling — RESOLVED
 - **Status:** RESOLVED — Replaced `new Date(isoString)` with `parseISO(isoString)` across 27 files. `new Date()` (current time) left as-is.

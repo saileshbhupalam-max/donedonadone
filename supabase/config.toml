@@ -20,3 +20,15 @@ verify_jwt = false
 
 [functions.session-debrief]
 verify_jwt = false
+
+[functions.match-nudges]
+verify_jwt = false
+
+[functions.ai-community-manager]
+verify_jwt = false
+
+[functions.auto-sessions]
+verify_jwt = false
+
+[functions.send-push]
+verify_jwt = false

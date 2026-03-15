@@ -3,82 +3,131 @@
 > Read this file first when resuming work. It tells you exactly what's done,
 > what's next, and where every piece lives.
 
-## What Was Done This Session
+## Track Status Overview
 
-### Track A: Map World — COMPLETE (A1-A9)
-
-| Item | What | Key Files |
-|------|------|-----------|
-| A1 | Quick Questions taste engine (60 questions, 5 types, FC rewards) | `src/components/home/QuickQuestionsCard.tsx`, `supabase/migrations/20260315_taste_engine.sql` |
-| A2 | Venue Detail page (`/venue/:id`) | `src/pages/VenueDetail.tsx` |
-| A3 | Content seeding (25 HSR venues in `locations` table) | `supabase/migrations/20260315_seed_hsr_venues.sql` |
-| A4 | MapSwapToggle on Home, Discover, Events | `src/components/map/MapSwapToggle.tsx` (shared), wired into Home/Discover/Events |
-| A5 | Venue popup links to `/venue/:id` | `src/components/map/SessionMap.tsx` — venues from `locations` table get "View venue" button |
-| A6 | Exhaustive venue data model (8 new contribution types) | `src/lib/venueContributions.ts` — wall_photo, ambient_noise, lighting, temperature, restroom, desk_layout, outlet_locations, menu_photo |
-| A7 | "Your Places" on Profile Journey tab | `src/components/home/YourPlaces.tsx`, wired into `src/pages/Profile/index.tsx` |
-| A8 | First-mover FC bonuses (2x for first contribution per type per venue) | `src/lib/venueContributions.ts` — `submitVenueContribution()` checks existing contributions |
-| A9 | Map enrichment (type icons, search, venue type filter, activity badges) | `src/components/map/SessionMap.tsx` — `createVenueIcon()`, search/filter in filter panel, check-in counts on markers |
-
-### Track C: Wow Moment — MOSTLY COMPLETE
-
-| Item | Status | Key Files |
-|------|--------|-----------|
-| C1 | DONE — SmartIntroCard wired into EventDetail | `src/components/session/SmartIntroCard.tsx`, `src/pages/EventDetail.tsx` line ~442 |
-| C2 | BLOCKED — needs push notifications (Track B) | — |
-| C3 | ALREADY BUILT — SpaceInsights.tsx at `/space/:id/insights` | `src/pages/SpaceInsights.tsx`, `src/pages/SpaceLive.tsx` |
-
-### Track D: Value Depth — MOSTLY COMPLETE
-
-| Item | Status | Key Files |
-|------|--------|-----------|
-| D1 | DONE (80% was pre-built) — Companies page + Home card | `src/pages/Companies.tsx`, `src/components/home/CompanyHomeCard.tsx`, `src/components/home/MatchNudgeCard.tsx` |
-| D2 | BLOCKED — needs day pass purchase flow (Track B) | — |
-| D3 | DONE — Needs board + Home NeedsMatchCard | `src/pages/Needs.tsx`, `src/components/home/NeedsMatchCard.tsx` (wired into Home) |
-| D4 | DONE (70% was pre-built) — mentorMatch + MentorSection | `src/lib/mentorMatch.ts`, `src/components/discover/MentorSection.tsx` |
-
-### Track E: AI + Scale — PARTIALLY COMPLETE
-
-| Item | Status | Key Files |
-|------|--------|-----------|
-| E1 | NOT BUILT — AI community manager needs Claude Edge Functions | — |
-| E2 | NOT BUILT — LLM search needs Claude Edge Functions | — |
-| E3 | NOT BUILT — AI session debrief needs Claude Edge Functions | — |
-| E4 | ALREADY BUILT — session templates + Admin TemplatesTab | `src/lib/sessionTemplates.ts`, `src/components/admin/TemplatesTab.tsx` |
-| E5 | LATER — cross-space network needs 10+ active spaces | — |
+| Track | Status | Blocker |
+|-------|--------|---------|
+| A: Map World | COMPLETE | — |
+| B: Revenue + Comms | INFRA BUILT, needs credentials | Razorpay keys, Resend key |
+| C: Wow Moment | COMPLETE (C2 unblocked by B2) | — |
+| D: Value Depth | COMPLETE (D2 unblocked by B1) | — |
+| E: AI + Scale | BUILT, needs ANTHROPIC_API_KEY secret | `supabase secrets set` |
 
 ---
 
-## What To Do Next
+## Track B: Revenue + Communications — What's Actually Built
 
-### Priority 1: Track B — Revenue + Communications (LAUNCH BLOCKER)
+The previous handoff said these were "NOT BUILT" but they are. Every piece of infra exists — just needs credentials deployed.
 
-This is the only track that blocks launch AND unblocks C2 + D2.
+### B1: Payments
+- UPI QR flow works (E2E tested: Day Pass card → QR → UTR input → confirm)
+- `upiqr` package installed and integrated
+- **Still needs:** Razorpay account + API keys for auto-verify (manual UTR verification works now)
 
-| Item | What | Dependencies | Notes |
-|------|------|-------------|-------|
-| B1 | **Razorpay payment integration** | Razorpay account + API keys | TD-001 in TECH-DEBT.md. `handleUpgrade()` currently shows a toast. Need real payment flow. `upiqr` package available for UPI QR MVP. |
-| B2 | **Push notifications** | VAPID keys in production | TD-003 in TECH-DEBT.md. Edge Functions log "Would push". Need real web push via service worker. |
-| B3 | **Email triggers** | Resend account + API key | Welcome email, session reminders, weekly digest. |
-| B4 | **Day pass purchase flow** | B1 (payments) | Outsiders buy single sessions. Unblocks D2 (day pass → member conversion). |
+### B2: Push Notifications — FULLY BUILT
+| Component | Status | File |
+|-----------|--------|------|
+| VAPID key generation | DONE | `scripts/generate-vapid-keys.mjs` |
+| VAPID keys generated | DONE | `.env` has public key, private key printed for `supabase secrets set` |
+| Service worker | DONE | `public/sw-push.js` (RFC 8291 encryption) |
+| Web Push protocol | DONE | `supabase/functions/_shared/webpush.ts` (383 lines, pure Deno) |
+| send-push Edge Function | DONE | `supabase/functions/send-push/index.ts` |
+| send-notification orchestrator | DONE | `supabase/functions/send-notification/index.ts` (multi-channel: push + email + in-app) |
+| Browser subscription hook | DONE | `src/hooks/usePushNotifications.ts` |
+| Push opt-in card (Home) | DONE | `src/pages/Home/PushOptInCard.tsx` |
+| Notification settings UI | DONE | `src/pages/Settings/NotificationSettingsCard.tsx` |
+| Notification bell + list | DONE | `src/components/layout/TopBar.tsx` |
+| Quiet hours logic | DONE | `src/lib/notificationLogic.ts` (IST 22:00-08:00 default) |
+| Per-category toggles | DONE | `notification_preferences.channels` JSONB |
+| DB tables | DONE | `push_subscriptions`, `notification_preferences`, `notification_log` |
+| Cron schedules | DONE | `supabase/migrations/20260315_notification_crons_and_admin_seed.sql` |
+| Trigger functions | DONE | `send-session-reminders`, `send-streak-warnings`, `match-nudges` |
 
-**Technical prerequisites** (check `docs/IMPLEMENTATION-PLAN.md` "Technical Prerequisites"):
-- [ ] Resend account + API key (for email)
-- [ ] Razorpay account + API keys (for payment)
-- [ ] VAPID keys in production (for push)
-- [x] `upiqr` package installed (for UPI QR MVP)
+**To activate push in production:**
+```bash
+supabase secrets set VAPID_PUBLIC_KEY="BFhMIfiAE_s9mRv-NkdeXEPCmtYMQq0nz2fLG39NtWIQwQxPOkGUj5O_Wo-SBGfJDVij1gfbVRpxc1mdO9eXcko"
+supabase secrets set VAPID_PRIVATE_KEY="Inqd4w5p5PXUQ3wLhGo7vH_sNs9lhMhjPn3-L7y9mwQ"
+supabase secrets set VAPID_SUBJECT="mailto:hello@danadone.club"
+supabase db push           # Apply cron migration
+supabase functions deploy send-push
+supabase functions deploy send-notification
+supabase functions deploy send-session-reminders
+supabase functions deploy send-streak-warnings
+supabase functions deploy match-nudges
+```
+Also add `VITE_VAPID_PUBLIC_KEY` to Vercel env vars for production.
 
-### Priority 2: Track E (E1-E3) — AI Features
+### B3: Email — BUILT, needs Resend key
+- `send-notification` Edge Function already dispatches to Resend API
+- HTML email templates generated dynamically
+- Respects quiet hours + per-category preferences
+- `email_enabled` defaults to false (user opt-in in Settings)
+- **To activate:** `supabase secrets set RESEND_API_KEY="re_xxxxx"`
 
-All need Supabase Edge Functions calling Claude API. The AI infrastructure exists:
-- `ai_providers`, `ai_task_config`, `ai_usage_log` tables exist
-- `ai_match_explanations` already uses Claude
-- Edge Functions deploy via `supabase functions deploy <name>`
+### B4: Day Pass
+- Purchase flow E2E tested (QR → UTR → confirm)
+- `day_passes` migration exists
+- **Still needs:** Razorpay for auto-verification
 
-| Item | What to build |
-|------|---------------|
-| E1 | Edge Function: daily churn prediction + auto-welcome for new members + community prompt suggestions. Admin UI: "AI Suggestions" tab with approve/dismiss. |
-| E2 | Edge Function: parse natural language query → map to taste graph → return ranked members. Wire into Discover search bar (Plus+ tier). |
-| E3 | Edge Function: post-session, generate personalized debrief per member from group data. Push via notification (needs B2). |
+---
+
+## Track E: AI Features — ALL EDGE FUNCTIONS BUILT
+
+| Item | Edge Function | Status | Needs |
+|------|-------------|--------|-------|
+| E1 | `ai-community-manager` | BUILT | ANTHROPIC_API_KEY secret |
+| E2 | `smart-search` | BUILT + client fallback | ANTHROPIC_API_KEY secret (fallback works without) |
+| E3 | `session-debrief` | BUILT | ANTHROPIC_API_KEY secret |
+| E4 | Session templates | BUILT | — |
+| E5 | Cross-space network | LATER | 10+ active spaces |
+
+**To activate AI features:**
+```bash
+supabase secrets set ANTHROPIC_API_KEY="sk-ant-xxxxx"
+supabase functions deploy smart-search
+supabase functions deploy ai-community-manager
+supabase functions deploy session-debrief
+supabase functions deploy generate-match-explanations
+supabase functions deploy draft-intro
+```
+
+---
+
+## E2E Testing — 44 Tests Passed, 11/12 Bugs Fixed
+
+See `docs/HANDOFF-E2E-PASS3.md` for full details.
+
+| Bug | Status |
+|-----|--------|
+| manifest.webmanifest missing | Fixed |
+| SmartIntroCard RSVP crash | Fixed |
+| Leaderboard slug display | Fixed |
+| `update_reliability` RPC missing | Fixed |
+| Venue nomination slug display | Fixed |
+| Share message slug display | Fixed |
+| Leaderboard local vs shared helper | Fixed |
+| Needs Board hides own posts | Fixed |
+| Admin `app_settings` 406 | Fixed |
+| Auth session drops on navigation | Known (Playwright MCP limitation) |
+| Discover search no text fallback | Fixed |
+| profile_views 409 conflict | Fixed |
+
+---
+
+## What Actually Needs Doing
+
+### Credentials to Deploy (user action)
+1. `supabase secrets set VAPID_PUBLIC_KEY=...` + `VAPID_PRIVATE_KEY=...` + `VAPID_SUBJECT=...`
+2. `supabase secrets set ANTHROPIC_API_KEY=...`
+3. `supabase secrets set RESEND_API_KEY=...` (when ready)
+4. Add `VITE_VAPID_PUBLIC_KEY` to Vercel env vars
+5. Razorpay account + API keys (when ready)
+6. `supabase db push` to apply cron migration
+
+### Code Still Needed
+- **Razorpay webhook handler** — Edge Function for auto-verifying payments (manual UTR works now)
+- **WhatsApp integration** — currently stubbed, queues to notification_log
+- **Day pass → member conversion funnel** — post-session upsell flow
 
 ---
 
@@ -103,10 +152,3 @@ supabase db push     # Apply migrations
 supabase functions deploy <name>  # Deploy Edge Function
 git push             # Pushes to both focusclub + donedonadone repos
 ```
-
-## Git State
-
-- Branch: `main`
-- Both remotes in sync: `focusclub` + `donedonadone`
-- Latest commit: `02802df` — feat: wire NeedsMatchCard into Home (Track D3)
-- All changes committed and pushed. Clean working tree.
