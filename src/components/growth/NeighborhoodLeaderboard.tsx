@@ -5,6 +5,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
+/** Convert slug like "hsr-layout" to display name "HSR Layout" */
+function displayNeighborhood(slug: string): string {
+  return slug
+    .split("-")
+    .map((w) => (w.length <= 3 ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
+    .join(" ");
+}
+
 interface LeaderboardEntry {
   rank: number;
   name: string;
@@ -181,13 +189,13 @@ export function NeighborhoodLeaderboard({ neighborhood, userId }: NeighborhoodLe
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-serif flex items-center gap-2">
             <Trophy className="w-5 h-5 text-amber-500" />
-            {neighborhood} Leaderboard
+            {displayNeighborhood(neighborhood)} Leaderboard
           </CardTitle>
         </div>
         {/* User rank callout */}
         {data?.currentUser && (
           <p className="text-sm text-muted-foreground">
-            You're <span className="font-semibold text-foreground">#{data.currentUser.rank}</span> in {neighborhood}
+            You're <span className="font-semibold text-foreground">#{data.currentUser.rank}</span> in {displayNeighborhood(neighborhood)}
           </p>
         )}
         {/* Period tabs */}
