@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.send-session-reminders]
 verify_jwt = false
+
+[functions.session-debrief]
+verify_jwt = false

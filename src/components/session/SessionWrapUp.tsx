@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CELEBRATIONS } from "@/lib/personality";
 import { motion } from "framer-motion";
+import { DayPassConversionCard } from "./DayPassConversionCard";
 
 interface Props {
   eventId: string;
@@ -121,6 +122,14 @@ export function SessionWrapUp({
             Rate this session ⭐
           </Button>
         </div>
+      )}
+
+      {/* D2: Day Pass → Member conversion CTA.
+         Shows match scores with group members to convert day-pass users.
+         Self-gating: DayPassConversionCard checks day_passes table and renders
+         nothing for subscription members, so it's safe to always include. */}
+      {user && (
+        <DayPassConversionCard eventId={eventId} userId={user.id} />
       )}
     </div>
   );

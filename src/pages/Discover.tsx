@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Sparkles, Link2, ChevronDown, ChevronUp, Building2, Users, Search, Lock, GraduationCap } from "lucide-react";
+import { MapPin, Sparkles, Link2, ChevronDown, ChevronUp, Building2, Users, Search, Lock, GraduationCap, Loader2, X } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,6 +22,7 @@ import { getInitials } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MentorSection } from "@/components/discover/MentorSection";
 import { MapSwapToggle } from "@/components/map/MapSwapToggle";
+import { toast } from "sonner";
 
 const SessionMap = lazy(() => import("@/components/map/SessionMap").then(m => ({ default: m.SessionMap })));
 
@@ -502,15 +503,154 @@ function CompanyDirectorySection() {
   );
 }
 
+function AISearchResults({
+  results,
+  onClear,
+}: {
+  results: any[];
+  onClear: () => void;
+}) {
+  const navigate = useNavigate();
+
+  const scoreBadge = (score: number) => {
+    if (score >= 70)
+      return "border-green-500/40 text-green-600 bg-green-50 dark:bg-green-950/30";
+    if (score >= 40)
+      return "border-blue-500/40 text-blue-600 bg-blue-50 dark:bg-blue-950/30";
+    return "border-border text-muted-foreground";
+  };
+
+  return (
+    <section className="mt-2 px-4">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs text-muted-foreground">
+          {results.length} result{results.length !== 1 ? "s" : ""} found
+        </p>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="text-xs h-7 gap-1"
+          onClick={onClear}
+        >
+          <X className="w-3 h-3" /> Clear search
+        </Button>
+      </div>
+      {results.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <Search className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">
+              No matches found. Try a different query.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {results.map((r: any) => (
+            <Card
+              key={r.user_id}
+              className="overflow-hidden cursor-pointer hover:shadow-sm transition-shadow"
+              onClick={() => navigate(`/profile/${r.user_id}`)}
+            >
+              <CardContent className="p-3">
+                <div className="flex items-center gap-3">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={r.avatar_url || ""} />
+                    <AvatarFallback className="text-xs">
+                      {getInitials(r.display_name || "?")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {r.display_name}
+                      </p>
+                      {typeof r.match_score === "number" && (
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] px-1.5 py-0 shrink-0 ${scoreBadge(r.match_score)}`}
+                        >
+                          {r.match_score}%
+                        </Badge>
+                      )}
+                    </div>
+                    {r.tagline && (
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {r.tagline}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {(r.match_reasons || []).map((reason: string, i: number) => (
+                        <Badge
+                          key={i}
+                          variant="secondary"
+                          className="text-[9px] px-1.5 py-0"
+                        >
+                          {reason}
+                        </Badge>
+                      ))}
+                      {(r.can_offer || []).slice(0, 3).map((tag: string, i: number) => (
+                        <Badge
+                          key={`offer-${i}`}
+                          variant="outline"
+                          className="text-[9px] px-1.5 py-0 border-primary/20 text-primary"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function Discover() {
   usePageTitle("Discover — DanaDone");
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { hasFeature } = useSubscription();
+  const canUseAISearch = hasFeature("smart_search");
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  const [searching, setSearching] = useState(false);
+
   // Incrementing refreshKey forces sub-components to remount and re-fetch their data
   const [refreshKey, incrementRefreshKey] = useReducer((c: number) => c + 1, 0);
 
   const handleRefresh = useCallback(async () => {
     incrementRefreshKey();
   }, []);
+
+  const searchWithAI = async (query: string) => {
+    if (!user || !query.trim()) return;
+    setSearching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("smart-search", {
+        body: { query: query.trim(), user_id: user.id },
+      });
+      if (error) throw error;
+      setSearchResults(data.results || []);
+      setIsSearchMode(true);
+    } catch (e: any) {
+      toast.error(e.message || "Search failed");
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const clearSearch = () => {
+    setIsSearchMode(false);
+    setSearchResults([]);
+    setSearchQuery("");
+  };
 
   return (
     <AppShell>
@@ -525,6 +665,49 @@ export default function Discover() {
             <h1 className="font-serif text-2xl text-foreground">Discover</h1>
             <p className="text-xs text-muted-foreground mt-0.5">Find people to work with</p>
           </div>
+
+          {/* AI Search Bar */}
+          <div className="px-4 mb-3">
+            <div className="relative">
+              {canUseAISearch ? (
+                <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+              ) : (
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              )}
+              <Input
+                placeholder={canUseAISearch ? "AI Search — try \"designers who like deep focus\"" : "Search members..."}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") searchWithAI(searchQuery);
+                }}
+                className="pl-9 pr-20 h-10 text-sm rounded-lg"
+                disabled={searching}
+              />
+              <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                {canUseAISearch && (
+                  <span className="text-[9px] text-muted-foreground mr-1">Powered by AI</span>
+                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0"
+                  onClick={() => searchWithAI(searchQuery)}
+                  disabled={searching || !searchQuery.trim()}
+                >
+                  {searching ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Search className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {isSearchMode ? (
+            <AISearchResults results={searchResults} onClear={clearSearch} />
+          ) : (
 
           <Tabs defaultValue="people" className="px-4 mb-2">
             <TabsList className="w-full">
@@ -564,6 +747,7 @@ export default function Discover() {
               <CompanyDirectorySection key={`companies-${refreshKey}`} />
             </TabsContent>
           </Tabs>
+          )}
         </motion.div>
       </PullToRefresh>
     </AppShell>

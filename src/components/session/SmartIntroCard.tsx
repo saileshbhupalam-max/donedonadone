@@ -84,9 +84,13 @@ function IntroEntry({ intro }: { intro: SmartIntro }) {
   );
 }
 
-export function SmartIntroCard({ currentUser, groupMembers }: SmartIntroCardProps) {
+export function SmartIntroCard({ currentUser, groupMembers, eventId }: SmartIntroCardProps & { eventId?: string }) {
   const intros = useMemo(
-    () => generateSmartIntros(currentUser, groupMembers),
+    () => {
+      // Guard: if called with only eventId (from EventDetail), skip until proper props are passed
+      if (!currentUser || !groupMembers || groupMembers.length === 0) return [];
+      return generateSmartIntros(currentUser, groupMembers);
+    },
     [currentUser, groupMembers],
   );
 

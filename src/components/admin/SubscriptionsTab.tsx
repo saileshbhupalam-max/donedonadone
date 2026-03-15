@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Search, Users, CreditCard, Zap, IndianRupee } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { PendingPayments } from "./PendingPayments";
 
 // ─── Stats Cards ─────────────────────────────────────────
 function SubscriptionStats() {
@@ -436,14 +437,16 @@ export function SubscriptionsTab() {
     <div className="space-y-4">
       <SubscriptionStats />
 
-      <Tabs defaultValue="users">
+      <Tabs defaultValue="payments">
         <TabsList className="w-full flex">
+          <TabsTrigger value="payments" className="flex-1 text-xs">Payments</TabsTrigger>
           <TabsTrigger value="users" className="flex-1 text-xs">Users</TabsTrigger>
           <TabsTrigger value="tiers" className="flex-1 text-xs">Tiers</TabsTrigger>
           <TabsTrigger value="features" className="flex-1 text-xs">Features</TabsTrigger>
           <TabsTrigger value="limits" className="flex-1 text-xs">Limits</TabsTrigger>
         </TabsList>
 
+        <TabsContent value="payments" className="mt-3"><PendingPayments /></TabsContent>
         <TabsContent value="users" className="mt-3"><UserSubManagement /></TabsContent>
         <TabsContent value="tiers" className="mt-3"><TierOverview /></TabsContent>
         <TabsContent value="features" className="mt-3"><FeatureManagement /></TabsContent>

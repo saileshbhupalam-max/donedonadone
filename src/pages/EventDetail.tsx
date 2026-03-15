@@ -33,6 +33,7 @@ import { VenueIntelligencePanel } from "@/components/venue/VenueQuickBadges";
 import { Input } from "@/components/ui/input";
 import { FirstSessionGuide } from "@/components/session/FirstSessionGuide";
 import { SmartIntroCard } from "@/components/session/SmartIntroCard";
+import { DayPassCard } from "@/components/payment/DayPassCard";
 
 /* DESIGN: IntentionAtRsvp moves intention-setting to RSVP time.
    Users arrive with purpose already set, not fumbling during the session. */
@@ -425,6 +426,10 @@ export default function EventDetailPage() {
               )}
             </CardContent>
           </Card>
+        )}
+
+        {!isPast && userRsvp?.status !== "going" && (
+          <DayPassCard eventId={event.id} eventTitle={event.title} startTime={event.start_time} endTime={event.end_time} />
         )}
 
         {userRsvp?.status === "going" && !isPast && <IntentionAtRsvp eventId={event.id} userId={user?.id || ""} />}

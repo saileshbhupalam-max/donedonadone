@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { trackConversion } from "@/lib/trackConversion";
 import { useSubscription, TierId } from "@/hooks/useSubscription";
@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { PaymentModal } from "@/components/payment/PaymentModal";
 
 const BORDER_COLORS: Record<string, string> = {
   gray: "border-t-muted-foreground",
@@ -61,7 +62,22 @@ export default function Pricing() {
     });
   }, [featuresByCategory]);
 
-  const handleUpgrade = () => toast.info("Payment integration coming soon! Contact us to upgrade.");
+  const [paymentModal, setPaymentModal] = useState<{
+    open: boolean;
+    tierName: string;
+    tierId: string;
+    amountPaise: number;
+    billingCycle: "monthly" | "yearly";
+    paymentType: "subscription" | "boost";
+  }>({ open: false, tierName: "", tierId: "", amountPaise: 0, billingCycle: "monthly", paymentType: "subscription" });
+
+  const handleUpgrade = (tierId: string, tierName: string, amountPaise: number, type: "subscription" | "boost" = "subscription") => {
+    if (amountPaise <= 0) {
+      toast.info("This is a free plan — no payment needed.");
+      return;
+    }
+    setPaymentModal({ open: true, tierId, tierName, amountPaise, billingCycle: "monthly", paymentType: type });
+  };
 
   if (loading) {
     return (
@@ -201,7 +217,7 @@ export default function Pricing() {
                       </Button>
                     ) : t.sort_order > (sortedTiers.find((st) => st.id === tier)?.sort_order ?? 0) ? (
                       <>
-                        <Button className="w-full" onClick={handleUpgrade}>
+                        <Button className="w-full" onClick={() => handleUpgrade(t.id, t.name, t.price_monthly)}>
                           Get {t.name}
                         </Button>
                         <p className="text-[10px] text-muted-foreground text-center mt-1.5">Cancel anytime</p>
@@ -230,7 +246,7 @@ export default function Pricing() {
                 Just need one day? Try a Session Boost for <strong>₹99</strong> — unlock next-tier features for 24 hours.
               </p>
             </div>
-            <Button onClick={handleUpgrade} className="shrink-0 gap-2">
+            <Button onClick={() => handleUpgrade("plus", "Session Boost", 9900, "boost")} className="shrink-0 gap-2">
               <Zap className="w-4 h-4" /> Get Session Boost
             </Button>
           </div>
@@ -258,6 +274,17 @@ export default function Pricing() {
             </AccordionItem>
           </Accordion>
         </div>
+        {paymentModal.open && (
+          <PaymentModal
+            open
+            onOpenChange={(open) => setPaymentModal((prev) => ({ ...prev, open }))}
+            tierName={paymentModal.tierName}
+            tierId={paymentModal.tierId}
+            amountPaise={paymentModal.amountPaise}
+            billingCycle={paymentModal.billingCycle}
+            paymentType={paymentModal.paymentType}
+          />
+        )}
       </motion.div>
     </AppShell>
   );
