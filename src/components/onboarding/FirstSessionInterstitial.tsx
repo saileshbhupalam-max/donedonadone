@@ -21,7 +21,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CalendarIcon, MapPin, ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
-import { getNeighborhoodLabel } from "@/lib/neighborhoods";
+import { displayNeighborhood } from "@/lib/neighborhoods";
 
 interface Props {
   /** User's neighborhood (normalized slug) from onboarding data */
@@ -113,7 +113,7 @@ export function FirstSessionInterstitial({ neighborhood, onDismiss }: Props) {
               Welcome to DanaDone!
             </h2>
             <p className="text-sm text-muted-foreground">
-              You're all set in <span className="font-medium text-foreground">{getNeighborhoodLabel(neighborhood)}</span>.
+              You're all set in <span className="font-medium text-foreground">{displayNeighborhood(neighborhood)}</span>.
               {" "}Let's get you to your first session.
             </p>
           </div>
@@ -135,7 +135,7 @@ export function FirstSessionInterstitial({ neighborhood, onDismiss }: Props) {
                 </span>
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
-                  {getNeighborhoodLabel(nearbyEvent.neighborhood)}
+                  {displayNeighborhood(nearbyEvent.neighborhood)}
                 </span>
               </div>
             </div>
