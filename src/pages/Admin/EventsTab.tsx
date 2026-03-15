@@ -116,6 +116,8 @@ export function EventsTab() {
       work_vibe: p.work_vibe || null,
       noise_preference: p.noise_preference || null,
       comm_style: p.comm_style || null,
+      looking_for: p.looking_for || null,
+      can_offer: p.can_offer || null,
     }));
     const newGroups = createSmartGroups(members, 4);
     setPreviewGroups(newGroups);
@@ -208,7 +210,7 @@ export function EventsTab() {
                 const { data: rsvps } = await supabase.from("event_rsvps").select("user_id").eq("event_id", e.id).eq("status", "going");
                 if (!rsvps || rsvps.length === 0) { toast.error("No confirmed RSVPs for this session"); return; }
                 const userIds = rsvps.map((r: any) => r.user_id);
-                const { data: profiles } = await supabase.from("profiles").select("id, display_name, gender, events_attended, is_table_captain, no_show_count, reliability_status, work_vibe, noise_preference, comm_style").in("id", userIds);
+                const { data: profiles } = await supabase.from("profiles").select("id, display_name, gender, events_attended, is_table_captain, no_show_count, reliability_status, work_vibe, noise_preference, comm_style, looking_for, can_offer").in("id", userIds);
                 if (!profiles || profiles.length === 0) { toast.error("Could not load profiles"); return; }
                 const members = profiles.map((p: any) => ({
                   id: p.id,
@@ -221,6 +223,8 @@ export function EventsTab() {
                   work_vibe: p.work_vibe || null,
                   noise_preference: p.noise_preference || null,
                   comm_style: p.comm_style || null,
+                  looking_for: p.looking_for || null,
+                  can_offer: p.can_offer || null,
                 }));
                 const groups = createSmartGroups(members, 4);
                 setPreviewGroups(groups);

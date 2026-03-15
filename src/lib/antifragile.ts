@@ -28,6 +28,8 @@ interface MatchAttendee {
   work_vibe: string | null;
   noise_preference: string | null;
   comm_style: string | null;
+  looking_for?: string[] | null;
+  can_offer?: string[] | null;
 }
 
 export function createSmartGroups(attendees: MatchAttendee[], groupSize: number = 4): MatchAttendee[][] {
@@ -115,6 +117,43 @@ export function createSmartGroups(attendees: MatchAttendee[], groupSize: number 
     if (!improved) break;
   }
 
+  // 6. Serendipity pass: randomly swap ~20% of non-captain members to inject diversity
+  // — complementary pairs (A wants what B offers) are preferred
+  // — controlled randomness prevents the algorithm from always producing identical groups
+  if (numGroups > 1) {
+    const nonCaptainSlots: Array<[number, number]> = [];
+    for (let i = 0; i < groups.length; i++) {
+      for (let j = 0; j < groups[i].length; j++) {
+        if (!groups[i][j].is_table_captain) nonCaptainSlots.push([i, j]);
+      }
+    }
+
+    const swapBudget = Math.max(1, Math.floor(nonCaptainSlots.length * 0.2));
+    for (let s = 0; s < swapBudget; s++) {
+      const pick1 = Math.floor(Math.random() * nonCaptainSlots.length);
+      const pick2 = Math.floor(Math.random() * nonCaptainSlots.length);
+      const [gi, ai] = nonCaptainSlots[pick1];
+      const [gj, bj] = nonCaptainSlots[pick2];
+      if (gi === gj) continue; // same group — skip
+
+      const beforeGender = getGroupGenderBalance(groups[gi]) + getGroupGenderBalance(groups[gj]);
+      const beforeSerendipity = getComplementarityScore(groups[gi]) + getComplementarityScore(groups[gj]);
+      [groups[gi][ai], groups[gj][bj]] = [groups[gj][bj], groups[gi][ai]];
+      const afterGender = getGroupGenderBalance(groups[gi]) + getGroupGenderBalance(groups[gj]);
+      const afterSerendipity = getComplementarityScore(groups[gi]) + getComplementarityScore(groups[gj]);
+
+      // Accept if serendipity improves, or with 50% probability (controlled randomness),
+      // but reject if gender balance drops significantly
+      const serendipityImproved = afterSerendipity > beforeSerendipity;
+      const genderOk = afterGender >= beforeGender - 0.15;
+      if (genderOk && (serendipityImproved || Math.random() < 0.5)) {
+        // keep swap
+      } else {
+        [groups[gi][ai], groups[gj][bj]] = [groups[gj][bj], groups[gi][ai]];
+      }
+    }
+  }
+
   return groups.filter(g => g.length > 0);
 }
 
@@ -138,6 +177,44 @@ function getGroupCompatibility(group: MatchAttendee[]): number {
       // Comm style match
       if (group[i].comm_style && group[j].comm_style && group[i].comm_style === group[j].comm_style) {
         score += 1;
+      }
+    }
+  }
+
+  return comparisons > 0 ? score / comparisons : 0;
+}
+
+/** Score how complementary a group is: A wants what B offers and vice versa.
+ * Different work vibes with complementary needs get a bonus (designer + founder). */
+function getComplementarityScore(group: MatchAttendee[]): number {
+  if (group.length <= 1) return 0;
+  let score = 0;
+  let comparisons = 0;
+
+  for (let i = 0; i < group.length; i++) {
+    for (let j = i + 1; j < group.length; j++) {
+      comparisons++;
+      const aLooking = group[i].looking_for || [];
+      const bOffer = group[j].can_offer || [];
+      const bLooking = group[j].looking_for || [];
+      const aOffer = group[i].can_offer || [];
+
+      // A wants what B offers (case-insensitive substring match)
+      const abMatch = aLooking.filter(l =>
+        bOffer.some(o => o.toLowerCase().includes(l.toLowerCase()) || l.toLowerCase().includes(o.toLowerCase()))
+      ).length;
+      // B wants what A offers
+      const baMatch = bLooking.filter(l =>
+        aOffer.some(o => o.toLowerCase().includes(l.toLowerCase()) || l.toLowerCase().includes(o.toLowerCase()))
+      ).length;
+
+      score += abMatch + baMatch;
+
+      // Bonus: different work vibes with complementary needs = serendipity gold
+      if (group[i].work_vibe && group[j].work_vibe
+          && group[i].work_vibe !== group[j].work_vibe
+          && (abMatch > 0 || baMatch > 0)) {
+        score += 2;
       }
     }
   }

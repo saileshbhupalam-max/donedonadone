@@ -95,16 +95,36 @@ export async function nominateVenue(
   }
 
   // Check for duplicate nomination by same user in same neighborhood
+  // Allow re-nomination if previous nomination was deactivated 90+ days ago
   const { data: existing } = await supabase
     .from("venue_nominations")
-    .select("id")
+    .select("id, status, deactivated_at")
     .eq("nominated_by", userId)
     .eq("venue_name", data.venue_name)
     .eq("neighborhood", neighborhood)
     .limit(1);
 
   if (existing && existing.length > 0) {
-    return { success: false, creditsAwarded: 0, error: "You already nominated this venue" };
+    const prev = existing[0] as { id: string; status: string; deactivated_at: string | null };
+    if (prev.status !== "deactivated") {
+      return { success: false, creditsAwarded: 0, error: "You already nominated this venue" };
+    }
+    // Deactivated venues can be re-nominated after 90 days
+    const deactivatedAt = prev.deactivated_at ? new Date(prev.deactivated_at) : null;
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    if (!deactivatedAt || deactivatedAt > ninetyDaysAgo) {
+      const daysLeft = deactivatedAt
+        ? Math.ceil((deactivatedAt.getTime() + 90 * 86400000 - Date.now()) / 86400000)
+        : 90;
+      return {
+        success: false,
+        creditsAwarded: 0,
+        error: `This venue was deactivated. You can re-nominate in ${daysLeft} days.`,
+      };
+    }
+    // 90 days passed — allow re-nomination (delete old record so new one can be created)
+    await supabase.from("venue_nominations").delete().eq("id", prev.id);
   }
 
   // Insert nomination

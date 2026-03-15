@@ -17,9 +17,9 @@ const MAX_SESSION_SIZE = 8;
 const OVERBOOK_MULTIPLIER = 2.5;
 
 const TIME_SLOT_MAP: Record<string, { start: string; end: string; format: string; label: string }> = {
-  morning:   { start: "09:30", end: "13:30", format: "focus_only_4hr", label: "Morning Focus" },
-  afternoon: { start: "14:00", end: "18:00", format: "networking_4hr", label: "Afternoon Hustle" },
-  evening:   { start: "18:00", end: "21:00", format: "evening_2hr",   label: "Evening Session" },
+  morning:   { start: "09:30", end: "13:30", format: "focus_only_4hr",  label: "Morning Focus" },
+  afternoon: { start: "14:00", end: "18:00", format: "structured_4hr", label: "Afternoon Hustle" },
+  evening:   { start: "18:00", end: "21:00", format: "structured_2hr", label: "Evening Session" },
 };
 
 // Determine current session window based on IST hour
@@ -42,7 +42,8 @@ Deno.serve(async (_req) => {
   const { data: requests } = await supabase
     .from("session_requests")
     .select("id, user_id, neighborhood, preferred_time, venue_preference")
-    .eq("status", "pending");
+    .eq("status", "pending")
+    .or("expires_at.is.null,expires_at.gt." + new Date().toISOString());
 
   if (requests && requests.length > 0) {
     const groups: Record<string, typeof requests> = {};

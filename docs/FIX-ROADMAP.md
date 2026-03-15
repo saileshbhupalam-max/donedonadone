@@ -211,8 +211,8 @@ Don't build full WhatsApp automation. Start with:
 
 ---
 
-### 2.2 MATCHING: Add Serendipity
-**Fixes: F-23 | Leverage: MEDIUM**
+### 2.2 ✅ MATCHING: Add Serendipity
+**Fixes: F-23 | Leverage: MEDIUM | DONE 2026-03-15**
 
 **What to do:**
 - `createSmartGroups()` currently optimizes for compatibility
@@ -223,8 +223,8 @@ Don't build full WhatsApp automation. Start with:
 
 ---
 
-### 2.3 MONITORING: Basic Health Checks
-**Fixes: F-27 | Leverage: MEDIUM**
+### 2.3 ✅ MONITORING: Basic Health Checks
+**Fixes: F-27 | Leverage: MEDIUM | DONE 2026-03-15**
 
 **What to do:**
 - Simple uptime check: Vercel cron that pings the app URL every 5 minutes
@@ -237,8 +237,8 @@ Don't build full WhatsApp automation. Start with:
 
 ---
 
-### 2.4 DATA: Expire and Clean Up
-**Fixes: F-13, F-22 | Leverage: LOW**
+### 2.4 ✅ DATA: Expire and Clean Up
+**Fixes: F-13, F-22 | Leverage: LOW | DONE 2026-03-15**
 
 **What to do:**
 - Add `expires_at` to `session_requests` (default: 14 days from creation)

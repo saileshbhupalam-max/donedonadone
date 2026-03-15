@@ -64,9 +64,9 @@ const MIN_CLUSTER_SIZE = 3;
 
 // Map preferred_time labels to actual start times
 const TIME_SLOT_MAP: Record<string, { start: string; format: string }> = {
-  morning: { start: "09:00", format: "morning_2hr" },
-  afternoon: { start: "14:00", format: "afternoon_2hr" },
-  evening: { start: "18:00", format: "evening_2hr" },
+  morning: { start: "09:00", format: "focus_only_2hr" },
+  afternoon: { start: "14:00", format: "structured_2hr" },
+  evening: { start: "18:00", format: "structured_2hr" },
 };
 
 // ─── Core Functions ──────────────────────────
@@ -80,6 +80,7 @@ export async function findDemandClusters(): Promise<DemandCluster[]> {
     .from("session_requests")
     .select("id, user_id, neighborhood, preferred_time, venue_preference, created_at")
     .eq("status", "pending")
+    .or("expires_at.is.null,expires_at.gt." + new Date().toISOString())
     .order("created_at", { ascending: true });
 
   if (error || !requests) return [];
@@ -259,7 +260,7 @@ async function fulfillRequests(
     status: "going",
   }));
 
-  await supabase.from("rsvps").upsert(rsvps, { onConflict: "event_id,user_id" });
+  await supabase.from("event_rsvps").upsert(rsvps, { onConflict: "event_id,user_id" });
 
   // Create in-app notifications
   const notifications = userIds.map((userId) => ({
