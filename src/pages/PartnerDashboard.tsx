@@ -10,8 +10,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { getInitials } from "@/lib/utils";
-import { MapPin, Users, Clock, Repeat, BarChart3, Loader2, QrCode } from "lucide-react";
+import { MapPin, Users, Clock, Repeat, BarChart3, Loader2, QrCode, Calendar } from "lucide-react";
 import { VenueQrSection } from "@/components/venue/VenueQrSection";
+import { ScheduleBuilder } from "@/components/partner/ScheduleBuilder";
 import { motion } from "framer-motion";
 import { format, parseISO, subDays } from "date-fns";
 
@@ -246,6 +247,13 @@ export default function PartnerDashboard() {
                 <Badge key={i} variant="secondary" className="text-xs px-3 py-1">{t}</Badge>
               ))}
             </div>
+          </section>
+        )}
+
+        {/* Schedule & Availability */}
+        {locationId && (
+          <section>
+            <ScheduleBuilder locationId={locationId} />
           </section>
         )}
 

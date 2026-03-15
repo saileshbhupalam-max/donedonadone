@@ -115,6 +115,7 @@ function NotificationSettingsCard({ settings, settingsLoaded, updateSetting }: {
           { key: "weekly_digest", label: "Weekly digest" },
           { key: "connection_updates", label: "Connection updates" },
           { key: "community_updates", label: "Community updates" },
+          { key: "follow_rsvp", label: "Followed people's RSVPs" },
         ].map(({ key, label }) => (
           <div key={key} className="flex items-center justify-between">
             <span className="text-sm text-foreground">{label}</span>

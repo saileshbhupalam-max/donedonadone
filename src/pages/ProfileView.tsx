@@ -13,6 +13,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ArrowLeft, ExternalLink, Flame, Link2, Dna } from "lucide-react";
 import { TierBadge } from "@/components/ui/TierBadge";
 import type { TierId } from "@/hooks/useSubscription";
+import { FollowButton } from "@/components/profile/FollowButton";
+import { BlockButton } from "@/components/profile/BlockButton";
 import { getBadgeDef } from "@/lib/badges";
 import { getRankForHours } from "@/lib/ranks";
 import { RankAvatar } from "@/components/gamification/RankAvatar";
@@ -86,7 +88,7 @@ const workStyleLabels: Record<string, Record<string, string>> = {
   communication_style: { minimal: "Focused", moderate: "Goes with the flow", chatty: "Chatty" },
 };
 
-function ProfileActions({ isOwnProfile, profileData, navigate }: { isOwnProfile: boolean; profileData: PublicProfile; navigate: ReturnType<typeof import("react-router-dom").useNavigate> }) {
+function ProfileActions({ isOwnProfile, profileData, navigate, userId }: { isOwnProfile: boolean; profileData: PublicProfile; navigate: ReturnType<typeof import("react-router-dom").useNavigate>; userId: string }) {
   const [connectOpen, setConnectOpen] = useState(false);
 
   if (isOwnProfile) {
@@ -104,9 +106,17 @@ function ProfileActions({ isOwnProfile, profileData, navigate }: { isOwnProfile:
 
   return (
     <div className="px-4 mt-5 space-y-2">
-      <Button className="w-full" onClick={() => setConnectOpen(true)}>
-        Connect
-      </Button>
+      <div className="flex gap-2 items-center">
+        <Button className="flex-1" onClick={() => setConnectOpen(true)}>
+          Connect
+        </Button>
+        <FollowButton currentUserId={userId} targetUserId={profileData.user_id} />
+        <BlockButton
+          currentUserId={userId}
+          targetUserId={profileData.user_id}
+          targetDisplayName={profileData.display_name}
+        />
+      </div>
       <SendConnectionRequest
         open={connectOpen}
         onOpenChange={setConnectOpen}
@@ -419,6 +429,7 @@ export default function ProfileView() {
           isOwnProfile={isOwnProfile}
           profileData={profileData}
           navigate={navigate}
+          userId={user?.id || ""}
         />
       </div>
     </AppShell>

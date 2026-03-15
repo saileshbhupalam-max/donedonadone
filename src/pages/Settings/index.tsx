@@ -23,6 +23,8 @@ import { getInitials } from "@/lib/utils";
 import { CONFIRMATIONS, ERROR_STATES } from "@/lib/personality";
 import NotificationSettingsCard from "./NotificationSettingsCard";
 import SubscriptionCard from "./SubscriptionCard";
+import { FollowedPeopleCard } from "@/components/settings/FollowedPeopleCard";
+import { BlockedPeopleCard } from "@/components/settings/BlockedPeopleCard";
 import { UserSettings, DEFAULT_SETTINGS } from "./types";
 
 // ─── Section error boundary to isolate which card crashes ───
@@ -239,6 +241,16 @@ export default function Settings() {
         {/* ═══ Section 3: Notifications ═══ */}
         <SectionBoundary name="Notifications">
         <NotificationSettingsCard settings={settings} settingsLoaded={settingsLoaded} updateSetting={updateSetting} />
+        </SectionBoundary>
+
+        {/* ═══ Section: People You Follow (Max tier) ═══ */}
+        <SectionBoundary name="FollowedPeople">
+        <FollowedPeopleCard />
+        </SectionBoundary>
+
+        {/* ═══ Section: Blocked Members ═══ */}
+        <SectionBoundary name="BlockedPeople">
+        <BlockedPeopleCard />
         </SectionBoundary>
 
         {/* ═══ Section 4: Preferences ═══ */}

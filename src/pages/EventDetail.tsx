@@ -266,6 +266,12 @@ export default function EventDetailPage() {
         trackAnalyticsEvent('rsvp', user.id, { event_id: event.id }).catch(() => {});
         trackFunnelStep("session", 3, "rsvp", { event_id: event.id });
 
+        // Notify followers and blockers (fire-and-forget)
+        supabase.rpc("notify_rsvp_followers_and_blockers", {
+          p_event_id: event.id,
+          p_rsvp_user_id: user.id,
+        }).catch(() => {/* best-effort */});
+
         // Auto-match buddy for first-timers
         if ((myProfile?.events_attended || 0) === 0) {
           (async () => {

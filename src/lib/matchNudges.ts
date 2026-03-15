@@ -14,6 +14,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { calculateMatch } from "@/lib/matchUtils";
+import { getBlockedUserIds } from "@/lib/memberBlocks";
 import { Tables } from "@/integrations/supabase/types";
 import { subDays } from "date-fns";
 
@@ -228,11 +229,15 @@ export async function generateMatchNudges(
       .map((p) => p.id)
   );
 
+  // Fetch blocked user IDs to exclude from nudges
+  const blockedIds = await getBlockedUserIds(userId);
+
   // Score and classify each member
   const nudges: MatchNudge[] = [];
 
   for (const member of allProfiles) {
     if (member.id === userId) continue;
+    if (blockedIds.has(member.id)) continue;
 
     const matchResult = calculateMatch(userProfile, member);
     if (matchResult.score < 40) continue;
