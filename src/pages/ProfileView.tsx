@@ -170,13 +170,13 @@ export default function ProfileView() {
 
       setLoading(false);
 
-      // Track profile view
+      // Track profile view (ignoreDuplicates avoids 409 — no UPDATE RLS policy needed)
       if (user.id !== id) {
         supabase.from("profile_views").upsert({
           viewer_id: user.id,
           viewed_id: id,
           viewed_at: new Date().toISOString().split("T")[0],
-        }, { onConflict: "viewer_id,viewed_id,viewed_at" }).then(() => {});
+        }, { onConflict: "viewer_id,viewed_id,viewed_at", ignoreDuplicates: true }).then(() => {});
         trackAnalyticsEvent("profile_view", user.id, { viewed_id: id }).catch(() => {});
       }
     };

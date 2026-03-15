@@ -639,8 +639,30 @@ export default function Discover() {
       if (error) throw error;
       setSearchResults(data.results || []);
       setIsSearchMode(true);
-    } catch (e: any) {
-      toast.error(e.message || "Search failed");
+    } catch {
+      // Fallback: client-side text search when Edge Function is unavailable
+      try {
+        const q = query.trim();
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, display_name, avatar_url, tagline, can_offer")
+          .or(`display_name.ilike.%${q}%,tagline.ilike.%${q}%`)
+          .neq("id", user.id)
+          .limit(20);
+
+        setSearchResults(
+          (profiles || []).map((p) => ({
+            user_id: p.id,
+            display_name: p.display_name,
+            avatar_url: p.avatar_url,
+            tagline: p.tagline,
+            can_offer: p.can_offer,
+          }))
+        );
+        setIsSearchMode(true);
+      } catch {
+        toast.error("Search failed");
+      }
     } finally {
       setSearching(false);
     }

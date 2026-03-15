@@ -294,9 +294,9 @@ export default function Needs() {
     return map;
   }, [allNeeds, profile, tasteGraph]);
 
-  // Filter + sort all needs
+  // Filter + sort all needs (include own posts — "Your Posts" tab is for management)
   const filteredNeeds = useMemo(() => {
-    let filtered = allNeeds.filter(n => n.user_id !== user?.id);
+    let filtered = [...allNeeds];
 
     if (categoryFilter !== "all") {
       filtered = filtered.filter(n => n.request_type === categoryFilter);

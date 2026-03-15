@@ -28,7 +28,7 @@ export function useAdminCheck(): { isAdmin: boolean; loading: boolean } {
           .from("app_settings")
           .select("value")
           .eq("key", "admin_emails")
-          .single();
+          .maybeSingle();
 
         if (!cancelled && data?.value) {
           // value is stored as a JSON object with an "emails" array,

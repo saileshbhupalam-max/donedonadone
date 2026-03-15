@@ -41,11 +41,11 @@ Pass 3 completed all remaining items from the Pass 2 checklist. **44 total E2E t
 | 5 | Venue nomination slug display | Fixed (Pass 3) | 3 |
 | 6 | Share message slug display | Fixed (Pass 3) | 3 |
 | 7 | Leaderboard local vs shared helper | Fixed (Pass 3) | 3 |
-| 8 | Needs Board "All Needs" hides own posts | Open | 2 |
-| 9 | Admin `app_settings` + `get_daily_metrics` 404 | Open | 2 |
+| 8 | Needs Board "All Needs" hides own posts | Fixed | 2 |
+| 9 | Admin `app_settings` 406 on missing `admin_emails` | Fixed | 2 |
 | 10 | Auth session drops on full-page navigation | Known (Playwright MCP) | 2 |
-| 11 | Discover search no text fallback | Open | 3 |
-| 12 | profile_views upsert 409 conflict | Open (non-blocking) | 3 |
+| 11 | Discover search no text fallback | Fixed | 3 |
+| 12 | profile_views upsert 409 conflict | Fixed | 3 |
 
 ## Test User
 
@@ -71,7 +71,5 @@ const { data, error } = await mod.supabase.auth.signInWithPassword({
 - **VAPID keys**: Run `node scripts/generate-vapid-keys.mjs` and set as Supabase secrets
 - **RESEND_API_KEY**: User will add later
 - **Razorpay + Dodo Payments**: User will add later
-- **`app_settings` table**: Create if needed for admin dashboard
-- **`get_daily_metrics` RPC**: Create for admin analytics
-- **Discover search fallback**: Add text-based search when Edge Function fails
-- **Needs Board query**: Investigate why "All Needs" hides own posts
+- **`admin_emails` app_setting**: Seed row for dynamic admin list (hardcoded fallback works fine)
+- **`get_daily_metrics` RPC**: Exists in migrations — verify migration applied on remote DB
