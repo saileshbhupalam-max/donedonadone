@@ -32,6 +32,7 @@ import { VenueVibeSummary } from "@/components/session/VenueVibeRating";
 import { VenueIntelligencePanel } from "@/components/venue/VenueQuickBadges";
 import { Input } from "@/components/ui/input";
 import { FirstSessionGuide } from "@/components/session/FirstSessionGuide";
+import { SmartIntroCard } from "@/components/session/SmartIntroCard";
 
 /* DESIGN: IntentionAtRsvp moves intention-setting to RSVP time.
    Users arrive with purpose already set, not fumbling during the session. */
@@ -439,6 +440,9 @@ export default function EventDetailPage() {
         {userRsvp?.status === "going" && !isPast && user && <YourTableCard eventId={event.id} userId={user.id} eventDate={event.date} />}
 
         {userRsvp?.status === "going" && !isPast && user && <GroupReveal eventId={event.id} userId={user.id} />}
+
+        {/* C1: Smart intros — AI-matched connection suggestions from your group */}
+        {userRsvp?.status === "going" && !isPast && user && <SmartIntroCard eventId={event.id} />}
 
         {userRsvp?.status === "going" && !isPast && (myProfile?.events_attended || 0) === 0 && (
           <BuddyCard eventId={event.id} userId={user?.id || ""} />
