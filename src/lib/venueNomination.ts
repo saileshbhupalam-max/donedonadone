@@ -213,14 +213,10 @@ export async function vouchForVenue(
   });
 
   // Check if nomination should activate (3 vouches + neighborhood unlocked)
+  // The RPC now handles activation atomically server-side (calls server_activate_venue internally)
   const { data: activated } = await supabase.rpc("check_nomination_activation", {
     p_nomination_id: nominationId,
   });
-
-  // If activated, create the location entry
-  if (activated) {
-    await activateVenue(nominationId);
-  }
 
   return {
     success: true,

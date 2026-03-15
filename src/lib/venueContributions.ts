@@ -319,16 +319,14 @@ export async function checkContributionMilestone(userId: string): Promise<boolea
 
   if (existing && existing.length > 0) return false;
 
-  // Award milestone (recorded as a credit entry for tracking)
-  await supabase
-    .from('focus_credits')
-    .insert({
-      user_id: userId,
-      amount: 0,
-      action: 'contribution_milestone',
-      metadata: { premium_days: config.premiumDaysForContributions, contributions: count },
-      expires_at: null,
-    });
+  // Award milestone via server RPC (focus_credits INSERT is locked down)
+  await supabase.rpc('server_award_credits', {
+    p_user_id: userId,
+    p_action: 'contribution_milestone',
+    p_amount: 0,
+    p_metadata: { premium_days: config.premiumDaysForContributions, contributions: count },
+    p_idempotency_key: null,
+  });
 
   return true;
 }

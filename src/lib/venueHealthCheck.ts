@@ -85,14 +85,17 @@ export async function submitHealthCheck(
     return { success: false, creditsAwarded: 0, venueDeactivated: false, error: error.message };
   }
 
-  // Award FC
+  // Award FC (server-side via RPC)
   const creditResult = await awardCredits(userId, "verify_venue_info", HEALTH_CHECK_FC, {
     venue_id: locationId,
     health_check: true,
   } as any);
 
-  // Evaluate venue health
-  const deactivated = await evaluateVenueHealth(locationId);
+  // Evaluate venue health server-side (prevents client from controlling deactivation)
+  const { data: healthResult } = await supabase.rpc("server_evaluate_venue_health", {
+    p_location_id: locationId,
+  });
+  const deactivated = healthResult?.deactivated ?? false;
 
   return {
     success: true,

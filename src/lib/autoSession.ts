@@ -347,8 +347,10 @@ export async function checkDemandAndCreateSessions(): Promise<AutoSessionResult>
 
 /**
  * Call this immediately after inserting a new session_request.
- * Checks if that request just completed a cluster (3+) and creates
- * the session instantly — no waiting for cron.
+ * Delegates to server_check_demand_cluster RPC which atomically:
+ * 1. Checks if cluster threshold (3+) is met
+ * 2. Creates event + RSVPs + notifications in one transaction
+ * 3. Prevents race conditions (two clients triggering simultaneously)
  *
  * Returns the event ID if a session was created, null otherwise.
  */
@@ -357,66 +359,17 @@ export async function onNewSessionRequest(
   preferredTime: string
 ): Promise<string | null> {
   const normalizedNeighborhood = normalizeNeighborhood(neighborhood);
-  const clusterKey = `${normalizedNeighborhood}__${preferredTime}`;
 
-  // Count pending requests for this exact cluster
-  const { data: requests } = await supabase
-    .from("session_requests")
-    .select("id, user_id, venue_preference")
-    .eq("status", "pending")
-    .eq("neighborhood", normalizedNeighborhood)
-    .eq("preferred_time", preferredTime);
+  const { data, error } = await supabase.rpc("server_check_demand_cluster", {
+    p_neighborhood: normalizedNeighborhood,
+    p_preferred_time: preferredTime,
+  });
 
-  if (!requests || requests.length < MIN_CLUSTER_SIZE) return null;
-
-  // Check if already created
-  const { data: existing } = await supabase
-    .from("events")
-    .select("id")
-    .eq("demand_cluster_key", clusterKey)
-    .eq("auto_created", true)
-    .limit(1);
-
-  if (existing && existing.length > 0) return null;
-
-  // Cluster just reached threshold — create session immediately
-  const venueVotes = new Map<string, number>();
-  for (const r of requests) {
-    if (r.venue_preference) {
-      venueVotes.set(r.venue_preference, (venueVotes.get(r.venue_preference) || 0) + 1);
-    }
+  if (error) {
+    console.error("[autoSession] server_check_demand_cluster error:", error);
+    return null;
   }
-  const topVenueId = venueVotes.size > 0
-    ? [...venueVotes.entries()].sort((a, b) => b[1] - a[1])[0][0]
-    : null;
 
-  const venue = await pickBestVenue(normalizedNeighborhood, topVenueId);
-  if (!venue) return null;
-
-  const userIds = requests.map((r) => r.user_id);
-  const captainId = await pickTableCaptain(userIds);
-  if (!captainId) return null;
-
-  const cluster: DemandCluster = {
-    neighborhood: normalizedNeighborhood,
-    preferredTime,
-    requests: requests.map((r) => ({
-      ...r,
-      neighborhood: normalizedNeighborhood,
-      preferred_time: preferredTime,
-      created_at: "",
-    })),
-    clusterKey,
-  };
-
-  const eventId = await createAutoEvent(cluster, venue, captainId);
-  if (!eventId) return null;
-
-  await fulfillRequests(
-    requests.map((r) => r.id),
-    eventId,
-    userIds
-  );
-
-  return eventId;
+  const result = data as { created: boolean; event_id?: string; reason?: string };
+  return result.created ? (result.event_id ?? null) : null;
 }
