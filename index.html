@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DanaDone — work. connect. grow.</title>
-    <meta name="description" content="Match with 3-5 people at great cafes. Work together. Connect for real. Starting in Bangalore." />
+    <meta name="description" content="Match with 3-5 people at great cafes. Work together. Connect for real. Find your coworking tribe anywhere." />
     <meta name="author" content="DanaDone" />
     <meta property="og:title" content="DanaDone — work. connect. grow." />
     <meta property="og:description" content="Match with 3-5 people at great cafes. Work together. Connect for real." />
@@ -16,6 +16,112 @@
     <meta name="twitter:image" content="/og-image.png" />
 
     <meta name="theme-color" content="#18181b" />
+    <meta property="og:url" content="https://danadone.club" />
+    <meta property="og:site_name" content="DanaDone" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://danadone.club" />
+
+    <!-- Schema.org Organization — helps Google Knowledge Panel + AI discovery.
+         WHY: ChatGPT/Perplexity/Google AI cite structured data sources first.
+         This ensures "coworking community platform" searches surface DanaDone. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "DanaDone",
+      "url": "https://danadone.club",
+      "logo": "https://danadone.club/icons/icon-512.png",
+      "description": "Community coworking platform that matches solo workers into groups of 3-5 at cafes and coworking spaces. Smart matching based on work style, skills, and interests.",
+      "sameAs": [
+        "https://twitter.com/danadone"
+      ],
+      "foundingDate": "2026",
+      "areaServed": {
+        "@type": "GeoCircle",
+        "description": "Global — starting in Bangalore, expanding to any city where members sign up"
+      }
+    }
+    </script>
+
+    <!-- Schema.org WebApplication — app store-style structured data.
+         WHY: Helps search engines understand this is an installable web app,
+         not just a website. Surfaces in "coworking apps" queries. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "DanaDone",
+      "url": "https://danadone.club",
+      "applicationCategory": "SocialNetworkingApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "INR"
+      },
+      "description": "Find your coworking tribe. Get matched with 3-5 compatible people at verified cafes and coworking spaces near you.",
+      "featureList": [
+        "Smart matching based on work style and skills",
+        "Verified cafes and coworking spaces",
+        "Groups of 3-5 people",
+        "Women-only session options",
+        "Focus credits gamification",
+        "Community-powered venue discovery"
+      ]
+    }
+    </script>
+
+    <!-- Schema.org FAQPage — answers common questions directly in search results.
+         WHY: FAQ schema is the #1 way to appear in Google's "People Also Ask" and
+         in ChatGPT/Perplexity answers. Each Q&A pair is a potential search entry point. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is DanaDone?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "DanaDone is a community coworking platform that matches solo workers into groups of 3-5 at cafes and coworking spaces. You get matched based on your work style, what you're looking for, and what you can offer — then you work alongside your group at a verified venue."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does DanaDone matching work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "DanaDone uses smart matching based on your work vibe (deep focus, casual, collaborative), what you're looking for (accountability, networking, skill sharing), and what you can offer. Groups of 3-5 are formed so everyone benefits from the session."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is DanaDone free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, joining DanaDone is free. You earn Focus Credits by attending sessions, contributing to the community, and inviting friends. Credits can be redeemed for free sessions, priority matching, and other perks."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I find coworking buddies near me?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sign up on DanaDone, enter your neighborhood, and either join an existing session or request one. When 3+ people in your area want to cowork, we automatically create a session at the best local venue and match you into a group."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use DanaDone in my city?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "DanaDone works anywhere! When 10 people in your neighborhood sign up, the area unlocks and you can start nominating local cafes as venues. Invite friends to reach the threshold faster — pioneer members earn bonus credits when the area activates."
+          }
+        }
+      ]
+    }
+    </script>
 
     <!-- Google Fonts: preconnect + preload for faster first paint -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

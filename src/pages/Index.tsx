@@ -241,6 +241,9 @@ const Index = () => {
             <span className="font-bold">Done</span>
           </h1>
 
+          {/* WHY generic copy: Landing page has no auth context, so we can't infer
+              the user's city. "Find your table" is a warm, universal CTA that works
+              globally without hardcoding any city name. */}
           <div
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-body"
             style={{
@@ -249,7 +252,7 @@ const Index = () => {
             }}
           >
             <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-            HSR Layout, Bangalore
+            Find your table
           </div>
         </nav>
 
@@ -290,7 +293,7 @@ const Index = () => {
             }}
           >
             {venueInfo
-              ? `Join the community coworking at ${venueInfo.venue_name} and other great spots across Bangalore.`
+              ? `Join the community coworking at ${venueInfo.venue_name} and other great spots nearby.`
               : "We find your tribe based on what you\u2019re looking for and what you can offer. 3\u20135 people, one table, real connections."}
           </p>
 
@@ -595,7 +598,7 @@ const Index = () => {
         <div className="flex items-center justify-center gap-4 text-xs font-body" style={{ color: 'rgba(245, 240, 232, 0.15)' }}>
           <a href="/partners" className="hover:opacity-60 transition-opacity">Partner Venues</a>
           <span>·</span>
-          <span>Built with coffee in Bangalore</span>
+          <span>Built with coffee</span>
         </div>
       </footer>
     </div>

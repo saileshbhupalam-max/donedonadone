@@ -220,14 +220,21 @@ async function createAutoEvent(
 ): Promise<string | null> {
   const timeSlot = TIME_SLOT_MAP[cluster.preferredTime] || TIME_SLOT_MAP.morning;
 
-  // Schedule for tomorrow (or next available weekday)
+  // Schedule for tomorrow (or next available valid day)
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  // WHY skip weekends: Partner cafes in Bangalore have unpredictable weekend hours
-  // and higher walk-in crowds that make reserving coworking tables unreliable.
-  // Weekend sessions can still be manually created by admins for special events.
-  while (tomorrow.getDay() === 0 || tomorrow.getDay() === 6) {
-    tomorrow.setDate(tomorrow.getDate() + 1);
+
+  // WHY configurable weekends: Bangalore cafes have unpredictable weekend hours,
+  // but coworking spaces in the US/EU/SEA are busy on weekends. This was previously
+  // hardcoded to skip ALL weekends globally — blocking demand in markets where
+  // weekend coworking is the primary use case. Now controlled by growthConfig.activation
+  // .allowWeekendSessions, which can be overridden per-neighborhood via app_settings.
+  const { getGrowthConfig } = await import("@/lib/growthConfig");
+  const allowWeekends = getGrowthConfig().activation.allowWeekendSessions;
+  if (!allowWeekends) {
+    while (tomorrow.getDay() === 0 || tomorrow.getDay() === 6) {
+      tomorrow.setDate(tomorrow.getDate() + 1);
+    }
   }
   const dateStr = tomorrow.toISOString().split("T")[0];
 

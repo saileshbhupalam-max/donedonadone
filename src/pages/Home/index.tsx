@@ -52,6 +52,7 @@ import { CaptainDashboardCard } from "@/components/home/CaptainDashboardCard";
 import { CompanyHomeCard } from "@/components/home/CompanyHomeCard";
 import { NeedsMatchCard } from "@/components/home/NeedsMatchCard";
 import { DemandSignalCard } from "@/components/home/DemandSignalCard";
+import { NeighborhoodActivationCard } from "@/components/home/NeighborhoodActivationCard";
 import { NearbySessionNudge } from "@/components/home/NearbySessionNudge";
 import { MapSwapToggle } from "@/components/map/MapSwapToggle";
 
@@ -504,6 +505,13 @@ export default function Home() {
             norms research shows people follow observed behavior of similar others. */}
         <DemandSignalCard />
 
+        {/* WHY activation card here (before NeedsMatchCard): For users in pre-unlock
+            neighborhoods, this is the most important action they can take — inviting
+            friends to unlock sessions. It complements the demand signal above (proof
+            others want to cowork) with the activation CTA (help make it happen).
+            Self-manages visibility: returns null if neighborhood is already unlocked. */}
+        <NeighborhoodActivationCard />
+
         {/* Needs board — matching requests from the community */}
         <NeedsMatchCard />
 
@@ -920,7 +928,7 @@ export default function Home() {
                 <p className="text-xs font-medium text-primary">🔥 {postSessionSummary.streak} session streak!</p>
               )}
               <WhatsAppShareButton
-                message={`Just did a ${postSessionSummary.hours}-hour coworking session with ${postSessionSummary.coworkers.length} amazing people${postSessionSummary.venueName ? ` at ${postSessionSummary.venueName}` : ""} through DanaDone! 🎯\nIf you work remotely or freelance in Bangalore, check it out: ${window.location.origin}/invite/${profile.referral_code || ""}`}
+                message={`Just did a ${postSessionSummary.hours}-hour coworking session with ${postSessionSummary.coworkers.length} amazing people${postSessionSummary.venueName ? ` at ${postSessionSummary.venueName}` : ""} through DanaDone! 🎯\nIf you work remotely or freelance, check it out: ${window.location.origin}/invite/${profile.referral_code || ""}`}
                 label="Share your experience"
                 size="sm"
                 variant="outline"

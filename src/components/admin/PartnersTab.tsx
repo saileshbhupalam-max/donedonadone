@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Plus, Copy, MessageCircle, Upload, MapPin, QrCode, ExternalLink, BarChart3 } from "lucide-react";
 import { format } from "date-fns";
+import { inferCitySync } from "@/lib/locationUtils";
 
 const NEIGHBORHOODS = [
   { value: "hsr_layout", label: "HSR Layout" },
@@ -63,9 +64,17 @@ function getQrLink(venueId: string) {
 }
 
 function getPitchMessage(partner: VenuePartner, adminName = "DanaDone Team") {
+  // WHY dynamic location: Admin may be pitching venues outside Bangalore.
+  // inferCitySync resolves instantly for seed neighborhoods; for others,
+  // falls back to just the neighborhood name or "your area".
+  const neighborhoodLabel = getNeighborhoodLabel(partner.neighborhood);
+  const city = partner.neighborhood ? inferCitySync(partner.neighborhood) : null;
+  const locationText = neighborhoodLabel && city
+    ? `${neighborhoodLabel}, ${city}`
+    : neighborhoodLabel || city || "your area";
   return `Hi ${partner.contact_name || "there"}! 👋
 
-I'm ${adminName} from DanaDone — we organize coworking meetups in ${getNeighborhoodLabel(partner.neighborhood) || "Bangalore"}. We bring groups of 3-5 focused professionals to work at great cafes.
+I'm ${adminName} from DanaDone — we organize coworking meetups in ${locationText}. We bring groups of 3-5 focused professionals to work at great cafes.
 
 We'd love to feature ${partner.venue_name} as a partner venue. Here's what it means:
 

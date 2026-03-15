@@ -2,15 +2,30 @@
    work vibe, neighborhood, gender, women-only interest.
    "What I do" and tagline deferred to profile (progressive profiling — CXL). */
 
+import { useState, useCallback } from "react";
 import type { OnboardingData } from "@/lib/types";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { NeighborhoodInput } from "@/components/ui/NeighborhoodInput";
+import { MapPin, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { detectUserLocation, reverseGeocode } from "@/lib/locationUtils";
+import { normalizeNeighborhood } from "@/lib/neighborhoods";
 
 interface Props {
   data: OnboardingData;
   updateData: (d: Partial<OnboardingData>) => void;
+}
+
+// WHY these states: Clear visual feedback for each geolocation outcome prevents
+// user confusion. "denied" vs "error" both fall back to manual input but with
+// appropriate messaging — permission denial is permanent (until browser settings
+// change), while network errors are transient.
+type GeoState = "idle" | "loading" | "success" | "error";
+
+interface GeoResult {
+  neighborhood: string;
+  city: string;
 }
 
 const VIBES = [
@@ -27,6 +42,60 @@ const GENDERS = [
 ];
 
 export function Step2WorkVibe({ data, updateData }: Props) {
+  const [geoState, setGeoState] = useState<GeoState>("idle");
+  const [geoResult, setGeoResult] = useState<GeoResult | null>(null);
+
+  // WHY useCallback: This handler triggers state updates in the parent (updateData)
+  // and local state (geoState, geoResult). Wrapping in useCallback prevents stale
+  // closures if the component re-renders mid-detection.
+  const handleDetectLocation = useCallback(async () => {
+    setGeoState("loading");
+    setGeoResult(null);
+
+    // Step 1: Get browser geolocation (lat/lng)
+    const position = await detectUserLocation();
+    if (!position) {
+      // WHY separate error state: User may have denied permission, or the browser
+      // may not support geolocation. Either way, manual entry remains available.
+      setGeoState("error");
+      return;
+    }
+
+    // Step 2: Reverse geocode to get neighborhood + city names
+    const location = await reverseGeocode(position.lat, position.lng);
+    if (!location?.neighborhood) {
+      // WHY check neighborhood specifically: reverseGeocode can succeed but return
+      // only city-level data in rural areas. Without a neighborhood, auto-fill
+      // isn't useful — the user still needs to type manually.
+      setGeoState("error");
+      return;
+    }
+
+    // Step 3: Normalize and auto-fill the neighborhood
+    const slug = normalizeNeighborhood(location.neighborhood);
+    const result: GeoResult = {
+      neighborhood: location.neighborhood,
+      city: location.city || "",
+    };
+
+    setGeoResult(result);
+    setGeoState("success");
+
+    // WHY update all three fields together: lat/lng enables distance-based matching
+    // in autoSession.ts, while neighborhood enables demand clustering. Both are needed
+    // for the full session-matching pipeline.
+    updateData({
+      neighborhood: slug,
+      preferred_latitude: position.lat,
+      preferred_longitude: position.lng,
+    });
+  }, [updateData]);
+
+  // WHY this condition: Once the user has typed a neighborhood manually, showing
+  // "Detect my location" is distracting. But if they want to re-detect (e.g., they
+  // moved), the success state shows a "re-detect" option.
+  const showDetectButton = geoState !== "success" && !data.neighborhood;
+
   return (
     <div className="flex flex-col pt-8 gap-6 max-w-sm mx-auto">
       <div className="text-center space-y-2">
@@ -59,16 +128,96 @@ export function Step2WorkVibe({ data, updateData }: Props) {
         </div>
       </fieldset>
 
-      {/* Neighborhood */}
-      <div className="space-y-2">
+      {/* Neighborhood — with geolocation detection */}
+      <div className="space-y-3">
         <label htmlFor="onboarding-neighborhood" className="text-sm font-medium text-foreground">Neighborhood</label>
-        <NeighborhoodInput
-          value={data.neighborhood}
-          onChange={(slug) => updateData({ neighborhood: slug })}
-          placeholder="Type your area (e.g., Koramangala, Indiranagar...)"
-          className="rounded-xl"
-        />
-        <p className="text-xs text-muted-foreground">We'll find sessions near you.</p>
+
+        {/* Geolocation detect button — shown when no neighborhood is entered yet */}
+        {showDetectButton && geoState === "idle" && (
+          <button
+            type="button"
+            onClick={handleDetectLocation}
+            className={cn(
+              "w-full flex items-center justify-center gap-2 p-3.5 rounded-xl",
+              "border-2 border-dashed border-primary/40 bg-primary/5",
+              "text-sm font-medium text-primary",
+              "hover:border-primary hover:bg-primary/10 transition-all",
+              // WHY min-h-[48px]: Google's mobile UX guidelines recommend 48px
+              // minimum touch targets. Onboarding is heavily mobile.
+              "min-h-[48px]"
+            )}
+          >
+            <MapPin className="w-4 h-4" />
+            <span>Detect my location</span>
+          </button>
+        )}
+
+        {/* Loading state — spinner while waiting for geolocation + geocoding */}
+        {geoState === "loading" && (
+          <div className="w-full flex items-center justify-center gap-2 p-3.5 rounded-xl border-2 border-primary/30 bg-primary/5 text-sm text-primary">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Finding your location...</span>
+          </div>
+        )}
+
+        {/* Success state — show detected neighborhood with checkmark */}
+        {geoState === "success" && geoResult && (
+          <div className="w-full flex items-center justify-between p-3.5 rounded-xl border-2 border-green-500/30 bg-green-500/5">
+            <div className="flex items-center gap-2 text-sm">
+              <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
+              <span className="text-green-700 dark:text-green-400 font-medium">
+                Found: {geoResult.neighborhood}{geoResult.city ? `, ${geoResult.city}` : ""}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                // WHY reset all geo state: Let the user start fresh if detection
+                // picked the wrong neighborhood (e.g., they're at a cafe in a
+                // different area than where they usually work).
+                setGeoState("idle");
+                setGeoResult(null);
+                updateData({
+                  neighborhood: "",
+                  preferred_latitude: null,
+                  preferred_longitude: null,
+                });
+              }}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors underline ml-2 shrink-0"
+            >
+              Change
+            </button>
+          </div>
+        )}
+
+        {/* Error state — permission denied or geocoding failed */}
+        {geoState === "error" && (
+          <div className="w-full flex items-center gap-2 p-3 rounded-xl border border-border bg-muted/50 text-sm">
+            <XCircle className="w-4 h-4 text-muted-foreground shrink-0" />
+            <span className="text-muted-foreground">
+              Location not available — type your neighborhood below
+            </span>
+          </div>
+        )}
+
+        {/* Manual neighborhood input — always available as fallback */}
+        {geoState !== "success" && (
+          <NeighborhoodInput
+            value={data.neighborhood}
+            onChange={(slug) => updateData({ neighborhood: slug })}
+            placeholder="Type your area (e.g., Koramangala, Indiranagar...)"
+            className="rounded-xl"
+          />
+        )}
+
+        {/* WHY explain location purpose: Privacy-conscious users need to know WHY
+            before granting permission. This micro-copy answers the implicit "why do
+            you need my location?" question that causes permission denials. */}
+        <p className="text-xs text-muted-foreground">
+          {geoState === "success"
+            ? "You can change this anytime in your profile settings."
+            : "To find coworking sessions near you. We never share your exact location."}
+        </p>
       </div>
 
       {/* Gender */}

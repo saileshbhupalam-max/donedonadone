@@ -143,7 +143,11 @@ export default function Onboarding() {
     setSaving(true);
     try {
       const completion = calculateCompletion();
-      const { error } = await supabase.from("profiles").update(sanitizeProfileData({
+      // WHY save lat/lng: When geolocation detection is used during onboarding,
+      // preferred_latitude and preferred_longitude enable distance-based session
+      // matching in autoSession.ts — users get matched to nearby venues even if
+      // their neighborhood slug doesn't exactly match the venue's neighborhood.
+      const profileUpdate: Record<string, any> = {
         display_name: data.display_name,
         avatar_url: data.avatar_url,
         tagline: data.tagline,
@@ -156,7 +160,18 @@ export default function Onboarding() {
         can_offer: data.can_offer,
         onboarding_completed: true,
         profile_completion: completion,
-      })).eq("id", user.id);
+      };
+
+      // Only include lat/lng if geolocation was used — avoid overwriting
+      // existing coordinates with null if the user typed manually.
+      if (data.preferred_latitude != null && data.preferred_longitude != null) {
+        profileUpdate.preferred_latitude = data.preferred_latitude;
+        profileUpdate.preferred_longitude = data.preferred_longitude;
+      }
+
+      const { error } = await supabase.from("profiles")
+        .update(sanitizeProfileData(profileUpdate))
+        .eq("id", user.id);
 
       if (error) throw error;
 

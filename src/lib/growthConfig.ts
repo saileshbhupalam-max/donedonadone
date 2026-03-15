@@ -181,6 +181,41 @@ export interface ReferralConfig {
   maxReferralRewards: number;
 }
 
+// ─── Neighborhood Activation (Nextdoor city-launch model) ───
+export interface NeighborhoodActivationConfig {
+  /** FC bonus for users who were in a neighborhood when it unlocked ("pioneer bonus").
+   * WHY: Nextdoor's early-adopter incentive. Rewards patience and recruiting effort.
+   * Creates a "founding member" identity that drives long-term retention. */
+  pioneerBonus: number;
+  /** FC bonus for the user whose invite triggered the unlock threshold.
+   * WHY: The person who tips the scale deserves outsized recognition.
+   * Creates stories: "I unlocked coworking in Koramangala!" → shareable moment. */
+  unlockTriggerBonus: number;
+  /** Additional FC per successful neighborhood invite (on top of normal referral).
+   * WHY: Normal referral rewards don't convey the neighborhood-building context.
+   * This stacks with referral FC to make neighborhood invites extra rewarding. */
+  neighborhoodInviteBonus: number;
+  /** Allow auto-sessions on weekends (configurable per region/neighborhood).
+   * WHY: Bangalore cafes have unpredictable weekend hours, but coworking spaces
+   * in the US/EU/SEA are busy on weekends. Must not block global demand.
+   * Default false for backwards compatibility with Bangalore launch. */
+  allowWeekendSessions: boolean;
+  /** Distance (km) for cross-neighborhood matching when an area is sparse.
+   * WHY: A neighborhood with 4 members can't form a group alone. But if 3
+   * nearby neighborhoods each have 2-3 members, matching across boundaries
+   * (within this radius) enables sessions. Uber uses similar "expanded radius"
+   * logic when a zone has low driver supply. */
+  sparseAreaRadiusKm: number;
+  /** Member count below which a neighborhood is "sparse" and cross-matching activates.
+   * WHY: Below this count, waiting for same-neighborhood demand will take too long
+   * and users churn. Cross-matching is the escape valve. */
+  sparseAreaThreshold: number;
+  /** Milestones during activation that trigger notifications/celebrations.
+   * WHY: Progress visibility increases perceived velocity (Nunes & Dreze endowed progress).
+   * Showing "7/10 — almost there!" creates urgency and FOMO that drives sharing. */
+  activationMilestones: number[];
+}
+
 export interface GrowthNudgeConfig {
   nudgeAfterGoodSession: boolean;
   nudgeAfterMilestone: boolean;
@@ -222,6 +257,7 @@ export interface GrowthConfig {
   referral: ReferralConfig;
   growth: GrowthNudgeConfig;
   venueData: VenueDataConfig;
+  activation: NeighborhoodActivationConfig;
 }
 
 // ─── Default Configuration ──────────────────────────────
@@ -425,6 +461,33 @@ export const DEFAULT_GROWTH_CONFIG: GrowthConfig = {
     contributionMilestoneActions: 3,
   },
 
+  activation: {
+    // WHY pioneerBonus 20: Enough to feel rewarding (2 sessions of earning) but not
+    // so much that it distorts the economy. Creates a "founding member" badge moment.
+    pioneerBonus: 20,
+    // WHY unlockTriggerBonus 50: The person who tips the scale gets a referral-sized
+    // reward. This is the most shareable moment ("I unlocked Koramangala!").
+    unlockTriggerBonus: 50,
+    // WHY neighborhoodInviteBonus 10: Stacks with referral (50 FC). Total 60 FC per
+    // neighborhood invite makes it ~2x more rewarding than a normal referral.
+    // The extra 10 FC creates a clear "invite to YOUR area" > "generic invite" incentive.
+    neighborhoodInviteBonus: 10,
+    // WHY false default: Bangalore launch — cafes have unpredictable weekend hours.
+    // Global expansion should set this to true per-neighborhood via app_settings.
+    allowWeekendSessions: false,
+    // WHY 10km: In Indian cities, neighborhoods are 2-5km apart. 10km covers 2-4
+    // adjacent neighborhoods without matching across the entire city.
+    // In less dense areas (US suburbs), this might need to be 20-30km.
+    sparseAreaRadiusKm: 10,
+    // WHY 5: Below 5 members, forming even one 3-person group is unreliable.
+    // With 5-9 members, normal single-neighborhood matching usually works.
+    sparseAreaThreshold: 5,
+    // WHY these milestones: 25%, 50%, 75%, 90% of threshold (10 members).
+    // Each milestone triggers a notification + UI update.
+    // 90% creates maximum urgency: "Just 1 more person!"
+    activationMilestones: [3, 5, 7, 9],
+  },
+
   venueData: {
     collectNoise: true,
     collectWifi: true,
@@ -474,6 +537,7 @@ export async function loadGrowthConfig(): Promise<GrowthConfig> {
         referral: { ...DEFAULT_GROWTH_CONFIG.referral, ...override.referral },
         growth: { ...DEFAULT_GROWTH_CONFIG.growth, ...override.growth },
         venueData: { ...DEFAULT_GROWTH_CONFIG.venueData, ...override.venueData },
+        activation: { ...DEFAULT_GROWTH_CONFIG.activation, ...override.activation },
       };
       return runtimeConfig;
     }

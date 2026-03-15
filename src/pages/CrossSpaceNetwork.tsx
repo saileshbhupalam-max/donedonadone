@@ -16,6 +16,8 @@ import { useNavigate } from "react-router-dom";
 import { Globe, MapPin, Lock, UserPlus, Sparkles } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { inferCitySync } from "@/lib/locationUtils";
 
 interface CrossSpacePerson {
   user_id: string;
@@ -35,6 +37,12 @@ const VIBE_LABELS: Record<string, string> = {
 
 function NetworkTeaser() {
   const navigate = useNavigate();
+  // WHY inferCitySync: This is a render path — async isn't possible. For seed
+  // neighborhoods (Bangalore), the city resolves instantly from the static map.
+  // For other cities, falls back to "Your Cross-Space Network" (no city shown).
+  const { profile } = useAuth();
+  const city = profile?.neighborhood ? inferCitySync(profile.neighborhood) : null;
+  const heading = city ? `Your Network Across ${city}` : "Your Cross-Space Network";
   return (
     <Card className="border-border/50 bg-muted/10">
       <CardContent className="pt-6 pb-8 space-y-5 text-center">
@@ -42,7 +50,7 @@ function NetworkTeaser() {
           <Globe className="w-7 h-7 text-primary" />
         </div>
         <div className="space-y-2">
-          <h2 className="font-serif text-xl text-foreground">Your Network Across Bangalore</h2>
+          <h2 className="font-serif text-xl text-foreground">{heading}</h2>
           <p className="text-sm text-muted-foreground max-w-xs mx-auto">
             Discover matched professionals at cafes you haven't visited yet
           </p>

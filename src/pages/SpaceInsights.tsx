@@ -670,7 +670,7 @@ export default function SpaceInsights() {
                 >
                   DanaDone
                 </a>{" "}
-                -- Group coworking at cafes in Bangalore
+                -- Group coworking at great cafes
               </p>
             </footer>
           </>

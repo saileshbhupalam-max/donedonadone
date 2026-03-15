@@ -264,7 +264,7 @@ export function ShareProfileCard({ profile, propCounts, streak, referralCode, re
     
     const msg = recommendedBy
       ? `Check out ${profile.display_name} on DanaDone${profile.tagline ? ` — ${profile.tagline}` : ""}. Join us: ${profileLink}`
-      : `Hey! I'm on DanaDone — a community for people who cowork in Bangalore. Check out my profile and join: ${profileLink}`;
+      : `Hey! I'm on DanaDone — a community for people who cowork together. Check out my profile and join: ${profileLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   };
 

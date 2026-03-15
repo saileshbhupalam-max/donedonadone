@@ -106,10 +106,10 @@ describe('sharing', () => {
       expect(msg).toContain('/profile/user-123');
     });
 
-    it('mentions DanaDone and Bangalore', () => {
+    it('mentions DanaDone and coworking', () => {
       const msg = getProfileShareMessage('Alice', 'user-123');
       expect(msg).toContain('DanaDone');
-      expect(msg).toContain('Bangalore');
+      expect(msg).toContain('cowork together');
     });
 
     it('appends referral code', () => {

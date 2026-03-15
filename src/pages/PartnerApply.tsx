@@ -16,6 +16,8 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, MapPin, CheckCircle2, Loader2, Users, Clock, BadgeIndianRupee, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { inferCitySync } from "@/lib/locationUtils";
+import { normalizeNeighborhood } from "@/lib/neighborhoods";
 
 const VENUE_TYPES = [
   { value: "cafe", label: "☕ Café" },
@@ -227,13 +229,18 @@ export default function PartnerApply() {
     if (!user) return;
     setSubmitting(true);
     try {
+      // WHY dynamic city: Venue partners may apply from any city. Infer city
+      // from the neighborhood they entered; falls back to null if unknown.
+      const inferredCity = form.neighborhood
+        ? inferCitySync(normalizeNeighborhood(form.neighborhood))
+        : null;
       const { error } = await supabase.from("partner_applications").insert({
         user_id: user.id,
         venue_name: form.venue_name.trim(),
         venue_type: form.venue_type,
         address: form.address.trim(),
         neighborhood: form.neighborhood.trim(),
-        city: "Bangalore",
+        city: inferredCity || "",
         description: form.description.trim() || null,
         amenities: form.amenities,
         wifi_available: form.wifi_available,

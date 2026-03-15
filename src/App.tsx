@@ -61,6 +61,7 @@ const SpaceLive = lazy(() => import("./pages/SpaceLive"));
 const CrossSpaceNetwork = lazy(() => import("./pages/CrossSpaceNetwork"));
 const VenueDetail = lazy(() => import("./pages/VenueDetail"));
 const NominateVenue = lazy(() => import("./pages/NominateVenue"));
+const Neighborhood = lazy(() => import("./pages/Neighborhood"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
@@ -82,6 +83,7 @@ const App = () => (
             {/* Public routes */}
             <Route path="/" element={<Index />} />
             <Route path="/invite/:code" element={<InviteRedirect />} />
+            <Route path="/n/:slug" element={<Neighborhood />} />
 
             {/* Protected routes — each wrapped in ProtectedPage (auth + error boundary) */}
             <Route path="/onboarding" element={

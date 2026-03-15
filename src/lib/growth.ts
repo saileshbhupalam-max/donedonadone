@@ -157,7 +157,9 @@ export const MILESTONES: Record<string, MilestoneDef> = {
   member_3_months: {
     type: "member_3_months", emoji: "📅", title: "Quarter Year!",
     description: "3 months of focused coworking.",
-    shareMessage: (ref) => `3 months on DanaDone! 📅 Best coworking community in Bangalore: ${APP_URL}/invite/${ref || ""}`,
+    // WHY generic: Milestone share messages go to the user's social network which
+    // may span multiple cities — "best coworking community" works everywhere.
+    shareMessage: (ref) => `3 months on DanaDone! 📅 Best coworking community I've found: ${APP_URL}/invite/${ref || ""}`,
   },
   member_6_months: {
     type: "member_6_months", emoji: "📅", title: "Half Year!",
