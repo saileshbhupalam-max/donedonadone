@@ -161,6 +161,16 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // Auth: only accept service_role calls (from cron or other Edge Functions)
+    const authToken = req.headers.get("Authorization")?.replace("Bearer ", "");
+    if (!authToken || authToken !== serviceKey) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden: service_role required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const supabase = createClient(supabaseUrl, serviceKey);
 
     const { event_id, user_id }: DebriefRequest = await req.json();

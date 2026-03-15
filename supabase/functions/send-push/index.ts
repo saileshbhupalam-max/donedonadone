@@ -25,6 +25,16 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Auth: only accept service_role calls (from send-notification or other Edge Functions)
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const authToken = req.headers.get("Authorization")?.replace("Bearer ", "");
+    if (!authToken || authToken !== serviceKey) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden: service_role required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { user_id, title, body, url, tag } = await req.json();
     if (!user_id || !title) {
       return new Response(

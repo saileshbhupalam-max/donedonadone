@@ -107,23 +107,26 @@ export default function Credits() {
     {
       action: "redeem_exclusive_session",
       label: "Exclusive Session",
-      description: "Access invite-only premium sessions",
+      description: "Coming soon",
       cost: config.exclusiveSession,
       icon: Sparkles,
+      comingSoon: true,
     },
     {
       action: "redeem_pick_seat",
       label: "Pick Your Seat",
-      description: "Choose your table and group before others",
+      description: "Coming soon",
       cost: config.pickSeat,
       icon: Armchair,
+      comingSoon: true,
     },
     {
       action: "redeem_venue_upgrade",
       label: "Venue Upgrade",
-      description: "Upgrade to a premium venue for your next session",
+      description: "Coming soon",
       cost: config.venueUpgrade,
       icon: ArrowUpRight,
+      comingSoon: true,
     },
     {
       action: "redeem_gift_session",
@@ -251,15 +254,16 @@ export default function Credits() {
             <div className="grid grid-cols-2 gap-2">
               {redeemOptions.map((opt) => {
                 const canAfford = balance >= opt.cost;
+                const disabled = !canAfford || opt.comingSoon;
                 return (
                   <Card
                     key={opt.action}
                     className={`cursor-pointer transition-all ${
-                      canAfford
-                        ? "hover:shadow-md hover:border-primary/40"
-                        : "opacity-50"
+                      disabled
+                        ? "opacity-50"
+                        : "hover:shadow-md hover:border-primary/40"
                     }`}
-                    onClick={() => canAfford && setRedeemTarget(opt)}
+                    onClick={() => !disabled && setRedeemTarget(opt)}
                   >
                     <CardContent className="p-3 space-y-1.5">
                       <div className="flex items-center justify-between">

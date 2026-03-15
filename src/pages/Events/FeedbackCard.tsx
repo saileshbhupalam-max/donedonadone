@@ -38,10 +38,18 @@ export function FeedbackCard({ event, userId, onDismiss }: { event: any; userId:
       });
       if (error) throw error;
       if (attended) {
-        const { data: prof } = await supabase.from("profiles").select("events_attended").eq("id", userId).single();
-        await supabase.from("profiles").update({ events_attended: (prof?.events_attended || 0) + 1 }).eq("id", userId);
+        const { data: prof } = await supabase.from("profiles").select("events_attended, referred_by").eq("id", userId).single();
+        const newCount = (prof?.events_attended || 0) + 1;
+        await supabase.from("profiles").update({ events_attended: newCount }).eq("id", userId);
         const hours = calculateSessionHours(event.start_time, event.end_time, event.title);
         await addFocusHours(userId, hours);
+        // Wire referral milestones: award referrer FC on 1st and 3rd session
+        if (prof?.referred_by && (newCount === 1 || newCount === 3)) {
+          import("@/lib/referralEngine").then(({ checkReferralMilestones }) => {
+            const milestone = newCount === 1 ? "first_session" : "third_session";
+            checkReferralMilestones(prof.referred_by, userId, milestone).catch(console.error);
+          });
+        }
         setFeedbackEventId(event.id);
         setShowProps(true);
         setSubmitted(true);

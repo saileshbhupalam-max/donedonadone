@@ -183,13 +183,7 @@ export async function submitVenueContribution(
     }
   }
 
-  // Award credits (enforces caps/diminishing returns)
-  const creditResult = await awardCredits(userId, mapping.action, baseAmount, {
-    venue_id: venueId ?? undefined,
-    first_mover: isFirstMover || undefined,
-  } as CreditMetadata);
-
-  // Record the contribution regardless of credit outcome
+  // Record the contribution FIRST — prevents phantom credits if INSERT fails
   const { error } = await supabase
     .from('venue_contributions')
     .insert({
@@ -197,12 +191,30 @@ export async function submitVenueContribution(
       venue_id: venueId,
       contribution_type: type,
       data,
-      credits_awarded: creditResult.awarded,
+      credits_awarded: 0, // Updated after award
       verified: false,
     });
 
   if (error) {
     return { success: false, creditsAwarded: 0, isFirstMover, reason: error.message };
+  }
+
+  // Award credits AFTER contribution is recorded (enforces caps/diminishing returns)
+  const creditResult = await awardCredits(userId, mapping.action, baseAmount, {
+    venue_id: venueId ?? undefined,
+    first_mover: isFirstMover || undefined,
+  } as CreditMetadata);
+
+  // Best-effort update of credits_awarded on the contribution record
+  if (creditResult.awarded > 0) {
+    await supabase
+      .from('venue_contributions')
+      .update({ credits_awarded: creditResult.awarded })
+      .eq('user_id', userId)
+      .eq('venue_id', venueId)
+      .eq('contribution_type', type)
+      .order('created_at', { ascending: false })
+      .limit(1);
   }
 
   return { success: true, creditsAwarded: creditResult.awarded, isFirstMover };
@@ -320,8 +332,7 @@ export async function checkContributionMilestone(userId: string): Promise<boolea
   if (existing && existing.length > 0) return false;
 
   // Award milestone via server RPC (focus_credits INSERT is locked down)
-  await supabase.rpc('server_award_credits', {
-    p_user_id: userId,
+  await supabase.rpc('user_award_credits', {
     p_action: 'contribution_milestone',
     p_amount: 0,
     p_metadata: { premium_days: config.premiumDaysForContributions, contributions: count },

@@ -138,8 +138,7 @@ export async function awardCredits(
   amount: number,
   metadata: CreditMetadata = {}
 ): Promise<AwardResult> {
-  const { data, error } = await supabase.rpc('server_award_credits', {
-    p_user_id: userId,
+  const { data, error } = await supabase.rpc('user_award_credits', {
     p_action: action,
     p_amount: amount,
     p_metadata: metadata as any,
@@ -169,8 +168,7 @@ export async function spendCredits(
   amount: number,
   metadata: CreditMetadata = {}
 ): Promise<AwardResult> {
-  const { data, error } = await supabase.rpc('server_spend_credits', {
-    p_user_id: userId,
+  const { data, error } = await supabase.rpc('user_spend_credits', {
     p_action: action,
     p_amount: amount,
     p_metadata: metadata as any,
@@ -198,8 +196,7 @@ export async function fulfillRedemption(
   action: CreditAction,
   cost: number
 ): Promise<{ success: boolean; data?: Record<string, unknown>; reason?: string }> {
-  const { data, error } = await supabase.rpc('server_fulfill_redemption', {
-    p_user_id: userId,
+  const { data, error } = await supabase.rpc('user_fulfill_redemption', {
     p_action: action,
     p_cost: cost,
   });
@@ -253,8 +250,12 @@ export async function checkAndAwardStreak(userId: string): Promise<AwardResult> 
     return { success: false, awarded: 0, reason: 'not_enough_sessions' };
   }
 
+  // Idempotency key prevents double-award from concurrent calls
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
   const streakResult = await awardCredits(userId, 'streak_bonus', 25, {
     sessions_this_month: sessionCount,
+    idempotency_key: `streak_bonus_${userId}_${year}-${month}`,
   } as CreditMetadata);
 
   if (streakResult.success) {

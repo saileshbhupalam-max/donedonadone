@@ -172,6 +172,9 @@ export default function Onboarding() {
             p_type: "referral",
             p_link: `/profile/${user.id}`,
           });
+          // Wire referral engine: record the referral for FC rewards + dashboard
+          const { trackReferralSignup } = await import("@/lib/referralEngine");
+          await trackReferralSignup(referrer.id, user.id).catch(console.error);
           const { checkAndAwardBadges } = await import("@/lib/badges");
           const { data: referrerProfile } = await supabase.from("profiles").select("*").eq("id", referrer.id).single();
           if (referrerProfile) {

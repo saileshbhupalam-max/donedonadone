@@ -44,9 +44,8 @@ export interface NoShowResult {
  *    - < 2h to start → auto-cancels session (unless guaranteed)
  */
 export async function cancelRsvp(eventId: string, userId: string): Promise<CancelResult> {
-  const { data, error } = await supabase.rpc("server_cancel_rsvp", {
+  const { data, error } = await supabase.rpc("user_cancel_rsvp", {
     p_event_id: eventId,
-    p_user_id: userId,
   });
 
   if (error) {

@@ -955,14 +955,23 @@ export default function Home() {
                       try {
                         const { error } = await supabase.from("event_feedback").insert({ event_id: ev.id, user_id: user!.id, rating: r.v, attended: true });
                         if (error) throw error;
-                        const { data: prof } = await supabase.from("profiles").select("events_attended").eq("id", user!.id).single();
-                        await supabase.from("profiles").update({ events_attended: (prof?.events_attended || 0) + 1 }).eq("id", user!.id);
+                        const { data: prof } = await supabase.from("profiles").select("events_attended, referred_by").eq("id", user!.id).single();
+                        const newCount = (prof?.events_attended || 0) + 1;
+                        await supabase.from("profiles").update({ events_attended: newCount }).eq("id", user!.id);
 
                         // Add focus hours
                         const { data: eventData } = await supabase.from("events").select("title, start_time, end_time, session_format").eq("id", ev.id).single();
                         if (eventData) {
                           const hours = calculateSessionHours(eventData.start_time, eventData.end_time, eventData.title, eventData.session_format);
                           await addFocusHours(user!.id, hours);
+                        }
+
+                        // Wire referral milestones: award referrer FC on 1st and 3rd session
+                        if (prof?.referred_by && (newCount === 1 || newCount === 3)) {
+                          import("@/lib/referralEngine").then(({ checkReferralMilestones }) => {
+                            const milestone = newCount === 1 ? "first_session" : "third_session";
+                            checkReferralMilestones(prof.referred_by, user!.id, milestone).catch(console.error);
+                          });
                         }
 
                         setPendingFeedback((p) => p.filter((e) => e.id !== ev.id));
