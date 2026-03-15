@@ -49,7 +49,7 @@ import {
   type VouchData,
   type NeighborhoodReadiness,
 } from "@/lib/venueNomination";
-import { normalizeNeighborhood } from "@/lib/neighborhoods";
+import { normalizeNeighborhood, displayNeighborhood } from "@/lib/neighborhoods";
 
 type View = "list" | "nominate" | "vouch";
 
@@ -228,7 +228,7 @@ export default function NominateVenue() {
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center gap-4">
           <MapPin className="w-12 h-12 text-primary" />
-          <h1 className="font-serif text-2xl">{userNeighborhood} is almost unlocked!</h1>
+          <h1 className="font-serif text-2xl">{displayNeighborhood(userNeighborhood)} is almost unlocked!</h1>
           <p className="text-sm text-muted-foreground max-w-sm">
             {readiness.memberCount}/{readiness.threshold} members in your area.
             Invite {readiness.threshold - readiness.memberCount} more to unlock venue nominations.
@@ -258,7 +258,7 @@ export default function NominateVenue() {
           </Button>
           <div>
             <h1 className="font-serif text-2xl text-foreground">
-              {view === "nominate" ? "Nominate a Venue" : view === "vouch" ? "Vouch for Venue" : "Venues in " + userNeighborhood}
+              {view === "nominate" ? "Nominate a Venue" : view === "vouch" ? "Vouch for Venue" : "Venues in " + displayNeighborhood(userNeighborhood)}
             </h1>
             <p className="text-xs text-muted-foreground">
               {view === "list" && `${readiness?.nominations.length || 0} nominations · ${readiness?.activeVenues || 0} active`}

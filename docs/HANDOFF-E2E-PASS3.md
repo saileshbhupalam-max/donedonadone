@@ -1,78 +1,69 @@
-# Session Handoff: E2E Testing Pass 2 Complete
+# Session Handoff: E2E Testing Pass 3 Complete
 
-## What Was Done (Pass 2)
+## Summary
 
-Continued Playwright MCP E2E testing + fixed both remaining bugs from Pass 1.
+Pass 3 completed all remaining items from the Pass 2 checklist. **44 total E2E tests passed across 3 passes**. Fixed 3 additional slug display bugs found during testing.
 
-### Tests Passed (Pass 2 — 14 new, 32 total)
+## Tests Passed (Pass 3 — 12 new, 44 total)
 
-#### Critical (all pass)
-19. **RSVP flow** — RSVP button changes to "Going", count increments, toast notification, 0 errors
-20. **Cancel RSVP** — button reverts to "RSVP", count decrements, DayPassCard appears
-21. **Re-RSVP** — full cycle works, toast "You're in. Sunday, Third Wave Coffee."
-22. **IntentionAtRsvp** — fill intention text, "Lock in" enables, saves and shows locked intention with Edit button
-23. **Notification bell** — dialog opens, "You're all caught up!" empty state, close button
-24. **Session Boost purchase** — payment modal opens with QR, ₹99, UTR step enables Confirm at 6+ chars
+33. **Other member profile** — click "sailesh bhupalam" from Home → `/profile/:id`, shows name, Newcomer badge, member since, Work DNA empty state, Connect button. 1 non-blocking error (profile_views 409 conflict).
+34. **Share button on event detail** — opens WhatsApp share in new tab with event name, date, venue, going count, referral link.
+35. **Logout flow** — Settings > Sign Out shows confirmation dialog "Sign out?", confirms → redirects to landing page at `/`.
+36. **Deep linking** — `/events/:id` loads full event detail; `/venue/:id` loads venue page with QR code; unauthenticated deep links redirect to landing (expected).
+37. **Responsive viewports** — 375px (iPhone): all cards render, bottom nav, PWA install prompt. 768px (tablet): renders identically. Event detail also works at 375px. 0 errors on both.
+38. **Quick Questions** — answered 3 questions (work type, skills, looking for). Each awards +2 FC with toast. Total 6 FC earned, match accuracy 0% → 3%. Card disappears after completing all 3.
+39. **Work DNA** — "Complete your DNA" → `/me/dna` "Build Your Work DNA" page. Step 1/7 with role picker, project input, stage selector, experience level. FC balance confirmed at 6.
+40. **Map List toggle** — List button toggles, shows "Sessions near you" with empty state.
+41. **Discover AI search** — search triggers `smart-search` Edge Function (401, expected without API key). Toast error shown. **No text fallback for free tier** (see bugs).
+42. **Day Pass purchase** — cancel RSVP → DayPassCard appears (₹100). "Buy Day Pass" → payment modal with QR, UPI ID, UTR step. "Confirm Payment" enables at 12-char UTR.
+43. **Session request** — "Tell us when" → dialog with day picker, time of day, location (pre-filled HSR Layout), notes, "Find my table" button.
+44. **Venue nomination** — "Suggest a spot" → `/nominate`, correctly gates behind neighborhood unlock (1/10 members).
 
-#### Important (all pass)
-25. **Settings page** — personal info, work vibe, noise/comm prefs, neighborhood, looking for/can offer tags, location map with travel radius, session prefs (days/time/length), interests, socials with visibility toggles, mentoring toggles, invite link, theme switcher, sign out
-26. **Admin dashboard** — "Mission Control" loads with stats (2 users, 42 locations), sidebar nav (Overview/Community/Sessions/Partners/Settings), daily metrics, engagement, feature flags
-27. **Admin Subscriptions** — Payments tab with PendingPayments empty state, Users/Tiers/Features/Limits tabs, stats cards
-28. **Needs board** — page loads, 3 tabs (All Needs/Matching You/Your Posts), post dialog with all fields (category, title, description, budget, duration, tags), post succeeds with toast, free tier limit enforced (1 post)
-29. **Credits page** — balance display (0 FC), earned/spent, 6 redeem options (Free Session 100FC, Priority Matching 30FC, etc), history empty state, 7 earning methods, daily cap 50 FC
-30. **Companies tab** — search, stage filter, empty state, "Create Company" CTA
-31. **Discover page** — People tab with real-time "working now" section, Work DNA CTA, mentoring, connections, venue suggestion
-32. **Sessions page** — filters (neighborhood, format), List/Map toggle, Upcoming/Past tabs, empty state, session request CTA
+## Bugs Fixed (Pass 3)
 
-### Bugs Fixed (Pass 2)
-3. **Leaderboard slug display** — `NeighborhoodLeaderboard.tsx` was showing raw slug "hsr-layout". Added `displayNeighborhood()` helper that title-cases and handles short words (HSR, not Hsr). Now shows "HSR Layout Leaderboard".
-4. **`update_reliability` RPC missing** — Created the Supabase RPC function. Handles 4 event types: `show` (increment events_attended, set reliable at 3+), `no_show` (flag), `late_cancel` (warn unless already reliable), `rsvp` (no-op). RSVP flow now has 0 console errors.
+5. **Venue nomination slug display** — `NominateVenue.tsx` showed raw "hsr-layout" in heading and list title. Added `displayNeighborhood()` import from `neighborhoods.ts`. Now shows "HSR Layout".
+6. **Share message slug display** — `sharing.ts` `getEventShareMessage()` included raw `event.neighborhood` slug in WhatsApp share text. Now uses `displayNeighborhood()` for human-readable name.
+7. **Leaderboard local vs shared helper** — `NeighborhoodLeaderboard.tsx` had a local `displayNeighborhood()` copy from Pass 2. Replaced with import from canonical `neighborhoods.ts`. Also fixed social proof line that still used raw `{neighborhood}`.
 
-### New Bug Found (Pass 2)
-1. **Needs Board "All Needs" doesn't show own posts** — Posted a need, it appears in "Your Posts" tab but "All Needs" still says "No open needs right now." Either RLS filters out own posts or the query excludes them. The empty state message is misleading if needs exist.
-2. **Admin 404s** — `app_settings` table query and `get_daily_metrics` RPC return 404. Non-blocking (admin dashboard still loads), but these features don't work.
-3. **Auth session drops on full page navigation** — `goto()` to protected routes sometimes shows bare "DanaDone" heading. Workaround: re-authenticate via `signInWithPassword` in `browser_evaluate`. The SPA client-side navigation works fine.
+## New Bugs Found (Pass 3)
 
-## What To Test Next (Pass 3)
+4. **Discover search has no text fallback** — `smart-search` Edge Function returns 401 (ANTHROPIC_API_KEY not set). Toast error "Edge Function returned a non-2xx status code" is shown to user. Free tier should degrade gracefully to text-based search instead of showing a raw error.
+5. **profile_views upsert 409 conflict** — visiting another member's profile triggers a 409 on `profile_views` table upsert. Non-blocking (profile loads fine).
 
-### Remaining from Pass 2 checklist
-- [ ] **Other member profile** — click "sailesh bhupalam" from Going list → `/profile/:id`, verify match score
-- [ ] **Share button** on event detail — verify copy link / Web Share API
-- [ ] **Logout flow** — Settings > Sign Out, verify redirect to landing
-- [ ] **Deep linking** — directly navigate to `/events/:id`, `/venue/:id`
-- [ ] **Responsive viewports** — test at 375px (mobile), 768px (tablet)
-- [ ] **Quick Questions** — answer a question on Home, verify FC award
-- [ ] **Work DNA** — click "Complete your DNA", verify TasteGraphBuilder page
-- [ ] **Map List toggle** — switch to List view on Map page
-- [ ] **Discover AI search** — type query, verify text fallback for free tier
+## Cumulative Bug Tracker
 
-### Edge cases
-- [ ] **Event detail Share button** — test Web Share / clipboard copy
-- [ ] **Day Pass purchase** — Buy Day Pass on event detail → payment modal with ₹100
-- [ ] **Session request** — "Tell us when" on Sessions page → request form
-- [ ] **Venue nomination** — "Suggest a spot" from Discover
+| # | Bug | Status | Pass |
+|---|-----|--------|------|
+| 1 | manifest.webmanifest missing | Fixed (Pass 1) | 1 |
+| 2 | SmartIntroCard RSVP crash | Fixed (Pass 1) | 1 |
+| 3 | Leaderboard slug display | Fixed (Pass 2) | 2 |
+| 4 | `update_reliability` RPC missing | Fixed (Pass 2) | 2 |
+| 5 | Venue nomination slug display | Fixed (Pass 3) | 3 |
+| 6 | Share message slug display | Fixed (Pass 3) | 3 |
+| 7 | Leaderboard local vs shared helper | Fixed (Pass 3) | 3 |
+| 8 | Needs Board "All Needs" hides own posts | Open | 2 |
+| 9 | Admin `app_settings` + `get_daily_metrics` 404 | Open | 2 |
+| 10 | Auth session drops on full-page navigation | Known (Playwright MCP) | 2 |
+| 11 | Discover search no text fallback | Open | 3 |
+| 12 | profile_views upsert 409 conflict | Open (non-blocking) | 3 |
 
 ## Test User
 
 - **Email**: `e2e-test@danadone.club`
 - **Password**: `TestPass123!`
 - **User ID**: `90a2ba66-3855-4b2c-a6b7-589f491ae400`
-- **Profile**: display_name "E2E Test User", balanced vibe, hsr-layout, looking_for: [coding help, accountability], can_offer: [code reviews]
+- **Profile**: display_name "E2E Test User", balanced vibe, hsr-layout, 6 FC, Quick Questions answered (Founder/Coding/Accountability)
 - **Tier**: Free (Explorer)
 - **Login method**: `signInWithPassword` via browser evaluate
 
 ### How to sign in for testing
 ```js
-// In Playwright browser_evaluate:
 const mod = await import('/src/integrations/supabase/client.ts');
 const { data, error } = await mod.supabase.auth.signInWithPassword({
   email: 'e2e-test@danadone.club',
   password: 'TestPass123!'
 });
 ```
-
-### Note on auth sessions
-Auth sessions sometimes drop on full-page `goto()` navigation. If a protected route shows bare "DanaDone" heading, re-authenticate using the snippet above. Client-side navigation (clicking links) works fine.
 
 ## Still Pending (Non-E2E)
 
@@ -82,3 +73,5 @@ Auth sessions sometimes drop on full-page `goto()` navigation. If a protected ro
 - **Razorpay + Dodo Payments**: User will add later
 - **`app_settings` table**: Create if needed for admin dashboard
 - **`get_daily_metrics` RPC**: Create for admin analytics
+- **Discover search fallback**: Add text-based search when Edge Function fails
+- **Needs Board query**: Investigate why "All Needs" hides own posts

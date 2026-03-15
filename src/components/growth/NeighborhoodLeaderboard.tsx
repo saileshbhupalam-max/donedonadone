@@ -4,14 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-
-/** Convert slug like "hsr-layout" to display name "HSR Layout" */
-function displayNeighborhood(slug: string): string {
-  return slug
-    .split("-")
-    .map((w) => (w.length <= 3 ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
-    .join(" ");
-}
+import { displayNeighborhood } from "@/lib/neighborhoods";
 
 interface LeaderboardEntry {
   rank: number;
@@ -277,7 +270,7 @@ export function NeighborhoodLeaderboard({ neighborhood, userId }: NeighborhoodLe
 
             {/* Social proof */}
             <p className="text-xs text-center text-muted-foreground pt-2">
-              {data.totalContributors} contributors in {neighborhood} this {period === "week" ? "week" : "month"}
+              {data.totalContributors} contributors in {displayNeighborhood(neighborhood)} this {period === "week" ? "week" : "month"}
             </p>
           </>
         )}

@@ -14,6 +14,7 @@
  * Related: RsvpSharePrompt.tsx, PostEventShare.tsx, WhatsAppButton.tsx (UI components that use these generators)
  */
 import { format, parseISO } from "date-fns";
+import { displayNeighborhood } from "@/lib/neighborhoods";
 
 const APP_URL = typeof window !== "undefined" ? window.location.origin : "https://danadone.club";
 
@@ -25,7 +26,7 @@ function getRefLink(path: string, referralCode?: string | null) {
 export function getEventShareMessage(event: { title: string; date: string; start_time?: string | null; venue_name?: string | null; neighborhood?: string | null; id: string }, goingCount: number, referralCode?: string | null) {
   const dateStr = format(parseISO(event.date), "EEEE, MMM d");
   const time = event.start_time ? ` · ${event.start_time}` : "";
-  const venue = event.venue_name ? `📍 ${event.venue_name}${event.neighborhood ? `, ${event.neighborhood}` : ""}` : "";
+  const venue = event.venue_name ? `📍 ${event.venue_name}${event.neighborhood ? `, ${displayNeighborhood(event.neighborhood)}` : ""}` : "";
   const link = getRefLink(`/events/${event.id}`, referralCode);
   return `🎯 ${event.title}\n📅 ${dateStr}${time}\n${venue}\n${goingCount > 0 ? `${goingCount} people going already!\n\n` : "\n"}Join on DanaDone: ${link}`;
 }
