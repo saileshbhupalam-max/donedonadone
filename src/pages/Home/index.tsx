@@ -51,6 +51,7 @@ import { CommunityRitualCard } from "@/components/home/CommunityRitualCard";
 import { CaptainDashboardCard } from "@/components/home/CaptainDashboardCard";
 import { CompanyHomeCard } from "@/components/home/CompanyHomeCard";
 import { NeedsMatchCard } from "@/components/home/NeedsMatchCard";
+import { NearbySessionNudge } from "@/components/home/NearbySessionNudge";
 import { MapSwapToggle } from "@/components/map/MapSwapToggle";
 
 const SessionMap = lazy(() => import("@/components/map/SessionMap").then(m => ({ default: m.SessionMap })));
@@ -815,22 +816,7 @@ export default function Home() {
                   <div className="h-[300px] rounded-lg overflow-hidden -mx-1"><SessionMap /></div>
                 </Suspense>
               ) : nearbySessions.length > 0 ? (
-                <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-                  {nearbySessions.map((s: any) => (
-                    <div key={s.event_id} className="shrink-0 w-44 rounded-lg border border-border bg-background p-3 cursor-pointer hover:shadow-sm transition-shadow"
-                      onClick={() => navigate(`/events/${s.event_id}`)}>
-                      <p className="text-xs font-medium text-foreground truncate">{s.title}</p>
-                      <p className="text-[10px] text-muted-foreground truncate">{s.venue_name}</p>
-                      <p className="text-[10px] text-muted-foreground">{s.date ? format(parseISO(s.date), "EEE, MMM d") : ""}{s.start_time ? ` · ${s.start_time}` : ""}</p>
-                      <div className="flex items-center justify-between mt-1.5">
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary">
-                          {s.distance_km?.toFixed(1)} km
-                        </Badge>
-                        {s.max_spots && <span className="text-[10px] text-muted-foreground">{Math.max(0, s.max_spots - (s.rsvp_count || 0))} spots</span>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <NearbySessionNudge sessions={nearbySessions} userNeighborhood={profile?.neighborhood} />
               ) : (
                 <p className="text-xs text-muted-foreground text-center py-4">No sessions nearby yet — try the map to explore venues</p>
               )}

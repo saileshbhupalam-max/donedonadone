@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Send } from "lucide-react";
+import { Send, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ERROR_STATES } from "@/lib/personality";
@@ -15,6 +15,12 @@ import { DAYS, DAY_LABELS } from "./constants";
 import { NeighborhoodInput } from "@/components/ui/NeighborhoodInput";
 import { normalizeNeighborhood } from "@/lib/neighborhoods";
 import { onNewSessionRequest } from "@/lib/autoSession";
+
+const SESSION_WINDOWS = [
+  { id: "morning", label: "Morning Focus", time: "9:30 AM – 1:30 PM", description: "Deep work, fewer distractions" },
+  { id: "afternoon", label: "Afternoon Hustle", time: "2:00 – 6:00 PM", description: "Energy + networking" },
+  { id: "evening", label: "Evening", time: "6:00 – 9:00 PM", description: "After-hours cowork" },
+];
 
 export function SessionRequestSheet() {
   const { user, profile } = useAuth();
@@ -88,12 +94,16 @@ export function SessionRequestSheet() {
               </div>
               <div>
                 <Label className="text-sm">What time of day?</Label>
-                <div className="flex gap-2 mt-2">
-                  {["morning", "afternoon", "evening"].map((t) => (
-                    <button key={t} onClick={() => setPreferredTime(t)}
-                      className={cn("flex-1 px-3 py-2 rounded-xl border text-xs font-medium transition-all capitalize",
-                        preferredTime === t ? "border-primary bg-primary/10" : "border-border hover:bg-muted")}>
-                      {t}
+                <div className="space-y-2 mt-2">
+                  {SESSION_WINDOWS.map((w) => (
+                    <button key={w.id} onClick={() => setPreferredTime(w.id)}
+                      className={cn("w-full px-4 py-3 rounded-xl border text-left transition-all",
+                        preferredTime === w.id ? "border-primary bg-primary/10" : "border-border hover:bg-muted")}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{w.label}</span>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" />{w.time}</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{w.description}</p>
                     </button>
                   ))}
                 </div>
