@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useReducer } from "react";
+import { useState, useEffect, useCallback, useReducer, lazy, Suspense } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,9 @@ import { useNavigate } from "react-router-dom";
 import { getInitials } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MentorSection } from "@/components/discover/MentorSection";
+import { MapSwapToggle } from "@/components/map/MapSwapToggle";
+
+const SessionMap = lazy(() => import("@/components/map/SessionMap").then(m => ({ default: m.SessionMap })));
 
 interface LocationActivity {
   location_id: string;
@@ -85,6 +88,7 @@ function ActiveLocationsSection() {
   const [locationPeople, setLocationPeople] = useState<WhosHerePerson[]>([]);
   const [loadingPeople, setLoadingPeople] = useState(false);
   const [connectTarget, setConnectTarget] = useState<{ id: string; display_name: string | null; avatar_url: string | null } | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
   useEffect(() => {
     if (!user) return;
@@ -112,13 +116,22 @@ function ActiveLocationsSection() {
 
   return (
     <section className="mt-2">
-      <h2 className="font-serif text-lg px-4 mb-1 text-foreground flex items-center gap-2">
-        <MapPin className="w-4 h-4 text-primary" /> People working right now
-      </h2>
+      <div className="flex items-center justify-between px-4 mb-1">
+        <h2 className="font-serif text-lg text-foreground flex items-center gap-2">
+          <MapPin className="w-4 h-4 text-primary" /> People working right now
+        </h2>
+        <MapSwapToggle view={viewMode} onToggle={setViewMode} />
+      </div>
       {totalActive > 0 && (
         <p className="text-xs text-muted-foreground px-4 mb-2">{totalActive} people checked in now</p>
       )}
-      {locations.length === 0 ? (
+      {viewMode === "map" ? (
+        <div className="px-4">
+          <Suspense fallback={<Skeleton className="h-[300px] rounded-lg" />}>
+            <div className="h-[300px] rounded-lg overflow-hidden"><SessionMap /></div>
+          </Suspense>
+        </div>
+      ) : locations.length === 0 ? (
         <Card className="mx-4"><CardContent className="py-6 text-center">
           <p className="text-sm text-muted-foreground">It's quiet right now. Check in to be the first!</p>
         </CardContent></Card>

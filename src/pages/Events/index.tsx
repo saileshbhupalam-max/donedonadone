@@ -2,7 +2,6 @@ import { ERROR_STATES, CONFIRMATIONS } from "@/lib/personality";
 import { PullToRefresh } from "@/components/ui/PullToRefresh";
 import { hapticLight } from "@/lib/haptics";
 import { useState, useEffect, useCallback, useRef, lazy, Suspense, useMemo } from "react";
-import { getInitials } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppShell } from "@/components/layout/AppShell";
@@ -25,10 +24,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CalendarIcon, Plus, MapPin, Hand, AlertTriangle, Send, Map, List, Bookmark } from "lucide-react";
+import { CalendarIcon, Plus, MapPin, Hand, AlertTriangle, Send, Bookmark } from "lucide-react";
+import { MapSwapToggle } from "@/components/map/MapSwapToggle";
 import { format, parseISO, isTomorrow, differenceInDays, differenceInHours } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
+
 import { toast } from "sonner";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { trackFunnelStep } from "@/lib/analytics";
@@ -130,18 +130,7 @@ export default function Events() {
         className="px-4 py-4 space-y-4 max-w-lg mx-auto">
         <h1 className="font-serif text-2xl text-foreground">Sessions</h1>
 
-        <div className="flex gap-1 bg-muted rounded-lg p-1 w-fit">
-          <button onClick={() => setViewMode("list")}
-            className={cn("px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1",
-              viewMode === "list" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
-            <List className="w-3.5 h-3.5" /> List
-          </button>
-          <button onClick={() => setViewMode("map")}
-            className={cn("px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1",
-              viewMode === "map" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
-            <MapPin className="w-3.5 h-3.5" /> Map
-          </button>
-        </div>
+        <MapSwapToggle view={viewMode} onToggle={setViewMode} />
 
         {profile?.reliability_status === 'warning' && (
           <Alert className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20">

@@ -59,6 +59,8 @@ interface VenueMarker {
   lat: number;
   lng: number;
   address?: string;
+  /** locations table id — used for /venue/:id link */
+  locationId?: string;
 }
 
 interface SessionMarker {
@@ -118,9 +120,10 @@ export function SessionMap({ focusEventId }: Props) {
   useEffect(() => {
     (async () => {
       const today = new Date().toISOString().split("T")[0];
-      const [eventsRes, venuesRes, rsvpsRes] = await Promise.all([
+      const [eventsRes, venuesRes, locationsRes, rsvpsRes] = await Promise.all([
         supabase.from("events").select("*").gte("date", today).not("venue_latitude", "is", null),
         supabase.from("venue_partners").select("id, venue_name, latitude, longitude, venue_address").eq("status", "active").not("latitude", "is", null),
+        supabase.from("locations").select("id, name, latitude, longitude, location_type, neighborhood").eq("verified", true).not("latitude", "is", null),
         supabase.from("event_rsvps").select("event_id, status"),
       ]);
 
@@ -145,13 +148,26 @@ export function SessionMap({ focusEventId }: Props) {
         session_format: e.session_format,
       })));
 
-      setVenues((venuesRes.data || []).filter(v => v.latitude && v.longitude).map(v => ({
-        id: v.id,
-        name: v.venue_name,
-        lat: v.latitude!,
-        lng: v.longitude!,
-        address: v.venue_address ?? undefined,
-      })));
+      // Merge venue_partners + locations, dedup by name
+      const seen = new Set<string>();
+      const merged: VenueMarker[] = [];
+      // Locations first (they have locationId for /venue/:id links)
+      (locationsRes.data || []).filter(l => l.latitude && l.longitude).forEach(l => {
+        const key = l.name.toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          merged.push({ id: l.id, name: l.name, lat: l.latitude!, lng: l.longitude!, locationId: l.id });
+        }
+      });
+      // Then venue_partners (only if not already covered by locations)
+      (venuesRes.data || []).filter(v => v.latitude && v.longitude).forEach(v => {
+        const key = v.venue_name.toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          merged.push({ id: v.id, name: v.venue_name, lat: v.latitude!, lng: v.longitude!, address: v.venue_address ?? undefined });
+        }
+      });
+      setVenues(merged);
     })();
   }, []);
 
@@ -265,6 +281,14 @@ export function SessionMap({ focusEventId }: Props) {
                 <p className="font-medium">☕ {v.name}</p>
                 {v.address && <p className="text-xs text-muted-foreground">{v.address}</p>}
                 {getDistance(v.lat, v.lng) && <p className="text-xs text-primary">{getDistance(v.lat, v.lng)} away</p>}
+                {v.locationId && (
+                  <button
+                    onClick={() => navigate(`/venue/${v.locationId}`)}
+                    className="text-xs px-2 py-1 rounded bg-primary text-primary-foreground mt-1"
+                  >
+                    View venue
+                  </button>
+                )}
               </div>
             </Popup>
           </Marker>

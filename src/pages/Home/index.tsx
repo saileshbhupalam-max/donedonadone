@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +50,9 @@ import { GratitudeEchoCard } from "@/components/home/GratitudeEchoCard";
 import { CommunityRitualCard } from "@/components/home/CommunityRitualCard";
 import { CaptainDashboardCard } from "@/components/home/CaptainDashboardCard";
 import { CompanyHomeCard } from "@/components/home/CompanyHomeCard";
+import { MapSwapToggle } from "@/components/map/MapSwapToggle";
+
+const SessionMap = lazy(() => import("@/components/map/SessionMap").then(m => ({ default: m.SessionMap })));
 import { Users as UsersIcon, Zap, Shield } from "lucide-react";
 import { ActiveCheckInCard, CheckInFlow } from "@/components/checkin/CheckInFlow";
 import { useUserContext } from "@/hooks/useUserContext";
@@ -104,6 +107,7 @@ export default function Home() {
   const [crewEvents, setCrewEvents] = useState<any[]>([]);
   const [autopilotDismissed] = useState(() => localStorage.getItem("fc_autopilot_dismissed") === "true");
   const [showMoreSections, setShowMoreSections] = useState(false);
+  const [nearbyView, setNearbyView] = useState<"list" | "map">("list");
 
   const fetchAll = useCallback(async () => {
     if (!user || !profile) return;
@@ -793,13 +797,20 @@ export default function Home() {
 
         {/* Sessions Near You */}
         {!loading && profile.preferred_latitude && profile.preferred_longitude ? (
-          nearbySessions.length > 0 ? (
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-xs font-medium text-muted-foreground mb-3">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-medium text-muted-foreground">
                   <Navigation className="w-3.5 h-3.5 inline mr-1" />
                   Sessions within {profile.preferred_radius_km || 5}km
                 </p>
+                <MapSwapToggle view={nearbyView} onToggle={setNearbyView} />
+              </div>
+              {nearbyView === "map" ? (
+                <Suspense fallback={<Skeleton className="h-[300px] rounded-lg" />}>
+                  <div className="h-[300px] rounded-lg overflow-hidden -mx-1"><SessionMap /></div>
+                </Suspense>
+              ) : nearbySessions.length > 0 ? (
                 <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
                   {nearbySessions.map((s: any) => (
                     <div key={s.event_id} className="shrink-0 w-44 rounded-lg border border-border bg-background p-3 cursor-pointer hover:shadow-sm transition-shadow"
@@ -816,9 +827,11 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          ) : null
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-4">No sessions nearby yet — try the map to explore venues</p>
+              )}
+            </CardContent>
+          </Card>
         ) : !loading ? (
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/me")}>
             <CardContent className="p-4 flex items-center justify-between">
