@@ -45,6 +45,7 @@ import { PullToRefresh } from "@/components/ui/PullToRefresh";
 import { PrimaryActionCard } from "@/components/home/PrimaryActionCard";
 import { NextMilestoneIndicator } from "@/components/home/NextMilestone";
 import { ProfilePromptCard } from "@/components/home/ProfilePromptCard";
+import { QuickQuestionsCard } from "@/components/home/QuickQuestionsCard";
 import { GratitudeEchoCard } from "@/components/home/GratitudeEchoCard";
 import { CommunityRitualCard } from "@/components/home/CommunityRitualCard";
 import { CaptainDashboardCard } from "@/components/home/CaptainDashboardCard";
@@ -783,6 +784,9 @@ export default function Home() {
             </CardContent>
           </Card>
         )}
+
+        {/* Quick Questions — continuous taste data collection */}
+        <QuickQuestionsCard />
 
         {/* Progressive Profile Prompt */}
         <ProfilePromptCard profile={profile} />

@@ -1,13 +1,14 @@
-# FocusClub — Product Vision
+# DanaDone — Product Vision
 
-> Version: 2.0 (March 2026)
+> Version: 3.0 (March 2026)
 > Status: North Star document. Everything we build should trace back here.
+> Brand: DanaDone (danadone.club). Celebration: "DoneDanaDone!" with confetti.
 
 ---
 
 ## The One-Liner
 
-**FocusClub is the AI-native community layer for workspaces. We turn coworking spaces, cafes, and any shared workspace into places where people find customers, collaborators, mentors, investors, friends — and reasons to stay.**
+**DanaDone is the AI-native community layer for workspaces. We turn coworking spaces, cafes, and any shared workspace into places where people find customers, collaborators, mentors, investors, friends — and reasons to stay.**
 
 ---
 
@@ -35,7 +36,7 @@ Not a booking app. Not a social network. Not a CRM. We are the **intelligence la
 
 We increase the surface area of luck.
 
-Every workspace that runs FocusClub becomes a place where:
+Every workspace that runs DanaDone becomes a place where:
 - A freelance designer finds her biggest client at the coffee machine
 - A founder meets his co-founder during a structured deep work session
 - A startup discovers that the company across the hall has exactly the distribution channel they need
@@ -96,21 +97,78 @@ Every interaction feeds the matching engine. Every session produces data. Every 
 
 ---
 
+## The Map World — DanaDone's Second Dimension
+
+The map is not a feature. It's a **parallel world** that members continuously enrich.
+
+Every photo uploaded, every check-in, every noise reading, every wall photographed — it all compounds into a living spatial layer. The map starts sparse and grows richer with every interaction. Over time, DanaDone's map contains more data about workspaces than Google Maps, Yelp, or any review site — because our users are there every day, working.
+
+### How it works
+
+```
+User checks in at cafe ──► Visit graph builds (which places, how often, when)
+User answers 2 questions ──► Taste graph sharpens (better matches next session)
+User photographs a wall ──► Venue detail gets richer (eventually: 3D reconstruction)
+User rates the noise ──► Time-varying data accrues (quiet mornings, loud afternoons)
+```
+
+**The map is accessible from everywhere.** Every screen with location-aware content (Home, Discover, Events) has a map/list toggle. The map is also a primary destination in the bottom navigation. Users can switch between list and map views naturally — the spatial layer isn't hidden behind a menu.
+
+### Exhaustive venue data
+
+We collect *everything* about a workspace — enough to recreate it in 3D someday:
+
+| Category | Data Points | How Collected |
+|----------|------------|---------------|
+| **Visual** | Every wall angle, desk layout, entrance, signage | Photo contributions |
+| **Audio** | Noise levels at different times of day, music type | Post-session ratings + periodic captures |
+| **Infrastructure** | WiFi speed, power outlet locations/count, desk dimensions | Structured contribution form |
+| **Environment** | Lighting (natural/artificial), temperature, AC quality | Quick contribution cards |
+| **Facilities** | Restrooms, parking, food/drink options, menu prices | Photo + rating contributions |
+| **Social** | Who works here, what they do, peak hours by profession | Check-in graph (automatic) |
+
+Every data point that doesn't exist yet earns **bonus FC** for the first contributor. This creates a race to complete venue profiles while preventing duplication.
+
+### The visit graph
+
+Every check-in creates a time-stamped association between a person and a place. Over months, this builds a rich graph:
+- Which cafes does someone frequent? (preferences)
+- What times do they visit? (schedule compatibility)
+- Who else visits the same places? (implicit affinity)
+- Which places attract which types of workers? (venue personality)
+
+This feeds back into matching: people who frequent the same cafes have an implicit compatibility signal.
+
+### Continuous taste collection
+
+The 7-step taste graph wizard is powerful but feels like homework. Instead, DanaDone collects preferences through **2-3 quick questions every time someone opens the app**:
+
+- Questions feel conversational, not form-like ("Coffee or chai?" not "Select your beverage preference")
+- Five question types: this-or-that, emoji pick, chip select, slider, quick text
+- Always skippable — no guilt, just a nudge ("Your matches are 42% accurate — answer more to sharpen them")
+- Each answer earns 2 FC and feeds the matching algorithm
+- The question pool is infinite and expandable — it never runs out
+- Priority questions (work DNA) are shown first, then personality, then fun/seasonal
+
+Over 2 weeks, a user who answers 3 questions per day has contributed 42 data points — more than the full taste graph wizard captures — and it felt effortless.
+
+---
+
 ## Value Prop by User Type
 
 ### For Coworking Spaces (Optional — Free Insights Dashboard)
 
-FocusClub is permissionless. Members sign up directly. Spaces are not the customer — members are. But spaces benefit naturally:
+DanaDone is permissionless. Members sign up directly. Spaces are not the customer — members are. But spaces benefit naturally:
 - **Retention:** Members stay because their network is here
 - **Revenue:** Day pass holders buy sessions at the space
 - **Data:** Free insights dashboard shows engagement, popular times, community health
-- **Differentiation:** "We're a FocusClub space" becomes a selling point
-- Spaces that want to buy FocusClub for all their members can do so (bulk plan), but this is not the primary GTM
+- **Differentiation:** "We're a DanaDone space" becomes a selling point
+- Spaces that want to buy DanaDone for all their members can do so (bulk plan), but this is not the primary GTM
 
 ### For Companies in the Space
 
 **What they get:**
-| Need | How FocusClub Delivers |
+| Need | How DanaDone Delivers |
 |------|----------------------|
 | Find customers | AI matches company needs/offers across the space's member base |
 | Find investors | Investor members flagged; warm intros through mutual connections |
@@ -123,7 +181,7 @@ FocusClub is permissionless. Members sign up directly. Spaces are not the custom
 ### For Employee Members
 
 **What they get:**
-| Need | How FocusClub Delivers |
+| Need | How DanaDone Delivers |
 |------|----------------------|
 | Referrals | Warm intros to people who need their skills, through mutual connections |
 | Mentors | AI matches senior members willing to mentor in their domain |
@@ -135,7 +193,7 @@ FocusClub is permissionless. Members sign up directly. Spaces are not the custom
 ### For Freelancer Members
 
 **What they get:**
-| Need | How FocusClub Delivers |
+| Need | How DanaDone Delivers |
 |------|----------------------|
 | Customers/gigs | Matched with companies that need their skills right now |
 | Collaborators | Other freelancers with complementary skills for joint projects |
@@ -147,7 +205,7 @@ FocusClub is permissionless. Members sign up directly. Spaces are not the custom
 ### For Startup Founders
 
 **What they get:**
-| Need | How FocusClub Delivers |
+| Need | How DanaDone Delivers |
 |------|----------------------|
 | First customers | Other members and companies in the space as beta testers/early adopters |
 | Employees/interns | Members looking for startup roles, matched by skills and values |
@@ -205,6 +263,16 @@ Over time:
 - Geolocation check-in with PIN fallback
 - Active locations ("Who's here" at each space)
 - QR code scan tracking for venues
+- Permissionless venue nomination + vouch system
+- Venue health checks (community-driven quality control)
+- Venue contribution system with FC rewards
+
+**Map World:**
+- Fullscreen map with floating controls (BottomNav primary destination)
+- Map/list toggle pattern (MapSwapToggle component)
+- Photo lightbox with keyboard/swipe navigation
+- Map markers with session locations + venues
+- Location picker for venue nominations
 
 **Infrastructure:**
 - PWA with offline resilience
@@ -212,11 +280,12 @@ Over time:
 - Notification system (in-app + push)
 - Analytics event tracking
 - Admin dashboard with grouped sidebar
+- CXL conversion-optimized copy across all user flows
 
 ### Blindspots and Gaps
 
 #### 1. The B2B Sales Motion is Invisible
-We built FocusClub as a consumer app where users book sessions at cafes. But the real business is selling to workspace operators. There is no:
+We built DanaDone as a consumer app where users book sessions at cafes. But the real business is selling to workspace operators. There is no:
 - Workspace operator dashboard (separate from admin)
 - White-label or co-branded experience
 - Operator analytics (member engagement, retention metrics, session revenue)
@@ -247,7 +316,7 @@ The `cross_space_network` feature flag exists and the Network tab is Max-tier on
 - No actual multi-space graph exists
 - No way to discover members at other spaces
 - No cross-space session booking
-- No "FocusClub passport" for visiting other spaces
+- No "DanaDone passport" for visiting other spaces
 
 **Fix:** This is the expansion play. When we're in 10+ spaces, the cross-space network becomes the killer feature. Build it when we have the density.
 
@@ -270,10 +339,10 @@ We have `ai_providers`, `ai_task_config`, `ai_usage_log`, and `ai_match_explanat
 
 **Fix:** Integrate Claude/GPT for intelligent community management and member experience.
 
-#### 7. Onboarding Doesn't Capture the Full Value Prop
+#### 7. Onboarding Doesn't Capture the Full Value Prop — ADDRESSING
 Current onboarding asks: name, work vibe, looking-for/can-offer. The TasteGraphBuilder is a separate 7-step flow that most users won't complete upfront. But the matching quality depends on it.
 
-**Fix:** Progressive profiling. Collect the minimum at signup. Then use post-session prompts, profile completion nudges, and contextual asks ("You just met Karthik who does React — what skills do you have?") to build the taste graph over time.
+**Fix (in progress):** Quick Questions system — 2-3 lightweight questions on the Home page every app open. Infinite, expandable question pool. Each answer earns FC and feeds the matching algorithm. After 2 weeks of 3 questions/day, users have more data points than the full wizard. See MAP-WORLD-PLAN.md Part A for full design.
 
 #### 8. No Marketplace/Gig Board
 Freelancers want gigs. Companies want to hire. The micro-request board exists but is lightweight. There's no:
@@ -289,7 +358,7 @@ Freelancers want gigs. Companies want to hire. The micro-request board exists bu
 ## 10x Opportunities
 
 ### 1. Workspace-as-a-Service: Sell Community, Not Desks
-**The 10x play:** Every coworking space in the world needs this. WeWork failed because they sold real estate. We sell the software that makes real estate valuable. A space running FocusClub has 3x the retention and 2x the NPS of a space without it. We become the Salesforce of coworking — the operating system you can't rip out because all the relationships live here.
+**The 10x play:** Every coworking space in the world needs this. WeWork failed because they sold real estate. We sell the software that makes real estate valuable. A space running DanaDone has 3x the retention and 2x the NPS of a space without it. We become the Salesforce of coworking — the operating system you can't rip out because all the relationships live here.
 
 ### 2. The Professional Graph for Physical Spaces
 LinkedIn owns the digital professional graph. Nobody owns the physical one. We know who sits next to whom, who works with whom, who helps whom — in real physical spaces. This data is enormously valuable for:
@@ -306,18 +375,21 @@ Most coworking spaces have 1 community manager for 200+ members. They can't poss
 - Automate welcome: "New member Ravi is a designer from Koramangala. Here are 5 existing members he'd click with."
 
 ### 4. Cross-Space Passport (Network Effect Moat)
-When we're in 50+ spaces, a FocusClub membership becomes a passport:
-- Visit any FocusClub-powered space and instantly connect with compatible people
+When we're in 50+ spaces, a DanaDone membership becomes a passport:
+- Visit any DanaDone-powered space and instantly connect with compatible people
 - Your taste graph travels with you
 - Your reputation (rank, badges, reliability) is portable
 - "I'm visiting Mumbai for a week — who should I meet?"
 
-This creates a network effect that no single space can replicate. The more spaces on FocusClub, the more valuable each membership becomes.
+This creates a network effect that no single space can replicate. The more spaces on DanaDone, the more valuable each membership becomes.
 
-### 5. Session-as-Revenue for Spaces
+### 5. The Spatial Data Moat
+Nobody has granular workspace data at this level — every wall photographed, noise levels by time of day, outlet locations, desk dimensions. Google Maps has addresses and reviews. We have the data to reconstruct a workspace in 3D. This data compounds: every check-in, every contribution, every photo makes DanaDone's venue intelligence more valuable. Combined with the visit graph (who works where, when, how often), we build the definitive spatial-professional dataset. Use cases beyond matching: real estate intelligence, workspace design consulting, franchise location analysis.
+
+### 6. Session-as-Revenue for Spaces
 Structured sessions become a revenue stream, not just a community feature:
 - Day pass holders pay ₹100-500 per session
-- Spaces keep 70%, FocusClub takes 30%
+- Spaces keep 70%, DanaDone takes 30%
 - Premium "Masterclass" sessions with expert facilitators
 - Corporate team sessions (companies bring their team for structured deep work)
 - "Try before you buy" — a session is the best sales pitch for a coworking membership
@@ -360,7 +432,7 @@ Structured sessions become a revenue stream, not just a community feature:
 
 ### Phase 1: HSR Layout, Bangalore (Now)
 - **Target:** 3-5 coworking spaces + 10 partner cafes
-- **Offer:** Free FocusClub setup for spaces. We run structured sessions. Space gets foot traffic + retention data.
+- **Offer:** Free DanaDone setup for spaces. We run structured sessions. Space gets foot traffic + retention data.
 - **Revenue:** Day pass fees (space takes 70%, we take 30%) + consumer subscriptions (Plus/Pro/Max)
 - **Goal:** 1,000 bookings/day across all venues. Prove the retention lift.
 
@@ -368,7 +440,7 @@ Structured sessions become a revenue stream, not just a community feature:
 - **Target:** 20+ coworking spaces across Bangalore
 - **Offer:** SaaS pricing for spaces (per-seat monthly). Free tier for small spaces.
 - **Revenue:** SaaS + day passes + premium member subscriptions
-- **Feature:** Cross-space passport for Bangalore. "Work from any FocusClub space."
+- **Feature:** Cross-space passport for Bangalore. "Work from any DanaDone space."
 
 ### Phase 3: Multi-City India (Month 6-12)
 - **Target:** Mumbai, Delhi, Hyderabad, Pune
@@ -377,7 +449,7 @@ Structured sessions become a revenue stream, not just a community feature:
 
 ### Phase 4: Global (Year 2+)
 - **Target:** Southeast Asia, then global
-- **The moat:** By now, FocusClub IS the community layer. Switching means losing your professional graph, your reputation, your community.
+- **The moat:** By now, DanaDone IS the community layer. Switching means losing your professional graph, your reputation, your community.
 
 ---
 
@@ -401,7 +473,7 @@ Structured sessions become a revenue stream, not just a community feature:
 Every venue is a physical distribution channel. A cafe in HSR Layout sees 200+ people/day walk through its doors. If even 5% of walk-ins scan a QR code and try a session, that's 10 new users/day per venue — with zero digital ad spend. The venue IS the acquisition channel.
 
 ### The Light Board Play
-Partner venues display a branded 3x4 foot light board (or acrylic standee) with a QR code at their entrance. Every person who walks in sees "FocusClub Partner Venue" with a QR code. The QR leads to the venue's public insight page (/space/:id/insights) — which shows live social proof ("8 people focused here right now"), upcoming sessions, community health stats, and a "Join the next session" CTA.
+Partner venues display a branded 3x4 foot light board (or acrylic standee) with a QR code at their entrance. Every person who walks in sees "DanaDone Partner Venue" with a QR code. The QR leads to the venue's public insight page (/space/:id/insights) — which shows live social proof ("8 people focused here right now"), upcoming sessions, community health stats, and a "Join the next session" CTA.
 
 The venue pays for the board (₹2000-4000 for production, negligible for any coworking space). We provide the design and the digital infrastructure. The board becomes our physical advertising at zero marginal cost to us.
 
@@ -429,7 +501,7 @@ This turns dead screen real estate into a continuous acquisition and engagement 
 
 ### WiFi Splash Page: The Frictionless Funnel
 Many coworking spaces have WiFi captive portals. We provide a one-line embed:
-"Get instant WiFi access at all FocusClub venues — Join free."
+"Get instant WiFi access at all DanaDone venues — Join free."
 Every non-member who connects to WiFi sees this. Tap → signup → pre-select this venue. The conversion happens at the exact moment they're sitting in the space, connected, and ready to work.
 
 ---
@@ -439,22 +511,22 @@ Every non-member who connects to WiFi sees this. Tap → signup → pre-select t
 ### Free Tier (Year 1)
 Every partner venue gets:
 1. **Real-time analytics dashboard** — traffic, trends, peak hours, who's here now
-2. **New customer attribution** — "FocusClub sent you 47 new faces this month"
+2. **New customer attribution** — "DanaDone sent you 47 new faces this month"
 3. **Community insights** — What professionals visit, what industries, what they're working on
 4. **Public venue profile page** — SEO-optimized, ranks for "coworking [neighborhood]"
 5. **Marketing materials** — QR codes, table tents, posters, digital display URL (all self-serve downloads)
-6. **Crowdsourced venue data** — Noise, WiFi, coffee, seating ratings from FocusClub members
-7. **"Powered by FocusClub" badge** — Social proof that they're part of the network
+6. **Crowdsourced venue data** — Noise, WiFi, coffee, seating ratings from DanaDone members
+7. **"Powered by DanaDone" badge** — Social proof that they're part of the network
 
 ### Why They Can't Refuse
 - **Data they don't have.** Most HSR Layout cafes don't know their repeat rate, peak hours by segment, or competitive positioning. We give them this for free.
-- **Customers they can't get.** Solo workers don't walk into a space for group sessions. FocusClub creates the demand.
+- **Customers they can't get.** Solo workers don't walk into a space for group sessions. DanaDone creates the demand.
 - **Zero operational burden.** We handle group formation, icebreakers, session flow. The venue just provides the space.
 - **Risk-free.** Free for a year. If it doesn't work, they lose nothing.
 
 ### Premium Tier (₹5,000/month after Year 1)
 - Everything above PLUS:
-- Revenue analytics — actual ₹ earned from FocusClub sessions
+- Revenue analytics — actual ₹ earned from DanaDone sessions
 - Priority session scheduling — their venue gets featured more in session matching
 - Custom branding on the public venue page
 - Competitive benchmarking — how they rank vs other venues on all metrics
@@ -463,11 +535,11 @@ Every partner venue gets:
 ### The Lock-In
 By month 6, the venue has:
 - 6 months of historical data they don't want to lose
-- A steady stream of FocusClub regulars who expect sessions there
+- A steady stream of DanaDone regulars who expect sessions there
 - A public venue page ranking on Google for "coworking in [neighborhood]"
 - Community-contributed data (noise, WiFi, reviews) that enriches their listing
 
-Switching cost is HIGH. ₹5,000/month when FocusClub brings them ₹30,000-100,000/month in new customers is a no-brainer.
+Switching cost is HIGH. ₹5,000/month when DanaDone brings them ₹30,000-100,000/month in new customers is a no-brainer.
 
 ---
 
@@ -529,6 +601,6 @@ We believe that AI should make human connection easier, not replace it.
 
 We believe in structured serendipity — increasing the surface area of luck.
 
-We are FocusClub. We are the community layer for every workspace on earth.
+We are DanaDone. We are the community layer for every workspace on earth.
 
 **We turn strangers into coworkers into collaborators into friends.**

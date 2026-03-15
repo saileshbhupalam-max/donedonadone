@@ -1,8 +1,8 @@
-# FocusClub Architecture
+# DanaDone Architecture
 
 ## System Overview
 
-FocusClub is a social coworking platform that matches solo workers into groups of 3-5 at partner cafes and coworking spaces in Bangalore. The core value proposition: "The place where ambitious solo workers exchange skills, energy, and accountability." The "looking for / can offer" exchange system is the product differentiator -- users declare what they seek (accountability, design feedback, fundraising advice) and what they can provide, and the matching algorithm connects complementary people.
+DanaDone is a social coworking platform that matches solo workers into groups of 3-5 at partner cafes and coworking spaces in Bangalore. The core value proposition: "The place where ambitious solo workers exchange skills, energy, and accountability." The "looking for / can offer" exchange system is the product differentiator -- users declare what they seek (accountability, design feedback, fundraising advice) and what they can provide, and the matching algorithm connects complementary people.
 
 **Tech stack:** React 18 + Vite + TypeScript + Tailwind CSS + shadcn/ui + Supabase (Auth, DB, Storage, Realtime, RPCs) + React Router + TanStack Query + Framer Motion.
 
@@ -32,6 +32,7 @@ src/
 │   ├── Onboarding.tsx   — 4-step onboarding wizard
 │   ├── SpaceInsights.tsx — Public venue analytics + conversion CTA (/space/:id/insights)
 │   ├── SpaceLive.tsx    — TV Mode always-on display for venues (/space/:id/live)
+│   ├── VenueDetail.tsx — Venue detail page with ratings, photos, QR, sessions (/venue/:id)
 │   ├── NominateVenue.tsx — Permissionless venue nomination + vouch UI (/nominate)
 │   ├── Credits.tsx      — Focus Credits balance, history, redemption (/credits)
 │   ├── CrossSpaceNetwork.tsx — Cross-venue network view (/network)
@@ -77,7 +78,8 @@ src/
 │   │
 │   ├── home/            — Home page feature cards
 │   │   ├── PrimaryActionCard.tsx     — Next session CTA or RSVP prompt
-│   │   ├── ProfilePromptCard.tsx     — Profile completion nudge
+│   │   ├── QuickQuestionsCard.tsx    — Continuous taste collection (2-3 Q per app open, FC rewards)
+│   │   ├── ProfilePromptCard.tsx     — Progressive profile completion (post-session prompts)
 │   │   ├── GratitudeEchoCard.tsx     — Delayed prop delivery (echoes)
 │   │   └── CommunityRitualCard.tsx   — Monday Focus + Friday Wins
 │   │

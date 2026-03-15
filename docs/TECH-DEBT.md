@@ -1,4 +1,4 @@
-# FocusClub — Technical Debt Register
+# DanaDone — Technical Debt Register
 
 > Last updated: March 2026
 > Severity: CRITICAL | HIGH | MEDIUM | LOW
@@ -78,7 +78,7 @@
 ## LOW — Nice to fix
 
 ### TD-017: Lovable branding remnants — RESOLVED
-- **Status:** RESOLVED — OG/Twitter meta tags use local `/og-image.png` and `@FocusClubHQ`. Removed `lovable-tagger`, `@lovable.dev/cloud-auth-js`, and `src/integrations/lovable/`.
+- **Status:** RESOLVED — OG/Twitter meta tags use local `/og-image.png` and `@DanaDoneHQ`. Removed `lovable-tagger`, `@lovable.dev/cloud-auth-js`, and `src/integrations/lovable/`.
 
 ### TD-018: Bundle size could be optimized — RESOLVED (no change needed)
 - **Status:** RESOLVED — Investigation confirmed recharts only used in lazy-loaded Admin page, html2canvas uses dynamic `await import()`, qrcode uses `React.lazy`. Chunks already lazy-load correctly via existing page-level code splitting.
@@ -114,13 +114,13 @@
 - **Status:** RESOLVED — All 3 hardcoded strings replaced with real Supabase queries. Social proof hidden when counts are below threshold (5 for weekly, 3 for venue-specific).
 
 ### TD-028: SpaceInsights page has no conversion CTA — RESOLVED
-- **Status:** RESOLVED — `LiveConversionHero` component added with live check-in avatars, next session CTA, and "Join FocusClub" button.
+- **Status:** RESOLVED — `LiveConversionHero` component added with live check-in avatars, next session CTA, and "Join DanaDone" button.
 
 ### TD-029: Partner dashboard QR/marketing tools are admin-only — RESOLVED
 - **Status:** RESOLVED — Extracted `VenueQrSection` shared component (`src/components/venue/VenueQrSection.tsx`). Added to PartnerDashboard with QR download, table tent download, and link copy. PartnersTab refactored to use same shared component.
 
 ### TD-030: No TV Mode display for venues — RESOLVED
-- **Status:** RESOLVED — `SpaceLive.tsx` at `/space/:id/live` with rotating stats, auto-refresh, QR placeholder, and FocusClub branding.
+- **Status:** RESOLVED — `SpaceLive.tsx` at `/space/:id/live` with rotating stats, auto-refresh, QR placeholder, and DanaDone branding.
 
 ---
 

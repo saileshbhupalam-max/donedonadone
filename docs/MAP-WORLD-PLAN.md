@@ -428,6 +428,13 @@ Phase 6 is polish after the core loop works.
 | Post-session venue rating (VenueVibeRating.tsx) | Exists |
 | Post-session DNA prompt (PostSessionDnaPrompt.tsx) | Exists |
 | Matching algorithm (calculate_taste_match SQL) | Exists |
+| Quick Questions system (QuickQuestionsCard + migration) | Done |
+| taste_questions table (60 seeded questions, 5 types, 4 categories) | Done |
+| taste_answers table (event-sourced, RLS, unique per user+question) | Done |
+| FC reward for taste_answer action | Done |
+| Venue Detail page (`/venue/:id`) with ratings, photos, QR, sessions | Done |
+| Venue Detail route in App.tsx | Done |
+| Content seeding (25 HSR Layout venues in locations table) | Done |
 
 ---
 

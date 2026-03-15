@@ -1,4 +1,4 @@
-# FocusClub — Implementation Plan
+# DanaDone — Implementation Plan
 
 > Version: 1.0 | March 2026
 > Based on: PRODUCT-VISION.md gap analysis vs current codebase
@@ -109,7 +109,7 @@
   - Top venue ratings (their crowdsourced scores)
   - Session attendance trends
 - Read-only — pulls from existing `analytics_events`, `event_rsvps`, `venue_vibes` tables
-- This is the "sales deck" for spaces — they see the value FocusClub brings
+- This is the "sales deck" for spaces — they see the value DanaDone brings
 
 ---
 
@@ -229,30 +229,68 @@ EASY ─────────────────────┼───
 
 ## Implementation Order (Strict Sequence)
 
-| Order | Item | Depends On | Estimated Complexity |
-|-------|------|-----------|---------------------|
-| 1 | **Payment (UPI QR MVP)** | Nothing | Medium — upiqr + manual verification |
-| 2 | **Push notification cron** | Nothing | Medium — Edge Function + VAPID |
-| 3 | **Email via Resend** | Nothing | Medium — Edge Function + templates |
-| 4 | **Day pass purchase flow** | Payment | Medium — new route + simplified onboarding |
-| 5 | **In-session smart intros** | Nothing | Low — uses existing match engine |
-| 6 | **Proactive match nudges** | Push/Email working | Medium — Edge Function + scheduling |
-| 7 | **Workspace insights dashboard** | Nothing | Medium — new read-only page |
-| 8 | **B2B matching prominence** | Nothing | Low — mostly UI reorganization |
-| 9 | **Day pass → member conversion** | Day pass flow | Low — post-session CTA |
-| 10 | **Needs board** | Nothing | Medium — evolve micro_requests |
-| 11 | **Mentor/mentee track** | Nothing | Low — profile fields + matching dimension |
-| 12 | **AI community manager** | Claude API | High — Edge Functions + AI pipeline |
-| 13 | **LLM-powered search** | Claude API | Medium — query parsing + search |
-| 14 | **AI session debrief** | Claude API | Medium — post-session generation |
-| 15 | **Configurable session formats** | Nothing | Medium — template system |
-| 16 | **Cross-space network** | 10+ spaces | High — multi-tenant architecture |
+### Track A: Map World + Data Collection (Current Focus)
+> See `docs/MAP-WORLD-PLAN.md` for full technical design.
+
+| Order | Item | Depends On | Complexity |
+|-------|------|-----------|-----------|
+| A1 | **Quick Questions system** | Nothing | Medium — migration + component + FC |
+| A2 | **Venue Detail page** (`/venue/:id`) | Nothing | Medium — new page, route |
+| A3 | **Content seeding** (25 HSR venues) | A2 | Low — migration only |
+| A4 | **Exhaustive venue data model** | A2 | Low — extend contribution types |
+| A5 | **Map/list swap on all screens** | Nothing | Low — MapSwapToggle integration |
+| A6 | **QR codes + check-in graph** | A2 | Medium — visit_summaries + profile section |
+| A7 | **Contribution engine** (first-mover bonuses) | A2 | Low — extend venueContributions.ts |
+| A8 | **Map enrichment** (markers, search, clustering) | A3 | Medium — SessionMap upgrades |
+
+### Track B: Revenue + Comms (Launch Blockers)
+
+| Order | Item | Depends On | Complexity |
+|-------|------|-----------|-----------|
+| B1 | **Payment (UPI QR MVP)** | Nothing | Medium — upiqr + manual verification |
+| B2 | **Push notification cron** | Nothing | Medium — Edge Function + VAPID |
+| B3 | **Email via Resend** | Nothing | Medium — Edge Function + templates |
+| B4 | **Day pass purchase flow** | B1 | Medium — new route + simplified onboarding |
+
+### Track C: The Wow Moment
+
+| Order | Item | Depends On | Complexity |
+|-------|------|-----------|-----------|
+| C1 | **In-session smart intros** | Nothing | Low — uses existing match engine |
+| C2 | **Proactive match nudges** | B2/B3 | Medium — Edge Function + scheduling |
+| C3 | **Workspace insights dashboard** | Nothing | Medium — new read-only page |
+
+### Track D: Value Depth
+
+| Order | Item | Depends On | Complexity |
+|-------|------|-----------|-----------|
+| D1 | **B2B matching prominence** | Nothing | Low — mostly UI reorganization |
+| D2 | **Day pass → member conversion** | B4 | Low — post-session CTA |
+| D3 | **Needs board** | Nothing | Medium — evolve micro_requests |
+| D4 | **Mentor/mentee track** | Nothing | Low — profile fields + matching |
+
+### Track E: AI Intelligence + Scale
+
+| Order | Item | Depends On | Complexity |
+|-------|------|-----------|-----------|
+| E1 | **AI community manager** | Claude API | High — Edge Functions + AI pipeline |
+| E2 | **LLM-powered search** | Claude API | Medium — query parsing + search |
+| E3 | **AI session debrief** | Claude API | Medium — post-session generation |
+| E4 | **Configurable session formats** | Nothing | Medium — template system |
+| E5 | **Cross-space network** | 10+ spaces | High — multi-tenant architecture |
+
+### Current Execution Plan
+
+**Now (Track A):** Quick Questions → Venue Detail → Content Seeding → Map enrichment
+**Next (Track B):** Payment + notifications (launch blockers)
+**Then (Track C+D):** Smart intros, nudges, B2B prominence
+**Later (Track E):** AI features, cross-space network
 
 ---
 
 ## What NOT to Build Yet
 
-- **White-label/co-branded experience** — premature. Prove value with FocusClub brand first.
+- **White-label/co-branded experience** — premature. Prove value with DanaDone brand first.
 - **Full marketplace/payment for services** — start with Needs Board matchmaking, not transactions.
 - **Operator onboarding flow** — manual onboarding is fine for first 10 spaces.
 - **Corporate team bookings** — wait for organic demand signal.
@@ -276,12 +314,12 @@ Before starting Phase 1:
 
 ---
 
-## Success Criteria per Phase
+## Success Criteria per Track
 
-| Phase | Ship When | Success Metric |
+| Track | Ship When | Success Metric |
 |-------|-----------|---------------|
-| 1 | Payment works, notifications send | First paying member |
-| 2 | Smart intros in session, nudges sending | "How did you know?!" feedback from members |
-| 3 | Needs board active, mentors matched | First gig/project from needs board |
-| 4 | AI suggestions being accepted by admin | 50% of AI suggestions acted on |
-| 5 | Cross-space booking working | First cross-space visit |
+| A (Map World) | Map feels alive, Quick Questions live, 25+ venues, venue detail pages | Taste completion >40% avg, map visits >20% of DAU |
+| B (Revenue) | Payment works, notifications send | First paying member |
+| C (Wow Moment) | Smart intros in session, nudges sending | "How did you know?!" feedback from members |
+| D (Value Depth) | Needs board active, mentors matched | First gig/project from needs board |
+| E (AI + Scale) | AI suggestions being accepted by admin | 50% of AI suggestions acted on |
