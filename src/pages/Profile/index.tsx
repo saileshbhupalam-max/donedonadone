@@ -100,6 +100,9 @@ export default function Profile() {
   const [prefDays, setPrefDays] = useState<string[]>([]);
   const [prefTimes, setPrefTimes] = useState<string[]>([]);
   const [prefDuration, setPrefDuration] = useState(2);
+  const [profileVisibility, setProfileVisibility] = useState<"public" | "session_only" | "minimal">("public");
+  const [hideNeighborhood, setHideNeighborhood] = useState(false);
+  const [hideSocialLinks, setHideSocialLinks] = useState(false);
 
   // Load profile data
   useEffect(() => {
@@ -131,6 +134,9 @@ export default function Profile() {
     setPrefDays(profile.preferred_days ?? []);
     setPrefTimes(profile.preferred_times ?? []);
     setPrefDuration(profile.preferred_session_duration ?? 2);
+    setProfileVisibility((profile as any).profile_visibility ?? "public");
+    setHideNeighborhood((profile as any).hide_neighborhood ?? false);
+    setHideSocialLinks((profile as any).hide_social_links ?? false);
   }, [profile]);
 
   // Load gamification data
@@ -186,6 +192,9 @@ export default function Profile() {
       preferred_latitude: prefLat, preferred_longitude: prefLng, preferred_radius_km: prefRadius,
       preferred_neighborhoods: prefNeighborhoods, preferred_days: prefDays, preferred_times: prefTimes,
       preferred_session_duration: prefDuration,
+      profile_visibility: profileVisibility,
+      hide_neighborhood: hideNeighborhood,
+      hide_social_links: hideSocialLinks,
     };
     const { error } = await supabase.from("profiles").update(sanitizeProfileData(profileData)).eq("id", user.id);
     setSaving(false);
@@ -694,6 +703,41 @@ export default function Profile() {
                       sonnerToast.success(checked ? "You'll be matched with mentors" : "Mentee mode off");
                     }}
                   />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Privacy Controls — wires up profile_visibility, hide_neighborhood, hide_social_links columns */}
+            <Card>
+              <CardContent className="pt-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-muted-foreground" />
+                  <h3 className="text-sm font-medium text-foreground">Privacy</h3>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Who can see your full profile</label>
+                  <Select value={profileVisibility} onValueChange={(v) => setProfileVisibility(v as any)}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Everyone</SelectItem>
+                      <SelectItem value="session_only">Only people in my sessions</SelectItem>
+                      <SelectItem value="minimal">Minimal (name + work vibe only)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-foreground">Hide my neighborhood</p>
+                    <p className="text-[10px] text-muted-foreground">Others won't see where you're based</p>
+                  </div>
+                  <Switch checked={hideNeighborhood} onCheckedChange={setHideNeighborhood} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-foreground">Hide social links</p>
+                    <p className="text-[10px] text-muted-foreground">LinkedIn, Instagram, Twitter hidden from non-connections</p>
+                  </div>
+                  <Switch checked={hideSocialLinks} onCheckedChange={setHideSocialLinks} />
                 </div>
               </CardContent>
             </Card>
