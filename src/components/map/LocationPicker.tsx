@@ -70,7 +70,7 @@ export function LocationPicker({ latitude, longitude, radiusKm = 5, onLocationCh
         <MapContainer center={[lat, lng]} zoom={13} className="w-full h-full" zoomControl={false}>
           <TileLayer
             url={isDark
-              ? "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
+              ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
               : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"}
           />
           <Marker position={[lat, lng]} />
