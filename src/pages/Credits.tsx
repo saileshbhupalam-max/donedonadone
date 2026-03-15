@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -26,10 +27,22 @@ import {
   ArrowUp,
   Loader2,
   Zap,
+  Shield,
+  Snowflake,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { getBalance, fulfillRedemption, type CreditAction } from "@/lib/focusCredits";
+import {
+  getBalance,
+  fulfillRedemption,
+  getLifetimeEarnings,
+  getUserTier,
+  getStreakMultiplier,
+  getEffectiveMultiplier,
+  purchaseStreakFreeze,
+  type CreditAction,
+  type UserTierInfo,
+} from "@/lib/focusCredits";
 import { getGrowthConfig } from "@/lib/growthConfig";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -100,8 +113,27 @@ export default function Credits() {
   const [loading, setLoading] = useState(true);
   const [redeemTarget, setRedeemTarget] = useState<RedeemOption | null>(null);
   const [redeeming, setRedeeming] = useState(false);
+  // WHY: Tier visibility creates an aspiration loop — users see the next tier
+  // and work toward it (Starbucks loyalty model: visible tiers = 2.5x engagement).
+  const [tierInfo, setTierInfo] = useState<UserTierInfo | null>(null);
+  // WHY: Streak display activates loss aversion (Kahneman: losses felt 2.25x).
+  // Seeing "6 week streak" makes missing a week feel like destroying progress.
+  const [streakWeeks, setStreakWeeks] = useState(0);
+  // WHY: Showing the combined multiplier makes every earn feel amplified.
+  // "Earning at 1.5x" reframes routine sessions as high-value activities.
+  const [effectiveMultiplier, setEffectiveMultiplier] = useState(1.0);
+  const [buyingFreeze, setBuyingFreeze] = useState(false);
 
   const config = getGrowthConfig().credits;
+
+  // WHY: Color-coded tiers create visible status differentiation — users
+  // instantly recognize their rank and what others have achieved (social proof).
+  const TIER_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+    explorer: { bg: "bg-gray-100 dark:bg-gray-800", text: "text-gray-700 dark:text-gray-300", border: "border-gray-300 dark:border-gray-600" },
+    regular: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-300", border: "border-blue-300 dark:border-blue-700" },
+    insider: { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-300", border: "border-purple-300 dark:border-purple-700" },
+    champion: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-300", border: "border-amber-300 dark:border-amber-700" },
+  };
 
   const redeemOptions: RedeemOption[] = [
     {
@@ -162,7 +194,7 @@ export default function Credits() {
     if (!user) return;
     setLoading(true);
 
-    const [bal, { data: entries }] = await Promise.all([
+    const [bal, { data: entries }, lifetimeFC, { data: prof }] = await Promise.all([
       getBalance(user.id),
       supabase
         .from("focus_credits")
@@ -170,10 +202,28 @@ export default function Credits() {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(50),
+      getLifetimeEarnings(user.id),
+      supabase
+        .from("profiles")
+        .select("current_streak")
+        .eq("id", user.id)
+        .single(),
     ]);
 
     setBalance(bal);
     setHistory((entries as LedgerEntry[]) || []);
+
+    // Compute tier from lifetime earnings (never demotes — Starbucks model)
+    const tier = getUserTier(lifetimeFC);
+    setTierInfo(tier);
+
+    // Streak from profile (updated server-side each week)
+    const weeks = (prof as any)?.current_streak || 0;
+    setStreakWeeks(weeks);
+
+    // Combined multiplier: tier × streak — both compound independently
+    setEffectiveMultiplier(getEffectiveMultiplier(lifetimeFC, weeks));
+
     setLoading(false);
   }, [user]);
 
@@ -209,6 +259,17 @@ export default function Credits() {
       );
     }
     setRedeeming(false);
+  };
+
+  const handleBuyFreeze = async () => {
+    if (!user) return;
+    setBuyingFreeze(true);
+    const result = await purchaseStreakFreeze(user.id);
+    if (!result.success) {
+      toast.error(result.error || "Could not purchase streak freeze");
+    }
+    await fetchData();
+    setBuyingFreeze(false);
   };
 
   const totalEarned = history.filter((e) => e.amount > 0).reduce((s, e) => s + e.amount, 0);
@@ -248,6 +309,126 @@ export default function Credits() {
             </div>
           )}
         </div>
+
+        {/* ─── Gamification Dashboard ─────────────────────────
+          WHY: Making progression systems visible turns passive earners into
+          active optimizers. Starbucks found that tier visibility increased
+          spend-to-next-tier behavior by 2.5x. Duolingo found that showing
+          streaks on the home screen increased daily opens by 14%.
+        */}
+        {!loading && tierInfo && (
+          <>
+            {/* WHY: Combined multiplier shown prominently so every future earn
+                feels amplified. "Earning at 1.5x" reframes routine actions as
+                high-value — the Peloton "output score" effect. */}
+            {effectiveMultiplier > 1.0 && (
+              <div className="flex justify-center">
+                <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 px-3 py-1 text-sm font-semibold shadow-sm">
+                  <Zap className="w-3.5 h-3.5 mr-1" />
+                  Earning at {effectiveMultiplier.toFixed(1)}x
+                </Badge>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              {/* ─── Tier Progress Card ─────────────────────────
+                WHY: Visible tier progress creates an "endowed progress" loop
+                (Nunes & Dreze). A bar at 60% feels like invested effort you
+                can't waste — dramatically increasing next-action motivation.
+              */}
+              <Card className={`${TIER_COLORS[tierInfo.key].border}`}>
+                <CardContent className="p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Shield className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <span className="text-xs font-medium text-muted-foreground">Tier</span>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] px-1.5 py-0 ${TIER_COLORS[tierInfo.key].text} ${TIER_COLORS[tierInfo.key].border}`}
+                    >
+                      {tierInfo.label}
+                    </Badge>
+                  </div>
+
+                  {/* WHY: Progress bar triggers goal-gradient effect — motivation
+                      increases as you get closer to the goal (Hull 1932). */}
+                  {tierInfo.fcToNextTier !== null ? (
+                    <>
+                      <Progress
+                        value={(() => {
+                          const tiers = config.tiers;
+                          const tierOrder = [tiers.explorer, tiers.regular, tiers.insider, tiers.champion];
+                          const currentMin = tierOrder.find(t => t.label === tierInfo.label)?.minLifetimeFC ?? 0;
+                          const nextMin = currentMin + (tierInfo.fcToNextTier ?? 0);
+                          const range = nextMin - currentMin;
+                          if (range <= 0) return 100;
+                          return Math.min(100, ((tierInfo.lifetimeFC - currentMin) / range) * 100);
+                        })()}
+                        className="h-2 bg-muted"
+                      />
+                      <p className="text-[10px] text-muted-foreground">
+                        {tierInfo.fcToNextTier} FC to {tierInfo.nextTierLabel}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                      Max tier reached!
+                    </p>
+                  )}
+
+                  <p className="text-[10px] text-muted-foreground">
+                    {tierInfo.earnMultiplier}x earn rate
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* ─── Streak Card ─────────────────────────
+                WHY: Streaks exploit loss aversion (Kahneman: 2.25x). Once a user
+                has a 6-week streak, the psychological cost of breaking it far
+                exceeds the cost of attending one more session. Duolingo data:
+                streak visibility alone increased 7-day retention by 14%.
+              */}
+              <Card className="border-orange-200 dark:border-orange-800">
+                <CardContent className="p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm" role="img" aria-label="fire">🔥</span>
+                      <span className="text-xs font-medium text-muted-foreground">Streak</span>
+                    </div>
+                    <span className="text-sm font-bold text-orange-600 dark:text-orange-400">
+                      {streakWeeks}w
+                    </span>
+                  </div>
+
+                  <p className="text-[10px] text-muted-foreground">
+                    {getStreakMultiplier(streakWeeks) > 1.0
+                      ? `${getStreakMultiplier(streakWeeks).toFixed(1)}x streak bonus`
+                      : "Attend weekly to build streak"}
+                  </p>
+
+                  {/* WHY: Streak freeze purchase is a "loss aversion monetization"
+                      — Duolingo found streak freezes reduced churn 21% among
+                      at-risk users. The user pays FC to protect sunk cost. */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-7 text-[10px] gap-1"
+                    onClick={handleBuyFreeze}
+                    disabled={buyingFreeze || balance < config.streak.freezeCost}
+                  >
+                    {buyingFreeze ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Snowflake className="w-3 h-3" />
+                    )}
+                    Freeze ({config.streak.freezeCost} FC)
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
 
         <Separator />
 
@@ -392,7 +573,9 @@ export default function Credits() {
           )}
         </section>
 
-        {/* How to earn */}
+        {/* How to earn — WHY: Showing multiplied amounts makes the multiplier
+            feel tangible. "10 FC (x1.5 = 15 FC)" turns an abstract multiplier
+            into a concrete reward increase, reinforcing tier/streak investment. */}
         <section>
           <h2 className="font-serif text-lg text-foreground mb-3 flex items-center gap-2">
             <Users className="w-4 h-4 text-primary" /> How to Earn
@@ -411,12 +594,26 @@ export default function Credits() {
                 <div key={item.label} className="flex justify-between">
                   <span>{item.label}</span>
                   <span className="font-medium text-amber-700 dark:text-amber-400">
-                    +{item.fc} FC
+                    {effectiveMultiplier > 1.0 ? (
+                      <>
+                        +{item.fc} FC{" "}
+                        <span className="text-[9px] text-amber-500 dark:text-amber-500">
+                          ({effectiveMultiplier.toFixed(1)}x = {Math.round(item.fc * effectiveMultiplier)} FC)
+                        </span>
+                      </>
+                    ) : (
+                      <>+{item.fc} FC</>
+                    )}
                   </span>
                 </div>
               ))}
               <p className="text-[10px] pt-1 text-muted-foreground/70">
                 Daily earning cap: {config.dailyEarnCap} FC
+                {effectiveMultiplier > 1.0 && (
+                  <span className="ml-1 text-amber-600 dark:text-amber-400">
+                    (your {effectiveMultiplier.toFixed(1)}x multiplier applies!)
+                  </span>
+                )}
               </p>
             </CardContent>
           </Card>

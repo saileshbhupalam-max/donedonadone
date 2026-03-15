@@ -20,6 +20,10 @@ import { normalizeNeighborhood } from "@/lib/neighborhoods";
 
 // ─── Types ──────────────────────────────────
 
+// WHY geographic data (lat/lng, GPS from photo, Google Maps URL): Three-way
+// geographic verification catches fake nominations. If the photo GPS doesn't
+// match the stated address, or the Google Maps URL points elsewhere, the venue
+// is likely fabricated. Also enables future proximity features (nearest venue search).
 export interface NominationData {
   venue_name: string;
   address: string;
@@ -165,14 +169,23 @@ export async function nominateVenue(
 /**
  * Vouch for an existing nomination. Awards 3 FC (verify_venue_info action).
  * Calls check_nomination_activation() RPC to see if 3-vouch threshold is met.
+ *
+ * WHY 3 vouches to activate: Balances speed vs. trust. 1-2 vouches could be
+ * friends rubber-stamping; 5+ creates too much friction and slows venue supply.
+ * 3 independent verifications (from members who've attended sessions) provides
+ * reasonable confidence that the venue exists, is suitable, and has WiFi/seating.
+ * Ring detection (detectNominationRings) catches coordinated gaming.
  */
 export async function vouchForVenue(
   userId: string,
   nominationId: string,
   data: VouchData
 ): Promise<{ success: boolean; activated: boolean; creditsAwarded: number; error?: string }> {
-  // Quality gate: voucher must have attended at least 1 session (prevents fake accounts)
-  // OR be an approved venue partner (they have skin in the game already)
+  // WHY events_attended >= 1 gate: Prevents Sybil attacks where someone creates
+  // multiple accounts to vouch for their own nomination. Attending 1 real session
+  // requires showing up in person — a meaningful proof of humanity. This is the
+  // lightest possible gate that still blocks zero-effort fake accounts.
+  // Approved venue partners are exempt because admin approval already establishes trust.
   const { data: voucherProfile } = await supabase
     .from("profiles")
     .select("events_attended")

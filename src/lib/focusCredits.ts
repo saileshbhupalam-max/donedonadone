@@ -416,25 +416,38 @@ export async function awardWithMultipliers(
 
 /**
  * Purchase a streak freeze. The user spends FC to protect one missed week.
- * Max freezes enforced by counting existing unused freezes.
+ * Max freezes enforced via rolling 7-day window (not lifetime total), so users
+ * can buy new freezes each week. Without the window, users who ever bought
+ * maxFreezes freezes would be permanently blocked from purchasing more.
  */
 export async function purchaseStreakFreeze(
   userId: string
 ): Promise<{ success: boolean; error?: string }> {
   const config = getGrowthConfig().credits.streak;
 
-  // Count existing unused freezes (streak_freeze_purchase without a matching use)
-  const { data: freezes } = await supabase
-    .from('focus_credits')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('action', 'streak_freeze_purchase')
-    .gt('amount', -config.freezeCost - 1)
-    .lt('amount', -config.freezeCost + 1);
+  // Count active freezes in rolling 7-day window via server RPC.
+  // WHY rolling window: lifetime count would permanently block after maxFreezes purchases.
+  // Falls back to client-side query if the RPC migration hasn't been applied yet.
+  let currentFreezes = 0;
+  const { data: rpcResult, error: rpcError } = await supabase.rpc(
+    'user_count_active_streak_freezes', { p_user_id: userId }
+  );
+  if (!rpcError && typeof rpcResult === 'number') {
+    currentFreezes = rpcResult;
+  } else {
+    // Fallback: count freezes purchased in last 7 days client-side
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: freezes } = await supabase
+      .from('focus_credits')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('action', 'streak_freeze_purchase')
+      .gte('created_at', weekAgo);
+    currentFreezes = freezes?.length ?? 0;
+  }
 
-  const currentFreezes = freezes?.length ?? 0;
   if (currentFreezes >= config.maxFreezes) {
-    return { success: false, error: `You already have ${config.maxFreezes} streak freezes.` };
+    return { success: false, error: `You already have ${config.maxFreezes} streak freezes this week.` };
   }
 
   const result = await spendCredits(userId, 'streak_freeze_purchase', config.freezeCost, {
@@ -498,34 +511,79 @@ export async function awardGroupChemistryBonus(
 // ─── Penalties ──────────────────────────────────
 // Kahneman/Tversky: loss aversion coefficient ~2.25x.
 // A 15 FC no-show penalty feels as bad as missing a 34 FC reward.
+//
+// WHY we try user_penalize_self first:
+// spendCredits enforces balance >= 0, so a zero-balance user who flakes
+// pays no penalty — they've effectively "dodged" the consequence.
+// user_penalize_self allows negative balance, meaning penalties always
+// apply. This is critical for loss aversion to function: if users learn
+// that going to 0 FC makes them immune to penalties, the entire
+// anti-flaking system collapses.
+//
+// The RPC is being created in a parallel SQL migration. Until that
+// migration is applied, we fall back to spendCredits (which will
+// silently fail for zero-balance users — acceptable during rollout).
 
 /**
- * Deduct FC for a no-show. Uses spendCredits so the server enforces
- * it can't take balance below zero.
+ * Deduct FC for a no-show. Tries penalty RPC (allows negative balance)
+ * first, falls back to spendCredits if the migration hasn't been applied.
  */
 export async function penalizeNoShow(
   userId: string,
   sessionId: string
 ): Promise<AwardResult> {
   const { noShow } = getGrowthConfig().credits.penalties;
-  return spendCredits(userId, 'no_show_penalty', noShow, {
+  const metadata = {
     session_id: sessionId,
     idempotency_key: `no_show_${userId}_${sessionId}`,
+  };
+
+  // Try penalty RPC that allows negative balance — zero-balance users can't dodge penalties
+  const { data, error } = await supabase.rpc('user_penalize_self', {
+    p_action: 'no_show_penalty',
+    p_amount: noShow,
+    p_metadata: metadata as any,
   });
+
+  if (error) {
+    // Fallback: spendCredits blocks on insufficient balance, so zero-balance
+    // users won't be penalized. Acceptable until user_penalize_self migration lands.
+    console.warn('[focusCredits] user_penalize_self not available, falling back to spendCredits:', error.message);
+    return spendCredits(userId, 'no_show_penalty', noShow, metadata);
+  }
+
+  return data as AwardResult;
 }
 
 /**
  * Deduct FC for a late cancellation (within lateCancelWindowHours of start).
+ * Tries penalty RPC (allows negative balance) first, falls back to spendCredits.
  */
 export async function penalizeLateCancel(
   userId: string,
   sessionId: string
 ): Promise<AwardResult> {
   const { lateCancel } = getGrowthConfig().credits.penalties;
-  return spendCredits(userId, 'late_cancel_penalty', lateCancel, {
+  const metadata = {
     session_id: sessionId,
     idempotency_key: `late_cancel_${userId}_${sessionId}`,
+  };
+
+  // Try penalty RPC that allows negative balance — zero-balance users can't dodge penalties
+  const { data, error } = await supabase.rpc('user_penalize_self', {
+    p_action: 'late_cancel_penalty',
+    p_amount: lateCancel,
+    p_metadata: metadata as any,
   });
+
+  if (error) {
+    // Fallback: spendCredits blocks on insufficient balance, so zero-balance
+    // users won't be penalized. Acceptable until user_penalize_self migration lands.
+    console.warn('[focusCredits] user_penalize_self not available, falling back to spendCredits:', error.message);
+    return spendCredits(userId, 'late_cancel_penalty', lateCancel, metadata);
+  }
+
+  return data as AwardResult;
 }
 
 // ─── Endowed Progress ──────────────────────────────────

@@ -78,6 +78,12 @@ export async function trackReferralSignup(
 /**
  * Check and award referral milestones for a referrer.
  * Called after a referee completes their 1st or 3rd session.
+ *
+ * WHY milestone-based (not signup-based) rewards: Rewarding at signup encourages
+ * spam referrals. Rewarding at 1st session ensures the referee actually showed up
+ * (real person, real engagement). The 3rd session milestone rewards the referrer
+ * again when the referee becomes a "regular" — proving the referral was high-quality.
+ * Dropbox famously found that referral quality > quantity for sustainable growth.
  */
 export async function checkReferralMilestones(
   referrerId: string,
@@ -179,7 +185,9 @@ export async function generateSmartReferralNudge(
 
   const referralCode = (profile as any)?.referral_code || '';
 
-  // After a good session (4-5 star rating)
+  // WHY nudge after good sessions: Peak-end rule (Kahneman) — users are most positive
+  // immediately after a great experience. A 4-5 star session is the highest-intent
+  // moment for referral. Nudging during neutral/bad moments feels tone-deaf.
   if (
     config.growth.nudgeAfterGoodSession &&
     context.justFinishedSession &&
@@ -208,7 +216,9 @@ export async function generateSmartReferralNudge(
     };
   }
 
-  // No slots available
+  // WHY nudge when no slots: Turns frustration into action. "No sessions available"
+  // is a dead end; "More members = more sessions — help us grow!" reframes the problem
+  // and gives the user agency. Also channels genuine demand signals into growth.
   if (config.growth.nudgeWhenNoSlots && context.noSlotsAvailable) {
     return {
       show: true,

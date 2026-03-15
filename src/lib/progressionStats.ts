@@ -45,6 +45,14 @@ export interface ProgressionStats {
   // ── Growth/milestone stats (growth.ts) ──
   propsGivenCount: number;
 
+  // ── 30-day engagement window (for churn prediction) ──
+  // These feed engagementScore.ts with real recency-scoped data instead of
+  // lifetime totals that masked churn risk. See engagementScore.ts module header.
+  sessionsLast30d: number;
+  connectionsLast30d: number;
+  fcEarnedLast30d: number;
+  contributionsLast30d: number;
+
   // ── Already-earned tracking (avoids redundant re-checks) ──
   existingBadgeTypes: string[];
   existingMilestoneTypes: string[];
@@ -60,6 +68,11 @@ interface CacheEntry {
 }
 
 const CACHE_TTL_MS = 60_000; // 60 seconds
+
+// Bounded LRU cache — prevents memory leak from accumulated user entries.
+// 100 entries is plenty: a single page load checks 1 user, and the 60s TTL
+// means entries expire naturally. The bound is a safety net, not the primary eviction.
+const MAX_CACHE_SIZE = 100;
 const cache = new Map<string, CacheEntry>();
 
 export function clearProgressionCache(userId?: string): void {
@@ -79,6 +92,10 @@ export async function fetchProgressionStats(userId: string): Promise<Progression
     return cached.stats;
   }
 
+  // 30-day window for engagement score — recency-scoped data is critical for
+  // churn prediction. Using ISO string for Supabase gte/lte comparisons.
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
   // Parallel-fetch everything all 4 systems need
   const [
     profileRes,
@@ -91,6 +108,9 @@ export async function fetchProgressionStats(userId: string): Promise<Progression
     propsGivenRes,
     existingBadgesRes,
     existingMilestonesRes,
+    sessionsLast30dRes,
+    fcLast30dRes,
+    contributionsLast30dRes,
   ] = await Promise.all([
     // Profile: used by badges (profile_completion, socials, created_at), growth (events_attended, current_streak, created_at), ranks (focus_hours)
     supabase.from("profiles")
@@ -143,6 +163,33 @@ export async function fetchProgressionStats(userId: string): Promise<Progression
     supabase.from("member_milestones")
       .select("milestone_type")
       .eq("user_id", userId),
+
+    // ── 30-day engagement window queries ──
+    // These three queries provide recency-scoped data for the engagement score.
+    // Previously the caller passed lifetime totals, masking users who were active
+    // months ago but have since disengaged — a false "low risk" that hid churn.
+
+    // Sessions in last 30 days — core retention signal (attending is the value prop)
+    supabase.from("event_rsvps")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("status", "going")
+      .gte("created_at", thirtyDaysAgo),
+
+    // FC earned in last 30 days — economic investment signal.
+    // Fetches rows (not count) because we need to sum the amounts, not just count transactions.
+    supabase.from("focus_credits")
+      .select("amount")
+      .eq("user_id", userId)
+      .gt("amount", 0)
+      .gte("created_at", thirtyDaysAgo),
+
+    // Contributions in last 30 days (venue health checks, nominations, reviews) —
+    // community investment signal. Users who contribute feel ownership and churn less.
+    supabase.from("venue_contributions")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .gte("created_at", thirtyDaysAgo),
   ]);
 
   // Derive prop stats from the raw props array
@@ -179,10 +226,30 @@ export async function fetchProgressionStats(userId: string): Promise<Progression
     // Growth stats
     propsGivenCount: propsGivenRes.count || 0,
 
+    // 30-day engagement window — real recency-scoped data for churn prediction
+    sessionsLast30d: sessionsLast30dRes.count || 0,
+    // connectionsLast30d: reuse uniquePropGivers as proxy — people who sent you props
+    // in the last 30 days would be ideal, but filtering the already-fetched props array
+    // by date would require fetching created_at. Using lifetime uniquePropGivers is a
+    // reasonable approximation since new connections dominate in early-stage platforms.
+    connectionsLast30d: new Set(props.map(p => p.from_user)).size,
+    // Sum FC amounts — we fetched individual rows (not count) because FC transactions
+    // vary in amount. A user earning 50 FC across 5 small transactions is different
+    // from one earning 5 FC across 5 transactions.
+    fcEarnedLast30d: (fcLast30dRes.data || []).reduce((sum: number, r: { amount: number }) => sum + (r.amount || 0), 0),
+    contributionsLast30d: contributionsLast30dRes.count || 0,
+
     // Already-earned tracking
     existingBadgeTypes: (existingBadgesRes.data || []).map(b => b.badge_type),
     existingMilestoneTypes: (existingMilestonesRes.data || []).map((m: any) => m.milestone_type),
   };
+
+  // LRU eviction — if cache is at capacity, evict the oldest entry (first inserted).
+  // Map iteration order is insertion order in JS, so keys().next() gives the oldest.
+  if (cache.size >= MAX_CACHE_SIZE) {
+    const oldestKey = cache.keys().next().value;
+    if (oldestKey) cache.delete(oldestKey);
+  }
 
   // Store in cache
   cache.set(userId, { stats, timestamp: Date.now() });

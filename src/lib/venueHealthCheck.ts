@@ -38,8 +38,14 @@ export interface HealthCheckResult {
 
 // ─── Constants ──────────────────────────────
 
+// WHY 30 days: Venue conditions change slowly (WiFi outage, renovation, closure).
+// Monthly checks balance data freshness against member fatigue from too-frequent prompts.
 const CHECK_FRESHNESS_DAYS = 30;
-const BAD_CHECK_THRESHOLD = 3; // consecutive bad checks → deactivate
+// WHY 3 bad checks: Requires independent corroboration from 3 different members
+// before deactivating a venue. 1-2 bad checks could be one-off issues (bad WiFi day)
+// or a disgruntled individual. 3 consecutive bad checks = systemic problem.
+// Mirrors the 3-vouch activation threshold for symmetry in the trust system.
+const BAD_CHECK_THRESHOLD = 3;
 const HEALTH_CHECK_FC = 5; // FC reward for submitting a check
 
 // ─── Core Functions ──────────────────────────
@@ -127,7 +133,9 @@ export async function evaluateVenueHealth(locationId: string): Promise<boolean> 
     return true;
   }
 
-  // Check if venue has consistently bad conditions (2+ issues per check)
+  // WHY 2+ issues = "bad check": A single issue (e.g. noisy day) is tolerable.
+  // But 2+ simultaneous problems (no WiFi AND bad seating) indicates the venue
+  // is fundamentally unsuitable for coworking, not just having a rough day.
   const badChecks = checks.filter((c) => {
     const issues = [!c.wifi_ok, !c.noise_ok, !c.seating_ok].filter(Boolean).length;
     return issues >= 2;

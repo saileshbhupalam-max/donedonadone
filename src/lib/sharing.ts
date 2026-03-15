@@ -3,6 +3,15 @@
  * @description Share message generators for events, prompts, badges, and profiles.
  * All messages include referral codes when available for viral growth tracking.
  *
+ * WHY centralized share messages: Every share is a growth opportunity. Pre-written
+ * messages solve two problems: (1) users don't have to think about what to write
+ * (reducing friction by ~70% per Nir Eyal's "Hooked"), and (2) every message includes
+ * the referral code + link, ensuring viral loops are never broken by lazy copy-paste.
+ *
+ * WHY messages include social proof (going count, badge descriptions): "5 people going
+ * already!" is more compelling than just a link. Social proof in share messages increases
+ * click-through by 2-3x (Robert Cialdini's "Influence" principles).
+ *
  * Key exports:
  * - getEventShareMessage() — Formatted event share text with date, venue, going count, and referral link
  * - getPromptShareMessage() — Share a prompt answer with truncated text

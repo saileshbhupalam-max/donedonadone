@@ -3,6 +3,18 @@
  * @description 17 badge definitions with eligibility checking and auto-award system.
  * Badges cover: early adopter, profile completion, prompts, events, social links, reactions, referrals, and peer props.
  *
+ * WHY badges exist: Three psychological drivers work together here:
+ * 1. Retention — badges create "investment" (Hooked model). Each badge earned is a sunk
+ *    cost that makes leaving the platform more psychologically expensive.
+ * 2. Status — visible badges on profiles give members social proof and recognition,
+ *    which drives engagement more than monetary rewards (Deci & Ryan self-determination theory).
+ * 3. Achievement — clear progression from "First Prompt" → "All Prompts" gives users
+ *    a roadmap of what's possible and what they haven't tried yet (Zeigarnik effect).
+ *
+ * WHY earned-once (not recurring): Badges mark permanent identity milestones ("I'm an
+ * Event OG"), not repeated behavior. Recurring rewards are handled by FC and streaks.
+ * Once-earned badges also prevent inflation — if everyone has every badge, none matter.
+ *
  * Key exports:
  * - BADGE_DEFINITIONS — Array of 17 badge types with emoji, name, description, hint
  * - getBadgeDef() — Look up a badge definition by type string

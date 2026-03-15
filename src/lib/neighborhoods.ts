@@ -25,6 +25,12 @@ import { supabase } from "@/integrations/supabase/client";
  * "HSR Layout" → "hsr-layout"
  * "hsr_layout" → "hsr-layout"
  * "  Koramangala 5th Block  " → "koramangala-5th-block"
+ *
+ * WHY normalization is critical: We had a launch-blocking bug where Onboarding stored
+ * "HSR Layout" (display name) but SessionRequests stored "hsr_layout" (underscore slug).
+ * These never matched in demand clustering, so auto-sessions never triggered despite
+ * real demand. ALL neighborhood comparisons MUST go through this function.
+ * See CLAUDE.md "Key Architectural Decisions #1" for the full incident writeup.
  */
 export function normalizeNeighborhood(input: string): string {
   return input
@@ -62,6 +68,12 @@ export interface NeighborhoodOption {
 /**
  * Initial neighborhoods for Bangalore launch. After launch, neighborhoods
  * self-register from user profiles. This list just prevents a cold start.
+ *
+ * WHY seed neighborhoods exist: Without seeds, the autocomplete is empty on day 1.
+ * New users in Bangalore would have to type their neighborhood freeform, leading to
+ * inconsistent entries ("HSR", "HSR Layout", "H.S.R. Layout"). Seeds provide canonical
+ * display names and ensure consistent slugs from the very first signup.
+ * Intentionally limited to Bangalore — other cities self-populate via user profiles.
  */
 export const SEED_NEIGHBORHOODS: NeighborhoodOption[] = [
   { slug: "hsr-layout", display: "HSR Layout" },

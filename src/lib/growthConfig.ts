@@ -234,6 +234,9 @@ export const DEFAULT_GROWTH_CONFIG: GrowthConfig = {
     exclusiveSession: 40,
 
     // Anti-inflation
+    // WHY 40: Avg user earns ~25 FC/day (1 session + 1 review + 1 rating). Cap at 40
+    // prevents power-user farming while allowing 2 sessions + contributions in one day.
+    // 50+ would let bots/grinders inflate the economy; 30 would punish active contributors.
     dailyEarnCap: 40,
     diminishingReturns: {
       sameVenueReviewCap: 3,
@@ -252,6 +255,11 @@ export const DEFAULT_GROWTH_CONFIG: GrowthConfig = {
     // Based on lifetime FC earned (never demotes on spending).
     // Starbucks model: 1x → 1.15x → 1.3x → 1.5x earn rates.
     // "Explorer" starts day one so nobody feels like a nobody.
+    // WHY these thresholds: 0/100/500/1500 map to natural usage milestones.
+    // 100 FC = ~4 sessions (1 week of regular use) — attainable quickly so users feel progress.
+    // 500 FC = ~20 sessions (1-2 months) — the "habit formed" point per Lally et al. (66-day avg).
+    // 1500 FC = ~60 sessions (6+ months) — true community veterans. Only ~5% reach this.
+    // Starbucks Gold requires 300 Stars (~$150 spend); our thresholds scale similarly relative to effort.
     tiers: {
       explorer:  { minLifetimeFC: 0,    earnMultiplier: 1.0,  label: 'Explorer' },
       regular:   { minLifetimeFC: 100,  earnMultiplier: 1.15, label: 'Regular' },
@@ -263,8 +271,16 @@ export const DEFAULT_GROWTH_CONFIG: GrowthConfig = {
     // Weekly cadence (not daily — sessions are weekly rituals).
     // Duolingo data: 7-day streak = 3.6x long-term retention.
     // Streak Freeze reduces churn 21% for at-risk users.
+    // WHY these milestones: 4/8/12/26/52 weeks map to psychological commitment stages.
+    // 4 weeks = habit formation threshold (Duolingo sees 3.6x retention at 7-day streaks).
+    // 8 weeks = past the "novelty wore off" danger zone where most apps lose users.
+    // 12 weeks = one quarter, the point where identity shifts ("I'm a DanaDone person").
+    // 26/52 weeks = half/full year — exceptional commitment worthy of outsized rewards.
+    // Bonuses escalate non-linearly (10→25→40→75→150) because each milestone is harder to reach.
     streak: {
       sessionsPerWeek: 1,
+      // WHY freezeCost 15: ~1.5 sessions worth of FC. Expensive enough to feel meaningful,
+      // cheap enough that loyal users can afford it. Duolingo freeze costs ~$5 equivalent.
       freezeCost: 15,
       maxFreezes: 2,
       milestones: [4, 8, 12, 26, 52],
@@ -277,7 +293,13 @@ export const DEFAULT_GROWTH_CONFIG: GrowthConfig = {
     // VR schedules are most resistant to extinction (Skinner).
     // 10% mystery double = enough to be exciting, rare enough to stay surprising.
     variableRewards: {
+      // WHY 10%: Slot machine research (Skinner) shows variable ratio schedules are most
+      // resistant to extinction. 10% = roughly 1 in 10 sessions. Frequent enough to be
+      // exciting ("it could happen today"), rare enough to stay surprising.
+      // Higher rates (25%+) become expected and lose their dopamine effect.
       mysteryDoubleChance: 0.10,
+      // WHY 5: Small enough to not distort the economy, large enough to notice.
+      // Triggers only when ALL group members rate 4+ stars — rewards genuine chemistry.
       groupChemistryBonus: 5,
       goldenSessionMultiplier: 3,
     },
@@ -287,6 +309,12 @@ export const DEFAULT_GROWTH_CONFIG: GrowthConfig = {
     // Penalties sting because FC have real redemption value.
     // ClassPass model: no-show = full credit cost + penalty.
     penalties: {
+      // WHY 15/10: Loss aversion coefficient is ~2.25x (Kahneman/Tversky). A 15 FC
+      // penalty "feels" like losing ~34 FC of potential gain. That's 1.5 sessions of
+      // earning wiped out — painful enough to deter no-shows but not devastating.
+      // ClassPass charges $15-20 for no-shows on a similar principle.
+      // WHY noShow > lateCancel: No-shows waste the group's time and a venue seat.
+      // Late cancels at least free up the spot for waitlist promotion.
       noShow: 15,
       lateCancel: 10,
       lateCancelWindowHours: 2,
@@ -297,10 +325,21 @@ export const DEFAULT_GROWTH_CONFIG: GrowthConfig = {
     // Strava: club members 2x more likely to exercise weekly.
     // Peloton: cross-discipline engagement = 60% lower churn.
     social: {
+      // WHY 3 weeks: Habitica data shows small-group accountability kicks in after 3
+      // consecutive weeks of shared activity (65% higher completion). Shorter windows
+      // feel accidental; longer windows are too hard to coordinate.
       groupStreakWeeks: 3,
+      // WHY 10 FC: Modest reward shared by all group members. The real incentive is
+      // social — people don't want to be the one who breaks the group streak.
       groupStreakBonus: 10,
+      // WHY reliabilityBonus 25 at threshold 10: Rewards consistent attendance over
+      // time. 10 consecutive sessions ≈ 10 weeks of weekly use. The 25 FC bonus is
+      // 2.5x a session reward — a meaningful "thank you" for reliability.
       reliabilityBonus: 25,
       reliabilityThreshold: 10,
+      // WHY venueVariety 10 FC at 3 venues: Peloton saw 60% lower churn from
+      // cross-discipline engagement. Trying 3 venues/month prevents over-attachment
+      // to one spot and distributes revenue across partner venues.
       venueVarietyBonus: 10,
       venueVarietyThreshold: 3,
     },

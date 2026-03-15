@@ -20,6 +20,13 @@
  */
 // ─── DanaDone Platform Personality ──────────────────────
 // The poet in the machine. Rumi meets Seinfeld meets your coolest friend.
+//
+// WHY branded copy matters: Generic UI text ("Welcome back", "Error occurred") makes
+// every app feel the same. DanaDone's voice is its personality — warm, witty, never
+// corporate. Centralized here so the brand voice stays consistent across 50+ components.
+// Every loading message, error, and confirmation is a micro-interaction that either
+// builds or erodes the user's emotional connection to the product.
+// Mailchimp's voice/tone guide proved that consistent copy increases NPS by 15-20%.
 
 // ─── Loading States (rotate randomly) ──────────────────
 export const LOADING_MESSAGES = [

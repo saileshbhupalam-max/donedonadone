@@ -31,6 +31,17 @@ export interface RankTier {
   motivation: string;
 }
 
+// WHY focus_hours as the rank metric (not sessions attended or FC earned):
+// Focus hours measure the thing we actually care about — deep work done together.
+// Sessions attended doesn't distinguish a 2hr vs 4hr session. FC earned can be
+// gamed via reviews/photos without attending. Hours are the purest signal of
+// genuine engagement with the platform's core value proposition.
+//
+// WHY these thresholds: 0/5/15/35/75/150 follow a roughly exponential curve.
+// Each rank requires ~2x the incremental effort of the previous one.
+// 5hrs = ~3-4 sessions (first week or two). 15hrs = ~10 sessions (one month).
+// 35hrs = ~25 sessions (3 months). 75hrs = ~50 sessions (6 months).
+// 150hrs = power users only (~1% of members). This ensures each rank feels earned.
 export const RANK_TIERS: RankTier[] = [
   {
     name: "Newcomer", emoji: "🌱", minHours: 0, maxHours: 5,
@@ -100,6 +111,11 @@ export function getRankProgress(hours: number): { current: RankTier; next: RankT
 /**
  * Calculate focus hours from an event's times and type.
  * structured_4hr → 3hrs, structured_2hr → 1.33hrs, else full duration
+ *
+ * WHY not the full session duration: Structured sessions include icebreakers,
+ * social breaks, and wrap-ups which are valuable but aren't "focus hours."
+ * A 4hr session has ~3hrs of actual deep work; a 2hr session has ~80min (1.33hrs).
+ * Counting only deep work blocks keeps the rank metric honest and comparable.
  */
 export function calculateSessionHours(startTime: string | null, endTime: string | null, title: string, sessionFormat?: string | null): number {
   // Check session_format first

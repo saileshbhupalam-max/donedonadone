@@ -38,6 +38,16 @@ export async function trackAnalyticsEvent(
 }
 
 // ─── Milestone Definitions ──────────────────────────────
+// WHY milestones exist (vs. just badges): Milestones celebrate behavior in the
+// moment ("You just hit 3 sessions!") while badges accumulate on the profile.
+// The celebration popup + share message creates a viral loop — each milestone
+// is a natural sharing opportunity with a pre-written message including referral code.
+//
+// WHY these specific combinations: Milestones check distinct dimensions of engagement
+// (attendance, streaks, props, prompts, referrals, tenure) because each dimension
+// represents a different user archetype. A "lurker" who answers prompts but rarely
+// attends still hits prompt milestones. A "silent grinder" who attends but never
+// props still progresses through events milestones. Everyone finds their path.
 export interface MilestoneDef {
   type: string;
   emoji: string;
@@ -212,7 +222,10 @@ export async function checkMilestones(
 
   const monthsSince = Math.floor((Date.now() - createdAt.getTime()) / (30 * 24 * 60 * 60 * 1000));
 
-  // Check milestones in priority order (newest first)
+  // WHY check in descending order (highest first): Award the most impressive
+  // unearned milestone. If a user has 10 sessions but missed the events_5 milestone,
+  // we award events_10 first (the bigger celebration) then events_5 on the next check.
+  // This prevents anti-climactic sequences ("You hit 3 sessions!" after already hitting 10).
   const checks: [string, boolean][] = [
     ["events_50", attended >= 50],
     ["events_25", attended >= 25],

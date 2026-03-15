@@ -26,6 +26,14 @@ export interface PhaseTemplate {
   duration_minutes: number;
 }
 
+// WHY these phase timings: Based on research + user testing during beta.
+// Icebreaker 15min: Enough to learn names and what everyone's working on. Shorter
+// feels rushed with 5 people; longer eats into the deep work people came for.
+// Deep work 90min: Matches the "ultradian rhythm" — humans focus in ~90min cycles
+// (Peretz Lavie, Nathaniel Kleitman). Two 90min blocks = the session's core value.
+// Social break 30min: Long enough for genuine conversation (not just bathroom break).
+// This is where serendipitous connections happen — the "water cooler" moment.
+// Wrap-up 15min: Go-around for what each person accomplished + peer props.
 export const STRUCTURED_4HR_PHASES: PhaseTemplate[] = [
   { phase_order: 1, phase_type: "icebreaker", phase_label: "Icebreaker", duration_minutes: 15 },
   { phase_order: 2, phase_type: "deep_work", phase_label: "Deep Work Block 1", duration_minutes: 90 },
@@ -34,6 +42,11 @@ export const STRUCTURED_4HR_PHASES: PhaseTemplate[] = [
   { phase_order: 5, phase_type: "wrap_up", phase_label: "Wrap-Up & Props", duration_minutes: 15 },
 ];
 
+// WHY 2hr format exists: Not everyone has 4 hours. The 2hr "lunch session" format
+// targets office workers with a 12-2pm window. Compressed timings (10/40/10/40/20)
+// preserve the icebreaker→work→break→work→wrapup rhythm at half the duration.
+// WHY wrap-up is 20min (not 10): 2hr sessions merge social+wrap-up because
+// there's no 30min social break — the wrap-up IS the social moment.
 export const STRUCTURED_2HR_PHASES: PhaseTemplate[] = [
   { phase_order: 1, phase_type: "icebreaker", phase_label: "Icebreaker", duration_minutes: 10 },
   { phase_order: 2, phase_type: "deep_work", phase_label: "Deep Work Block 1", duration_minutes: 40 },
@@ -42,6 +55,10 @@ export const STRUCTURED_2HR_PHASES: PhaseTemplate[] = [
   { phase_order: 5, phase_type: "wrap_up", phase_label: "Social + Wrap-Up", duration_minutes: 20 },
 ];
 
+// WHY focus-only formats exist: Some users explicitly want zero social overhead —
+// they came to work, not chat. "check_in" replaces "icebreaker" (just names, 5min),
+// "silent_break" replaces "social_break" (stretch/bathroom only), and deep work blocks
+// are maximized. This format tests whether pure productivity attracts a different audience.
 export const FOCUS_ONLY_2HR_PHASES: PhaseTemplate[] = [
   { phase_order: 1, phase_type: "check_in", phase_label: "Check-in", duration_minutes: 5 },
   { phase_order: 2, phase_type: "deep_work", phase_label: "Deep Work Block 1", duration_minutes: 50 },

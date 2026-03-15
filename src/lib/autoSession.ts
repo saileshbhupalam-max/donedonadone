@@ -60,6 +60,9 @@ export interface AutoSessionResult {
 
 // ─── Constants ──────────────────────────────
 
+// WHY 3: Minimum viable group size for social coworking. 2 people feels like a
+// forced pairing; 4+ is ideal but waiting for 4 requests delays session creation.
+// 3 ensures every auto-session has at least a small-group dynamic from the start.
 const MIN_CLUSTER_SIZE = 3;
 
 // Map preferred_time labels to actual start times
@@ -74,6 +77,10 @@ const TIME_SLOT_MAP: Record<string, { start: string; format: string }> = {
 /**
  * Find demand clusters: group pending session_requests by neighborhood + preferred_time.
  * Returns only clusters with >= MIN_CLUSTER_SIZE requests.
+ *
+ * WHY cluster by neighborhood+time (not venue): Users care about when and where
+ * (their area), not which specific cafe. Clustering by venue would fragment demand
+ * and delay session creation. The system picks the best venue after clustering.
  */
 export async function findDemandClusters(): Promise<DemandCluster[]> {
   const { data: requests, error } = await supabase
@@ -176,6 +183,11 @@ export async function pickBestVenue(
 /**
  * Pick the best table captain from a set of user IDs.
  * Priority: is_table_captain flag > most events_attended > first in list.
+ *
+ * WHY this priority: Trained captains (is_table_captain) know the session format
+ * and can run icebreakers. If none are available, the most experienced attendee
+ * is the safest fallback — they've seen how sessions work and can guide newbies.
+ * First-in-list is a last resort to ensure every session has someone responsible.
  */
 export async function pickTableCaptain(userIds: string[]): Promise<string | null> {
   if (userIds.length === 0) return null;
@@ -211,7 +223,9 @@ async function createAutoEvent(
   // Schedule for tomorrow (or next available weekday)
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  // Skip weekends
+  // WHY skip weekends: Partner cafes in Bangalore have unpredictable weekend hours
+  // and higher walk-in crowds that make reserving coworking tables unreliable.
+  // Weekend sessions can still be manually created by admins for special events.
   while (tomorrow.getDay() === 0 || tomorrow.getDay() === 6) {
     tomorrow.setDate(tomorrow.getDate() + 1);
   }
@@ -226,7 +240,11 @@ async function createAutoEvent(
       session_format: timeSlot.format,
       location_id: venue.id,
       neighborhood: cluster.neighborhood,
-      max_spots: Math.min(cluster.requests.length + 2, 8), // room for walk-ins
+      // WHY requests + 2, capped at 8: The +2 buffer allows organic walk-ins and
+      // waitlist promotions without over-booking. Cap at 8 because cafe tables seat
+      // 4-8 people max, and groups larger than 8 fragment into sub-conversations
+      // (research on optimal group dynamics: 3-5 ideal, 8 hard maximum).
+      max_spots: Math.min(cluster.requests.length + 2, 8),
       auto_created: true,
       demand_cluster_key: cluster.clusterKey,
       created_by: captainId,

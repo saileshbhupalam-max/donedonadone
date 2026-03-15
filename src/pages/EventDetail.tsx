@@ -301,6 +301,32 @@ export default function EventDetailPage() {
     if (existing?.status === status) {
       await supabase.from("event_rsvps").delete().eq("event_id", event.id).eq("user_id", user.id);
       setShowRsvpShare(false);
+
+      // Check if this is a late cancellation (within N hours of session start).
+      // Kahneman/Tversky loss aversion: a 10 FC penalty feels as bad as missing
+      // a ~22 FC reward (2.25x coefficient), making last-minute flaking
+      // psychologically costly even for users with large FC balances.
+      // WHY we check here instead of server-side: the RSVP delete already
+      // happened above, so we need to fire the penalty before the user
+      // navigates away. The penalty itself is idempotent (keyed on user+event).
+      if (status === "going" && event.date && event.start_time) {
+        const { getGrowthConfig } = await import("@/lib/growthConfig");
+        const config = getGrowthConfig().credits.penalties;
+
+        const sessionStart = new Date(`${event.date}T${event.start_time}`);
+        const hoursUntilStart = (sessionStart.getTime() - Date.now()) / (1000 * 60 * 60);
+
+        if (hoursUntilStart > 0 && hoursUntilStart <= config.lateCancelWindowHours) {
+          // Late cancel — apply penalty (fire-and-forget, don't block the UI).
+          // WHY fire-and-forget: the cancellation UX should feel instant.
+          // If the penalty RPC fails, the idempotency key means a retry
+          // (e.g. from a server-side sweep) can still apply it later.
+          const { penalizeLateCancel } = await import("@/lib/focusCredits");
+          penalizeLateCancel(user.id, event.id).catch(console.error);
+          toast.warning(`Late cancel: -${config.lateCancel} FC (within ${config.lateCancelWindowHours}h of start)`);
+        }
+      }
+
       if (status === "going") promoteWaitlist(event.id).catch(() => {});
       trackAnalyticsEvent('rsvp_cancel', user.id, { event_id: event.id }).catch(() => {});
     } else if (existing) {

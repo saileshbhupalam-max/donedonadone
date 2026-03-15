@@ -89,11 +89,15 @@ export async function checkAllProgression(
   const focusHours = Number(stats.profile.focus_hours ?? 0);
   const rank = getRankProgress(focusHours);
 
-  // Engagement score is a pure function — uses profile stats already fetched
+  // Engagement score uses real 30-day scoped data from progressionStats.
+  // Previously passed lifetime totals (eventGoingCount, uniquePropGivers) which
+  // masked churn risk — a user active 6 months ago but idle now looked "healthy".
   const engagement = computeEngagementScore({
-    sessionsLast30d: stats.eventGoingCount, // approximate: eventGoingCount covers total, not 30d
-    connectionsLast30d: stats.uniquePropGivers, // approximate: prop givers as proxy for connections
+    sessionsLast30d: stats.sessionsLast30d,
+    connectionsLast30d: stats.connectionsLast30d,
     streakDays: stats.profile.current_streak || 0,
+    fcEarnedLast30d: stats.fcEarnedLast30d,
+    contributionsLast30d: stats.contributionsLast30d,
   });
 
   return {

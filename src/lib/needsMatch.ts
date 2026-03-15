@@ -113,6 +113,14 @@ export const DURATION_OPTIONS = [
  * - Description keyword match: +30
  * - Neighborhood proximity: +15
  * - Active engagement: +15
+ *
+ * WHY these weights: Category match (40%) dominates because a designer looking for
+ * "design feedback" matching a designer is the strongest relevance signal — wrong
+ * category = definitely irrelevant. Keywords (30%) catch nuances within a category
+ * (e.g. "React" vs "Python" within skill_help). Neighborhood (15%) boosts local
+ * connections because in-person follow-ups are more likely. Engagement (15%) rewards
+ * active members who are more likely to respond — matching needs with ghosts wastes
+ * everyone's time. Total weights intentionally sum to 100 for easy score interpretation.
  */
 export function scoreNeedForUser(
   need: {
@@ -237,6 +245,10 @@ export function scoreNeedForUser(
   }
 
   // --- Active engagement (+15) ---
+  // WHY tiered scoring (15/8/3): Members with 5+ sessions are proven active and likely
+  // to respond. 2-4 sessions = promising but unproven. 1 session = just joined, low
+  // probability of follow-through. 0 sessions = excluded implicitly (score stays 0
+  // for this dimension). This prevents matching needs with inactive/ghost profiles.
   const attended = userProfile.events_attended ?? 0;
   if (attended >= 5) {
     score += 15;

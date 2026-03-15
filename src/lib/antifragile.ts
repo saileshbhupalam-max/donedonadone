@@ -32,14 +32,19 @@ interface MatchAttendee {
   can_offer?: string[] | null;
 }
 
+// WHY "antifragile" systems: Named after Taleb's concept — these systems get stronger
+// from stress. Cancellations trigger waitlist promotion. Bad members get flagged and
+// auto-escalated. Unreliable attendees are distributed to minimize group damage.
+// The goal: sessions work well even when things go wrong, and get better over time.
 export function createSmartGroups(attendees: MatchAttendee[], groupSize: number = 4): MatchAttendee[][] {
   if (attendees.length === 0) return [];
   const numGroups = Math.max(1, Math.ceil(attendees.length / groupSize));
   const groups: MatchAttendee[][] = Array.from({ length: numGroups }, () => []);
 
-  // Reliability filter: unreliable members (2+ no-shows or "unreliable" status)
-  // should not become captain, and should be distributed last within their tier
-  // so they don't cluster in the same group
+  // WHY reliability filter: If unreliable members cluster in one group, that group
+  // has a high chance of imploding (multiple no-shows = awkward 2-person session).
+  // Distributing them across groups dilutes the risk — each group has at most 1
+  // unreliable member surrounded by reliable ones, preserving session quality.
   const isUnreliable = (a: MatchAttendee) =>
     a.no_show_count >= 2 || a.reliability_status === 'unreliable';
   const reliabilitySort = (a: MatchAttendee, b: MatchAttendee) =>
@@ -250,6 +255,10 @@ export async function updateReliability(userId: string, type: "rsvp" | "show" | 
 }
 
 // ─── Waitlist System ───────────────────────────────────
+// WHY waitlist exists: Full sessions are a good problem — it means demand exceeds supply.
+// Rather than turning people away ("session full, bye"), the waitlist captures that demand
+// and auto-promotes when someone cancels. This turns cancellations from a loss into a
+// neutral event, and gives waitlisted users a reason to stay engaged ("you're #2 in line").
 export async function joinWaitlist(eventId: string, _userId: string): Promise<number> {
   // Atomic position assignment via server RPC — prevents TOCTOU race
   const { data, error } = await supabase.rpc("user_join_waitlist", { p_event_id: eventId });
@@ -270,6 +279,9 @@ export async function checkFlagEscalation(flaggedUserId: string) {
   const uniqueFlaggers = new Set(flags.map((f: any) => f.flagged_by));
   const uniqueSessions = new Set(flags.map((f: any) => f.session_id));
 
+  // WHY 2 flaggers across 2 sessions: A single flag from one session could be a
+  // personality clash. But 2+ people flagging across 2+ different sessions indicates
+  // a pattern of problematic behavior, not a one-off misunderstanding.
   if (uniqueFlaggers.size >= 2 && uniqueSessions.size >= 2) {
     // Auto-escalate to admin - in a real app, notify admin
     console.warn(`[Escalation] Member ${flaggedUserId} flagged by ${uniqueFlaggers.size} people across ${uniqueSessions.size} sessions`);
