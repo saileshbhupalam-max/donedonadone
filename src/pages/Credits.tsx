@@ -29,6 +29,11 @@ import {
   Zap,
   Shield,
   Snowflake,
+  AlertTriangle,
+  Clock,
+  Crown,
+  MapPin,
+  UsersRound,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -40,8 +45,10 @@ import {
   getStreakMultiplier,
   getEffectiveMultiplier,
   purchaseStreakFreeze,
+  getExpiringCredits,
   type CreditAction,
   type UserTierInfo,
+  type ExpiringCreditsInfo,
 } from "@/lib/focusCredits";
 import { getGrowthConfig } from "@/lib/growthConfig";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,6 +101,10 @@ const ACTION_LABELS: Record<string, string> = {
   streak_milestone: "Streak milestone",
   no_show_penalty: "No-show penalty",
   late_cancel_penalty: "Late cancel penalty",
+  // Anti-inflation sinks (v3)
+  redeem_profile_highlight: "Profile highlight",
+  redeem_venue_choice: "Venue choice",
+  redeem_group_size_preference: "Group size pref",
 };
 
 interface RedeemOption {
@@ -123,6 +134,10 @@ export default function Credits() {
   // "Earning at 1.5x" reframes routine sessions as high-value activities.
   const [effectiveMultiplier, setEffectiveMultiplier] = useState(1.0);
   const [buyingFreeze, setBuyingFreeze] = useState(false);
+  // WHY: Visible expiry creates urgency to spend (Starbucks saw 15% higher
+  // redemption velocity after showing "stars expiring on [date]"). Users who
+  // see a concrete deadline act; users who see a static balance hoard.
+  const [expiringInfo, setExpiringInfo] = useState<ExpiringCreditsInfo | null>(null);
 
   const config = getGrowthConfig().credits;
 
@@ -188,13 +203,38 @@ export default function Credits() {
       cost: 15,
       icon: Zap,
     },
+    // ─── New anti-inflation sinks ───
+    // WHY these three: They target the 200-400 FC/month surplus by offering
+    // social status (highlight) and preference control (venue, group size) —
+    // the two motivators that work in every community platform.
+    {
+      action: "redeem_profile_highlight",
+      label: "Profile Highlight",
+      description: "Stand out in group matching for 7 days",
+      cost: config.profileHighlight,
+      icon: Crown,
+    },
+    {
+      action: "redeem_venue_choice",
+      label: "Choose Your Venue",
+      description: "Pick your preferred venue for your next session",
+      cost: config.venueChoice,
+      icon: MapPin,
+    },
+    {
+      action: "redeem_group_size_preference",
+      label: "Group Size Pref",
+      description: "Request a smaller (3) or larger (5) group",
+      cost: config.groupSizePreference,
+      icon: UsersRound,
+    },
   ];
 
   const fetchData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
 
-    const [bal, { data: entries }, lifetimeFC, { data: prof }] = await Promise.all([
+    const [bal, { data: entries }, lifetimeFC, { data: prof }, expiring] = await Promise.all([
       getBalance(user.id),
       supabase
         .from("focus_credits")
@@ -208,6 +248,10 @@ export default function Credits() {
         .select("current_streak")
         .eq("id", user.id)
         .single(),
+      // WHY 14 days: Two-week warning window gives users enough time to browse
+      // the redemption catalog and decide, without being so early that it feels
+      // irrelevant. Starbucks uses a similar ~2 week pre-expiry notification.
+      getExpiringCredits(user.id, 14),
     ]);
 
     setBalance(bal);
@@ -223,6 +267,9 @@ export default function Credits() {
 
     // Combined multiplier: tier × streak — both compound independently
     setEffectiveMultiplier(getEffectiveMultiplier(lifetimeFC, weeks));
+
+    // Expiry warning data
+    setExpiringInfo(expiring.amount > 0 ? expiring : null);
 
     setLoading(false);
   }, [user]);
@@ -246,6 +293,12 @@ export default function Credits() {
         toast.success("Priority matching active for 7 days!");
       } else if (redeemTarget.action === "redeem_session_boost") {
         toast.success("Boost active! You'll get priority in your next session.");
+      } else if (redeemTarget.action === "redeem_profile_highlight") {
+        toast.success("Profile highlighted! You'll stand out in matching for 7 days.");
+      } else if (redeemTarget.action === "redeem_venue_choice") {
+        toast.success("Venue choice unlocked! Pick your preferred venue for your next session.");
+      } else if (redeemTarget.action === "redeem_group_size_preference") {
+        toast.success("Group size preference set! We'll try to match your preferred size.");
       } else {
         toast.success(`Redeemed: ${redeemTarget.label}!`);
       }
@@ -431,6 +484,36 @@ export default function Credits() {
         )}
 
         <Separator />
+
+        {/* ─── FC Expiry Warning Banner ─────────────────────────
+          WHY: Visible expiry deadlines increase redemption velocity 15-20%
+          (loyalty program industry data). Showing "47 FC expiring in 12 days"
+          triggers loss aversion — the user feels they're about to LOSE something
+          they earned, which is 2.25x more motivating than gaining the same amount
+          (Kahneman/Tversky). Placed directly above Redeem to create an immediate
+          call-to-action: "your FC is expiring → here's how to spend it."
+        */}
+        {!loading && expiringInfo && expiringInfo.amount > 0 && (
+          <Card className="bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700">
+            <CardContent className="p-3 flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
+                  {expiringInfo.amount} FC expiring soon
+                </p>
+                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5 flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {expiringInfo.earliestExpiry
+                    ? `Earliest: ${format(parseISO(expiringInfo.earliestExpiry), "MMM d, yyyy")}`
+                    : "Within 14 days"}
+                </p>
+                <p className="text-[10px] text-amber-600/80 dark:text-amber-500 mt-1">
+                  Redeem below before they expire!
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Redeem Section */}
         <section>

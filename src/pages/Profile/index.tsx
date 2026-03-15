@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOfflineQuery } from "@/hooks/useOfflineQuery";
 import { getInitials } from "@/lib/utils";
 import { sanitizeProfileData } from "@/lib/profileValidation";
 import { AppShell } from "@/components/layout/AppShell";
@@ -134,30 +135,53 @@ export default function Profile() {
     setPrefDays(profile.preferred_days ?? []);
     setPrefTimes(profile.preferred_times ?? []);
     setPrefDuration(profile.preferred_session_duration ?? 2);
-    setProfileVisibility((profile as any).profile_visibility ?? "public");
-    setHideNeighborhood((profile as any).hide_neighborhood ?? false);
-    setHideSocialLinks((profile as any).hide_social_links ?? false);
+    // TODO: type this properly — these fields exist on the DB profile but are not yet in the generated Supabase types
+    setProfileVisibility((profile as unknown as Record<string, unknown>).profile_visibility as "public" | "session_only" | "minimal" ?? "public");
+    setHideNeighborhood((profile as unknown as Record<string, unknown>).hide_neighborhood as boolean ?? false);
+    setHideSocialLinks((profile as unknown as Record<string, unknown>).hide_social_links as boolean ?? false);
   }, [profile]);
 
-  // Load gamification data
-  useEffect(() => {
-    if (!user) return;
-    Promise.all([
-      supabase.from("member_badges").select("badge_type, earned_at").eq("user_id", user.id),
-      supabase.from("peer_props").select("prop_type").eq("to_user", user.id),
-      supabase.from("exclusive_achievements").select("achievement_type, achieved_at").eq("user_id", user.id),
-      supabase.from("monthly_titles").select("title_type, month").eq("user_id", user.id),
-      supabase.from("session_scrapbook").select("*").eq("user_id", user.id).order("session_date", { ascending: false }),
-    ]).then(([badges, props, achiev, titles, scrapbook]) => {
-      setEarnedBadges(badges.data || []);
+  // PWA requirement — users at cafes may have flaky wifi during sessions.
+  // Cache profile gamification data so users can view their own profile offline.
+  interface ProfileGamificationData {
+    badges: EarnedBadge[];
+    propCounts: Record<string, number>;
+    achievements: Array<{ achievement_type: string; achieved_at: string | null }>;
+    titles: Array<{ title_type: string; month: string }>;
+    scrapbook: ScrapbookEntry[];
+  }
+
+  const { data: gamificationData } = useOfflineQuery<ProfileGamificationData>(
+    `profile-gamification-${user?.id}`,
+    async () => {
+      const [badges, props, achiev, titles, scrapbook] = await Promise.all([
+        supabase.from("member_badges").select("badge_type, earned_at").eq("user_id", user!.id),
+        supabase.from("peer_props").select("prop_type").eq("to_user", user!.id),
+        supabase.from("exclusive_achievements").select("achievement_type, achieved_at").eq("user_id", user!.id),
+        supabase.from("monthly_titles").select("title_type, month").eq("user_id", user!.id),
+        supabase.from("session_scrapbook").select("*").eq("user_id", user!.id).order("session_date", { ascending: false }),
+      ]);
       const counts: Record<string, number> = {};
-      (props.data || []).forEach((p: any) => { counts[p.prop_type] = (counts[p.prop_type] || 0) + 1; });
-      setPropCounts(counts);
-      setAchievements(achiev.data || []);
-      setMonthlyTitles(titles.data || []);
-      setScrapbookEntries((scrapbook.data || []) as unknown as ScrapbookEntry[]);
-    });
-  }, [user]);
+      (props.data || []).forEach((p: { prop_type: string }) => { counts[p.prop_type] = (counts[p.prop_type] || 0) + 1; });
+      return {
+        badges: badges.data || [],
+        propCounts: counts,
+        achievements: achiev.data || [],
+        titles: titles.data || [],
+        scrapbook: (scrapbook.data || []) as unknown as ScrapbookEntry[],
+      };
+    },
+    { enabled: !!user },
+  );
+
+  useEffect(() => {
+    if (!gamificationData) return;
+    setEarnedBadges(gamificationData.badges);
+    setPropCounts(gamificationData.propCounts);
+    setAchievements(gamificationData.achievements);
+    setMonthlyTitles(gamificationData.titles);
+    setScrapbookEntries(gamificationData.scrapbook);
+  }, [gamificationData]);
 
   const completion = useMemo(() => calculateProfileCompletion({
     ...profile!,

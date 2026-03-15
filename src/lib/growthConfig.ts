@@ -139,6 +139,28 @@ export interface CreditsConfig {
   bonusCreditExpiryDays: number;
   qualityGates: QualityGatesConfig;
 
+  // ─── FC Expiry (Starbucks Stars / airline miles model) ───
+  // WHY: Starbucks stars expire after 6 months; airline miles after 18 months.
+  // Expiry creates urgency to spend, preventing indefinite accumulation that
+  // devalues the currency. Without expiry, active users accumulate 200-400 FC/month
+  // surplus, and FC loses perceived value (the "Monopoly money" problem).
+  // 90 days is aggressive enough to drive spending but generous enough that
+  // monthly-active users never feel cheated — they have 3 full months to redeem.
+  fcExpiryDays: number;
+  // WHY: Welcome/first-session bonuses are "endowed progress" (Nunes & Dreze).
+  // Making them expire quickly would undermine the onboarding hook. 180 days
+  // gives new users 6 months to form the habit before their starter FC vanishes.
+  fcExpiryDaysEndowed: number;
+
+  // New sinks (anti-inflation)
+  // WHY: The original sink set (free session 100, priority 30, gift 100) totals
+  // ~230 FC if a user redeems all monthly. But active users earn 400-600 FC/month.
+  // These new sinks target the 200-400 FC surplus by offering social status and
+  // preference controls — the two things people will pay for in any community.
+  profileHighlight: number;
+  venueChoice: number;
+  groupSizePreference: number;
+
   // Gamification systems
   tiers: TierConfig;
   streak: StreakConfig;
@@ -250,6 +272,33 @@ export const DEFAULT_GROWTH_CONFIG: GrowthConfig = {
       minPhotoSizeKB: 50,
       peerRatingConsensus: 2,
     },
+
+    // ─── FC Expiry ───
+    // WHY 90: Starbucks uses 6 months, airlines 18 months. 90 days (3 months) is
+    // aggressive enough to prevent the 200-400 FC/month surplus from compounding
+    // indefinitely, while generous enough that a user attending 1x/week always has
+    // time to redeem. Research: Starbucks saw 15% increase in redemption velocity
+    // after introducing star expiry. Airlines report 20-30% of miles expire unused,
+    // effectively removing excess supply from the economy.
+    fcExpiryDays: 90,
+    // WHY 180: Endowed progress bonuses (welcome + first session) are the "pre-filled
+    // car wash card" (Nunes & Dreze). Short expiry on these would undermine the
+    // onboarding hook — new users need time to form the habit before feeling pressure.
+    fcExpiryDaysEndowed: 180,
+
+    // ─── New Sinks ───
+    // WHY profileHighlight 30: Roughly 3 sessions of earning. Social status is the
+    // #1 non-monetary motivator in community platforms (Reddit Gold, Discord Nitro).
+    // 30 FC = affordable enough for Regular-tier users, expensive enough to feel special.
+    profileHighlight: 30,
+    // WHY venueChoice 40: Venue preference is high-value — users will pay more for
+    // control over their environment. 40 FC = 4 sessions of earning, a meaningful
+    // spend that drains ~10% of monthly surplus per redemption.
+    venueChoice: 40,
+    // WHY groupSizePreference 25: Group size affects session quality. 25 FC = mid-range
+    // sink that's accessible but not trivial. Smaller groups (3) feel more intimate;
+    // larger (5) feel more energetic. Letting users choose increases perceived control.
+    groupSizePreference: 25,
 
     // ─── Tier System ───
     // Based on lifetime FC earned (never demotes on spending).

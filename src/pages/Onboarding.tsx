@@ -22,6 +22,7 @@ import { ArrowLeft } from "lucide-react";
 import { trackAnalyticsEvent } from "@/lib/growth";
 import { trackFunnelStep } from "@/lib/analytics";
 
+import { FirstSessionInterstitial } from "@/components/onboarding/FirstSessionInterstitial";
 import type { OnboardingData } from "@/lib/types";
 
 const TOTAL_STEPS = 4;
@@ -48,6 +49,11 @@ export default function Onboarding() {
   const [step, setStep] = useState(savedProgress?.step || 1);
   const [direction, setDirection] = useState(1);
   const [saving, setSaving] = useState(false);
+  // WHY interstitial state: Duolingo's "first lesson in 2 minutes" pattern shows
+  // 3x D7 retention. Instead of dumping users on /events after onboarding, we show
+  // a focused interstitial that channels their motivation into joining/requesting
+  // their first session — reducing time-to-activation.
+  const [showInterstitial, setShowInterstitial] = useState(false);
 
   const [data, setData] = useState<OnboardingData>(() => {
     const defaults: OnboardingData = {
@@ -203,7 +209,16 @@ export default function Onboarding() {
       toast.success(CELEBRATIONS.onboardingComplete);
       localStorage.removeItem("danadone_onboarding_progress");
       await refreshProfile();
-      setTimeout(() => navigate(goTo === "events" ? "/events" : "/home"), 1200);
+
+      // WHY interstitial instead of direct navigate: Slack's activation research
+      // shows users who complete a guided first action retain 2x. Rather than
+      // dropping users on a list page, we present a single focused CTA while
+      // their motivation is highest (just completed onboarding + saw confetti).
+      if (goTo === "events") {
+        setShowInterstitial(true);
+      } else {
+        setTimeout(() => navigate("/home"), 1200);
+      }
     } catch (error) {
       console.error("[OnboardingSave]", error);
       toast.error(ERROR_STATES.generic);
@@ -298,6 +313,23 @@ export default function Onboarding() {
           </div>
         )}
       </div>
+
+      {showInterstitial && (
+        <FirstSessionInterstitial
+          neighborhood={data.neighborhood}
+          onDismiss={(dest) => {
+            setShowInterstitial(false);
+            if (dest === "event") {
+              navigate("/events");
+            } else if (dest === "request") {
+              // Navigate to events page where the session request sheet is
+              navigate("/events");
+            } else {
+              navigate("/home");
+            }
+          }}
+        />
+      )}
     </AppShell>
   );
 }

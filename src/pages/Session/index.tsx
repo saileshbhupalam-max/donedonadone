@@ -14,6 +14,7 @@ import { cn, getInitials } from "@/lib/utils";
 import { toast } from "sonner";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { Tables } from "@/integrations/supabase/types";
+import { useOfflineQuery } from "@/hooks/useOfflineQuery";
 import { IcebreakerEngine } from "@/components/session/IcebreakerEngine";
 import { EnergyCheck } from "@/components/session/EnergyCheck";
 import { PhotoMoment } from "@/components/session/PhotoMoment";
@@ -51,7 +52,7 @@ export default function SessionPage() {
   const { user, profile } = useAuth();
   usePageTitle("Session — DanaDone");
 
-  const [event, setEvent] = useState<any>(null);
+  const [event, setEvent] = useState<Tables<"events"> | null>(null);
   const [phases, setPhases] = useState<Phase[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPhaseIdx, setCurrentPhaseIdx] = useState(0);
@@ -87,13 +88,28 @@ export default function SessionPage() {
   const { dnaComplete } = useUserContext();
   const autoPromotedRef = useRef(false);
 
-  // Load event + phases
+  // PWA requirement — users at cafes may have flaky wifi during sessions.
+  // Cache the event data so network blips don't blank the session screen.
+  const { data: cachedEvent } = useOfflineQuery<Tables<"events"> | null>(
+    `session-event-${eventId}`,
+    async () => {
+      const { data: ev } = await supabase.from("events").select("*").eq("id", eventId!).single();
+      return ev;
+    },
+    { enabled: !!eventId },
+  );
+
+  // Sync cached event into local state (local state needed for the rest of the component)
+  useEffect(() => {
+    if (cachedEvent) setEvent(cachedEvent);
+  }, [cachedEvent]);
+
+  // Load phases + check-in state + intention (these depend on eventId, not offline-critical)
   useEffect(() => {
     if (!eventId) return;
     (async () => {
-      const { data: ev } = await supabase.from("events").select("*").eq("id", eventId).single();
+      const ev = cachedEvent ?? event;
       if (!ev) { setLoading(false); return; }
-      setEvent(ev);
 
       const { data: ph } = await supabase
         .from("session_phases")
@@ -124,7 +140,7 @@ export default function SessionPage() {
           .eq("event_id", eventId)
           .eq("user_id", user.id)
           .maybeSingle();
-        if ((rsvp as any)?.checked_in) {
+        if ((rsvp as { checked_in?: boolean })?.checked_in) {
           setCheckedIn(true);
         }
       }
@@ -178,15 +194,15 @@ export default function SessionPage() {
         .eq("event_id", eventId);
       if (!statuses) return;
 
-      const userIds = statuses.map((s: any) => s.user_id);
+      const userIds = statuses.map((s: { user_id: string }) => s.user_id);
       const { data: profiles } = userIds.length > 0
         ? await supabase.from("profiles").select("*").in("id", userIds)
         : { data: [] as Profile[] };
       const profileMap = new Map<string, Profile>();
       profiles?.forEach(p => profileMap.set(p.id, p));
 
-      setGroupStatuses(statuses.map((s: any) => ({ ...s, profile: profileMap.get(s.user_id) })));
-      const mine = statuses.find((s: any) => s.user_id === user.id);
+      setGroupStatuses(statuses.map((s: { user_id: string; status: string; topic?: string }) => ({ ...s, profile: profileMap.get(s.user_id) })));
+      const mine = statuses.find((s: { user_id: string }) => s.user_id === user.id);
       if (mine) setMyStatus(mine.status);
     };
 
@@ -330,7 +346,7 @@ export default function SessionPage() {
       s.user_id !== user.id && s.profile?.is_table_captain
     );
     if (hasRealCaptain) return false;
-    const myAttended = (profile as any)?.events_attended || 0;
+    const myAttended = (profile as { events_attended?: number })?.events_attended || 0;
     const moreExperienced = groupStatuses.some(s =>
       s.user_id !== user.id && (s.profile?.events_attended || 0) > myAttended
     );

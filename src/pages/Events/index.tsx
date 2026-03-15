@@ -24,7 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CalendarIcon, Plus, MapPin, Hand, AlertTriangle, Send, Bookmark } from "lucide-react";
+import { CalendarIcon, Plus, MapPin, Hand, AlertTriangle, Send, Bookmark, Clock } from "lucide-react";
 import { MapSwapToggle } from "@/components/map/MapSwapToggle";
 import { format, parseISO, isTomorrow, differenceInDays, differenceInHours } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -61,7 +61,7 @@ export default function Events() {
     catch { return []; }
   });
   const [minThreshold, setMinThreshold] = useState(3);
-  const [pendingFeedback, setPendingFeedback] = useState<any[]>([]);
+  const [pendingFeedback, setPendingFeedback] = useState<Array<{ id: string; title: string; date: string }>>([]);
   const [circleUserIds, setCircleUserIds] = useState<string[]>([]);
 
   // Batch-fetch venue badges for all visible events in a single query (TD-012)
@@ -73,7 +73,7 @@ export default function Events() {
 
   useEffect(() => {
     supabase.from("app_settings").select("value").eq("key", "min_session_threshold").single()
-      .then(({ data }) => { if (data?.value) setMinThreshold((data.value as Record<string, unknown>)?.value as number || 3); });
+      .then(({ data }) => { if (data?.value) setMinThreshold(((data.value as Record<string, unknown>)?.value as number) || 3); });
   }, []);
 
   // Fetch circle members for social proof
@@ -81,7 +81,7 @@ export default function Events() {
     if (!user) return;
     supabase.rpc("get_my_circle", { p_user_id: user.id })
       .then(({ data }) => {
-        if (data) setCircleUserIds(data.map((c: any) => c.circle_user_id));
+        if (data) setCircleUserIds(data.map((c: { circle_user_id: string }) => c.circle_user_id));
       });
   }, [user]);
 
@@ -102,13 +102,13 @@ export default function Events() {
         .select("event_id, events:event_id(id, title, date)")
         .eq("user_id", user.id).eq("status", "going");
       if (!rsvps) return;
-      const pastRsvps = rsvps.filter((r: any) => r.events && r.events.date < today);
+      const pastRsvps = rsvps.filter((r: { events: { id: string; title: string; date: string } | null }) => r.events && r.events.date < today);
       if (pastRsvps.length === 0) return;
-      const eventIds = pastRsvps.map((r: any) => r.events.id);
+      const eventIds = pastRsvps.map((r: { events: { id: string; title: string; date: string } | null }) => r.events!.id);
       const { data: feedback } = await supabase.from("event_feedback")
         .select("event_id").eq("user_id", user.id).in("event_id", eventIds);
       const feedbackIds = new Set((feedback || []).map((f) => f.event_id));
-      const pending = pastRsvps.filter((r: any) => !feedbackIds.has(r.events.id)).map((r: any) => r.events);
+      const pending = pastRsvps.filter((r: { events: { id: string; title: string; date: string } | null }) => !feedbackIds.has(r.events!.id)).map((r: { events: { id: string; title: string; date: string } | null }) => r.events!);
       setPendingFeedback(pending.slice(0, 2));
     })();
   }, [user]);
@@ -180,11 +180,35 @@ export default function Events() {
               <TabsTrigger value="past" className="flex-1">Past</TabsTrigger>
             </TabsList>
             <TabsContent value="upcoming" className="space-y-3 mt-3">
+              {/* WHY banner at top: Foursquare/ClassPass research shows proactive demand
+                  signals increase supply-demand matching by 40%. Placing the CTA before
+                  event cards ensures visibility — users who scroll past cards may never
+                  reach a bottom-placed request form. The subtle variant shows when sessions
+                  exist; the prominent empty-state version shows when none do. */}
+              {!loading && filterEvents(upcoming).length > 0 && (
+                <Card className="border-dashed border-primary/30 bg-primary/5">
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <Clock className="w-4 h-4 text-primary shrink-0" />
+                    <p className="text-xs text-muted-foreground flex-1">
+                      No session at your preferred time?
+                    </p>
+                    <SessionRequestSheet triggerVariant="inline" />
+                  </CardContent>
+                </Card>
+              )}
               {loading ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />) :
                 filterEvents(upcoming).length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground text-sm">No sessions near you yet</p>
-                    <p className="text-xs text-muted-foreground mt-1">Request one below — we'll match you when others want the same slot</p>
+                  <div className="text-center py-10 space-y-4">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                      <CalendarIcon className="w-6 h-6 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-foreground font-medium text-sm">No sessions near you yet</p>
+                      <p className="text-xs text-muted-foreground max-w-[280px] mx-auto">
+                        Request a session and we'll auto-create one when 2 more people want the same slot
+                      </p>
+                    </div>
+                    <SessionRequestSheet triggerVariant="primary" />
                   </div>
                 ) : filterEvents(upcoming).map((e) => (
                   <EventCard key={e.id} event={e} onRsvp={toggleRsvp} userRsvp={getUserRsvp(e.id)}
@@ -193,7 +217,7 @@ export default function Events() {
                     circleUserIds={circleUserIds}
                     preloadedBadges={e.venue_name ? venueBadgeMap.get(e.venue_name) : undefined} />
                 ))}
-              <SessionRequestSheet />
+              {!loading && filterEvents(upcoming).length > 0 && <SessionRequestSheet />}
             </TabsContent>
             <TabsContent value="past" className="space-y-3 mt-3">
               {loading ? Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />) :

@@ -128,7 +128,7 @@ export async function fetchNeighborhoods(): Promise<NeighborhoodOption[]> {
     .not("neighborhood", "eq", "");
 
   if (profiles) {
-    const uniqueRaw = new Set(profiles.map((p: any) => p.neighborhood as string));
+    const uniqueRaw = new Set(profiles.map((p: { neighborhood: string | null }) => p.neighborhood as string));
     for (const raw of uniqueRaw) {
       const slug = normalizeNeighborhood(raw);
       if (slug && !seen.has(slug)) {

@@ -10,6 +10,7 @@ import { cancelRsvp } from "@/lib/sessionSafety";
 import { trackAnalyticsEvent } from "@/lib/growth";
 import { saveToCache, getFromCache } from "@/lib/offlineCache";
 import { captureSupabaseError } from "@/lib/sentry";
+import { useOfflineQuery } from "@/hooks/useOfflineQuery";
 
 type Profile = Tables<"profiles">;
 
@@ -51,64 +52,63 @@ export interface ToggleRsvpOptions {
 export function useEvents() {
   const { user } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
   const isTogglingRef = useRef(false);
 
-  const fetchEvents = useCallback(async () => {
-    setLoading(true);
-    const { data: eventsData, error } = await supabase
-      .from("events")
-      .select("*")
-      .order("date", { ascending: true });
+  // PWA requirement — users at cafes may have flaky wifi during sessions.
+  // useOfflineQuery stores last successful fetch in IndexedDB and serves it
+  // as fallback when the network request fails.
+  const { data: fetchedEvents, loading, refetch: refetchOffline } = useOfflineQuery<Event[]>(
+    "events",
+    async () => {
+      const { data: eventsData, error } = await supabase
+        .from("events")
+        .select("*")
+        .order("date", { ascending: true });
 
-    if (error) {
-      captureSupabaseError("EventsLoad", error, { table: "events" });
-      // Offline fallback: serve cached events when the network request fails
-      const cached = await getFromCache<Event[]>("events");
-      if (cached) {
-        setEvents(cached);
+      if (error) {
+        captureSupabaseError("EventsLoad", error, { table: "events" });
+        throw error;
       }
-      setLoading(false);
-      return;
-    }
 
-    if (!eventsData) {
-      setLoading(false);
-      return;
-    }
+      if (!eventsData) return [];
 
-    // Fetch RSVPs for all events
-    const eventIds = eventsData.map((e) => e.id);
-    const { data: rsvpsData } = await supabase
-      .from("event_rsvps")
-      .select("*")
-      .in("event_id", eventIds);
+      // Fetch RSVPs for all events
+      const eventIds = eventsData.map((e) => e.id);
+      const { data: rsvpsData } = await supabase
+        .from("event_rsvps")
+        .select("*")
+        .in("event_id", eventIds);
 
-    // Fetch profiles for creators and RSVPs
-    const profileIds = new Set<string>();
-    eventsData.forEach((e) => { if (e.created_by) profileIds.add(e.created_by); });
-    rsvpsData?.forEach((r) => profileIds.add(r.user_id));
+      // Fetch profiles for creators and RSVPs
+      const profileIds = new Set<string>();
+      eventsData.forEach((e) => { if (e.created_by) profileIds.add(e.created_by); });
+      rsvpsData?.forEach((r) => profileIds.add(r.user_id));
 
-    const { data: profiles } = profileIds.size > 0
-      ? await supabase.from("profiles").select("*").in("id", Array.from(profileIds))
-      : { data: [] as Profile[] };
+      const { data: profiles } = profileIds.size > 0
+        ? await supabase.from("profiles").select("*").in("id", Array.from(profileIds))
+        : { data: [] as Profile[] };
 
-    const profileMap = new Map<string, Profile>();
-    profiles?.forEach((p) => profileMap.set(p.id, p));
+      const profileMap = new Map<string, Profile>();
+      profiles?.forEach((p) => profileMap.set(p.id, p));
 
-    const enriched: Event[] = eventsData.map((e) => ({
-      ...e,
-      creator: e.created_by ? profileMap.get(e.created_by) : undefined,
-      rsvps: (rsvpsData || [])
-        .filter((r) => r.event_id === e.id)
-        .map((r) => ({ ...r, profile: profileMap.get(r.user_id) })),
-    }));
+      return eventsData.map((e) => ({
+        ...e,
+        creator: e.created_by ? profileMap.get(e.created_by) : undefined,
+        rsvps: (rsvpsData || [])
+          .filter((r) => r.event_id === e.id)
+          .map((r) => ({ ...r, profile: profileMap.get(r.user_id) })),
+      }));
+    },
+  );
 
-    setEvents(enriched);
-    // Persist to IndexedDB for offline fallback
-    saveToCache("events", enriched).catch(() => {});
-    setLoading(false);
-  }, []);
+  // Sync fetched data into local state so optimistic updates (RSVP toggle) still work
+  useEffect(() => {
+    if (fetchedEvents) setEvents(fetchedEvents);
+  }, [fetchedEvents]);
+
+  const fetchEvents = useCallback(async () => {
+    await refetchOffline();
+  }, [refetchOffline]);
 
   useEffect(() => { fetchEvents(); }, [fetchEvents]);
 

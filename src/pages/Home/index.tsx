@@ -51,6 +51,7 @@ import { CommunityRitualCard } from "@/components/home/CommunityRitualCard";
 import { CaptainDashboardCard } from "@/components/home/CaptainDashboardCard";
 import { CompanyHomeCard } from "@/components/home/CompanyHomeCard";
 import { NeedsMatchCard } from "@/components/home/NeedsMatchCard";
+import { DemandSignalCard } from "@/components/home/DemandSignalCard";
 import { NearbySessionNudge } from "@/components/home/NearbySessionNudge";
 import { MapSwapToggle } from "@/components/map/MapSwapToggle";
 
@@ -497,6 +498,11 @@ export default function Home() {
 
         {/* Company quick-glance card */}
         <CompanyHomeCard />
+
+        {/* WHY demand signal card: Social proof that others nearby want to cowork
+            creates urgency and validates the user's own intent. Cialdini's descriptive
+            norms research shows people follow observed behavior of similar others. */}
+        <DemandSignalCard />
 
         {/* Needs board — matching requests from the community */}
         <NeedsMatchCard />

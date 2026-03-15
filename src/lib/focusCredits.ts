@@ -68,7 +68,11 @@ export type CreditAction =
   | 'reliability_bonus'
   | 'venue_variety_bonus'
   | 'streak_freeze_purchase'
-  | 'streak_milestone';
+  | 'streak_milestone'
+  // Anti-inflation sinks (v3 — FC expiry + new redemptions)
+  | 'redeem_profile_highlight'
+  | 'redeem_venue_choice'
+  | 'redeem_group_size_preference';
 
 export interface CreditMetadata {
   venue_id?: string;
@@ -145,6 +149,58 @@ export async function getTodayEarnings(userId: string): Promise<number> {
   );
 }
 
+// ─── FC Expiry Queries ──────────────────────────────
+// WHY: Starbucks shows "X stars expiring on [date]" to create urgency.
+// Visible expiry deadlines increase redemption velocity 15-20% (loyalty
+// program industry data). Users who see "47 FC expiring in 12 days" are
+// far more likely to browse the redemption catalog than users who see
+// a static balance number.
+
+export interface ExpiringCreditsInfo {
+  /** Total FC amount expiring within the specified window */
+  amount: number;
+  /** Earliest expiry date among the expiring entries */
+  earliestExpiry: string | null;
+  /** Number of individual ledger entries expiring */
+  entryCount: number;
+}
+
+/**
+ * Query FC that will expire within the next N days.
+ * Used to show "X FC expiring soon" warning on the Credits page.
+ * Only counts positive entries with an expires_at in the future but
+ * within the warning window — already-expired entries are excluded
+ * (they're already zeroed out in getBalance).
+ */
+export async function getExpiringCredits(
+  userId: string,
+  withinDays: number = 14
+): Promise<ExpiringCreditsInfo> {
+  const now = new Date().toISOString();
+  const futureDate = new Date(Date.now() + withinDays * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data, error } = await supabase
+    .from('focus_credits')
+    .select('amount, expires_at')
+    .eq('user_id', userId)
+    .gt('amount', 0)
+    .not('expires_at', 'is', null)
+    .gt('expires_at', now)
+    .lte('expires_at', futureDate)
+    .order('expires_at', { ascending: true });
+
+  if (error || !data || data.length === 0) {
+    return { amount: 0, earliestExpiry: null, entryCount: 0 };
+  }
+
+  const entries = data as Array<{ amount: number; expires_at: string }>;
+  return {
+    amount: entries.reduce((sum, e) => sum + e.amount, 0),
+    earliestExpiry: entries[0].expires_at,
+    entryCount: entries.length,
+  };
+}
+
 // ─── Server-Side Write Operations ──────────────────
 
 /**
@@ -161,7 +217,7 @@ export async function awardCredits(
   const { data, error } = await supabase.rpc('user_award_credits', {
     p_action: action,
     p_amount: amount,
-    p_metadata: metadata as any,
+    p_metadata: metadata as unknown as Record<string, unknown>,
     p_idempotency_key: metadata.idempotency_key ?? null,
   });
 
@@ -191,7 +247,7 @@ export async function spendCredits(
   const { data, error } = await supabase.rpc('user_spend_credits', {
     p_action: action,
     p_amount: amount,
-    p_metadata: metadata as any,
+    p_metadata: metadata as unknown as Record<string, unknown>,
   });
 
   if (error) {
@@ -542,7 +598,7 @@ export async function penalizeNoShow(
   const { data, error } = await supabase.rpc('user_penalize_self', {
     p_action: 'no_show_penalty',
     p_amount: noShow,
-    p_metadata: metadata as any,
+    p_metadata: metadata as unknown as Record<string, unknown>,
   });
 
   if (error) {
@@ -573,7 +629,7 @@ export async function penalizeLateCancel(
   const { data, error } = await supabase.rpc('user_penalize_self', {
     p_action: 'late_cancel_penalty',
     p_amount: lateCancel,
-    p_metadata: metadata as any,
+    p_metadata: metadata as unknown as Record<string, unknown>,
   });
 
   if (error) {
@@ -674,7 +730,7 @@ export async function checkVenueVarietyBonus(userId: string): Promise<AwardResul
 
   const uniqueVenues = new Set(
     sessions
-      .map((s: any) => s.metadata?.venue_id)
+      .map((s: { metadata?: Record<string, unknown> }) => s.metadata?.venue_id)
       .filter(Boolean)
   );
 

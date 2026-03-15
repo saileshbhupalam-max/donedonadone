@@ -276,8 +276,8 @@ export async function checkFlagEscalation(flaggedUserId: string) {
   const { data: flags } = await supabase.from("member_flags").select("flagged_by, session_id").eq("flagged_user", flaggedUserId);
   if (!flags) return;
 
-  const uniqueFlaggers = new Set(flags.map((f: any) => f.flagged_by));
-  const uniqueSessions = new Set(flags.map((f: any) => f.session_id));
+  const uniqueFlaggers = new Set(flags.map((f: { flagged_by: string }) => f.flagged_by));
+  const uniqueSessions = new Set(flags.map((f: { session_id: string }) => f.session_id));
 
   // WHY 2 flaggers across 2 sessions: A single flag from one session could be a
   // personality clash. But 2+ people flagging across 2+ different sessions indicates
