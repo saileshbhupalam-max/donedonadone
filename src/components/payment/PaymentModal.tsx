@@ -1,16 +1,19 @@
 /**
  * @module PaymentModal
- * @description UPI QR payment flow for subscription upgrades and session boosts.
+ * @description Dual-mode payment flow: Razorpay checkout (primary) + UPI QR (fallback).
  *
- * Flow:
+ * Flow (Razorpay):
+ * 1. User clicks "Pay Now" → Razorpay popup opens
+ * 2. User pays via UPI/card/netbanking inside Razorpay
+ * 3. Signature verified server-side → subscription/boost/pass activated instantly
+ *
+ * Flow (UPI QR fallback):
  * 1. Shows UPI QR code + VPA for manual entry
- * 2. User pays via any UPI app (Google Pay, PhonePe, Paytm, etc.)
- * 3. User enters UTR (UPI Transaction Reference) number
- * 4. System records payment as pending_verification
- * 5. Admin verifies UTR → activates subscription
+ * 2. User pays via any UPI app, enters UTR number
+ * 3. Admin verifies UTR → activates subscription
  *
  * @key-exports PaymentModal
- * @dependencies qrcode.react, supabase, useAuth
+ * @dependencies qrcode.react, supabase, useAuth, useRazorpay
  * @tables payments, user_subscriptions, session_boosts
  */
 
@@ -25,8 +28,9 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRazorpay } from "@/hooks/useRazorpay";
 import { trackConversion } from "@/lib/trackConversion";
-import { Copy, Check, IndianRupee, QrCode, ArrowRight, Clock, Smartphone } from "lucide-react";
+import { Copy, Check, IndianRupee, QrCode, ArrowRight, Clock, Smartphone, CreditCard, ShieldCheck } from "lucide-react";
 
 const UPI_VPA = import.meta.env.VITE_UPI_VPA || "danadone@upi";
 const UPI_PAYEE_NAME = import.meta.env.VITE_UPI_PAYEE_NAME || "DanaDone";
@@ -44,7 +48,7 @@ interface PaymentModalProps {
   metadata?: Record<string, unknown>;
 }
 
-type Step = "qr" | "utr" | "submitted";
+type Step = "choose" | "qr" | "utr" | "submitted" | "success";
 
 function buildUpiUrl(amountRupees: number, note: string): string {
   const params = new URLSearchParams({
@@ -68,7 +72,7 @@ export function PaymentModal({
   metadata: extraMetadata,
 }: PaymentModalProps) {
   const { user } = useAuth();
-  const [step, setStep] = useState<Step>("qr");
+  const [step, setStep] = useState<Step>("choose");
   const [utr, setUtr] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -78,6 +82,31 @@ export function PaymentModal({
     ? `DanaDone Session Boost - ${tierName}`
     : `DanaDone ${tierName} - ${billingCycle}`;
   const upiUrl = buildUpiUrl(amountRupees, note);
+
+  const { pay: razorpayPay, loading: razorpayLoading } = useRazorpay({
+    onSuccess: () => {
+      setStep("success");
+      toast.success("Payment confirmed!");
+    },
+    onFailure: (error) => {
+      if (error === "Payment cancelled") {
+        toast.info("Payment cancelled");
+      } else {
+        toast.error(error || "Payment failed. Please try again.");
+      }
+    },
+  });
+
+  const handleRazorpayPay = () => {
+    razorpayPay({
+      tierId,
+      paymentType,
+      billingCycle,
+      eventId: extraMetadata?.event_id as string | undefined,
+      tierName,
+      amountPaise,
+    });
+  };
 
   const copyVpa = async () => {
     await navigator.clipboard.writeText(UPI_VPA);
@@ -129,7 +158,7 @@ export function PaymentModal({
   };
 
   const handleClose = () => {
-    setStep("qr");
+    setStep("choose");
     setUtr("");
     setSubmitting(false);
     setCopied(false);
@@ -145,7 +174,8 @@ export function PaymentModal({
           </DialogTitle>
         </DialogHeader>
 
-        {step === "qr" && (
+        {/* Step: Choose payment method */}
+        {step === "choose" && (
           <div className="space-y-5">
             {/* Amount */}
             <div className="flex items-center justify-between px-4 py-3 bg-muted/50 rounded-lg">
@@ -163,6 +193,43 @@ export function PaymentModal({
               </div>
             </div>
 
+            {/* Razorpay — Primary */}
+            <Button
+              className="w-full gap-2 h-12 text-base"
+              onClick={handleRazorpayPay}
+              disabled={razorpayLoading}
+            >
+              <CreditCard className="w-5 h-5" />
+              {razorpayLoading ? "Opening payment..." : "Pay Now"}
+            </Button>
+            <div className="flex items-center justify-center gap-1.5 -mt-2">
+              <ShieldCheck className="w-3 h-3 text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground">
+                UPI, Cards, Netbanking — powered by Razorpay
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Separator className="flex-1" />
+              <span className="text-[10px] text-muted-foreground uppercase">or</span>
+              <Separator className="flex-1" />
+            </div>
+
+            {/* UPI QR — Fallback */}
+            <Button
+              variant="outline"
+              className="w-full gap-2 text-sm"
+              onClick={() => setStep("qr")}
+            >
+              <QrCode className="w-4 h-4" />
+              Pay manually via UPI QR
+            </Button>
+          </div>
+        )}
+
+        {/* Step: UPI QR code */}
+        {step === "qr" && (
+          <div className="space-y-5">
             {/* QR Code */}
             <div className="flex flex-col items-center gap-3">
               <div className="bg-white p-4 rounded-xl shadow-sm">
@@ -193,7 +260,6 @@ export function PaymentModal({
 
             <Separator />
 
-            {/* Steps */}
             <div className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">How to pay</p>
               <div className="space-y-1.5">
@@ -214,9 +280,13 @@ export function PaymentModal({
             <Button className="w-full" onClick={() => setStep("utr")}>
               I've made the payment
             </Button>
+            <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground" onClick={() => setStep("choose")}>
+              Back to payment options
+            </Button>
           </div>
         )}
 
+        {/* Step: Enter UTR */}
         {step === "utr" && (
           <div className="space-y-5">
             <div className="px-4 py-3 bg-muted/50 rounded-lg text-center">
@@ -256,10 +326,11 @@ export function PaymentModal({
           </div>
         )}
 
+        {/* Step: UPI submitted (pending manual verification) */}
         {step === "submitted" && (
           <div className="space-y-5 text-center py-4">
-            <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto">
-              <Check className="w-8 h-8 text-green-500" />
+            <div className="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center mx-auto">
+              <Clock className="w-8 h-8 text-yellow-500" />
             </div>
 
             <div className="space-y-1">
@@ -278,6 +349,28 @@ export function PaymentModal({
             <Badge variant="outline" className="text-xs font-mono">
               UTR: {utr.trim()}
             </Badge>
+
+            <Button className="w-full" onClick={handleClose}>
+              Done
+            </Button>
+          </div>
+        )}
+
+        {/* Step: Razorpay payment confirmed (instant) */}
+        {step === "success" && (
+          <div className="space-y-5 text-center py-4">
+            <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto">
+              <Check className="w-8 h-8 text-green-500" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="font-serif text-lg text-foreground">Payment confirmed!</h3>
+              <p className="text-sm text-muted-foreground">
+                Your{" "}
+                {paymentType === "day_pass" ? "Day Pass" : paymentType === "boost" ? "Session Boost" : `${tierName} plan`}
+                {" "}is now active.
+              </p>
+            </div>
 
             <Button className="w-full" onClick={handleClose}>
               Done

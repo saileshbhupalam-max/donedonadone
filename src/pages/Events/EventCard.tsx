@@ -46,7 +46,7 @@ export function EventCard({ event, onRsvp, userRsvp, isPast, allUpcoming, minThr
 
   return (
     <Card className={cn("cursor-pointer hover:shadow-md transition-shadow", isLowAttendance && "border-destructive/30")}
-      onClick={() => navigate(`/events/${event.id}`)}>
+      role="button" tabIndex={0} onClick={() => navigate(`/events/${event.id}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/events/${event.id}`); } }}>
       <CardContent className="p-4 space-y-3">
         <div className="flex items-start justify-between">
           <div className="flex-1 space-y-1">

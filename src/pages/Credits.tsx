@@ -540,7 +540,10 @@ export default function Credits() {
                         ? "opacity-50"
                         : "hover:shadow-md hover:border-primary/40"
                     }`}
+                    role="button"
+                    tabIndex={disabled ? -1 : 0}
                     onClick={() => !disabled && setRedeemTarget(opt)}
+                    onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !disabled) { e.preventDefault(); setRedeemTarget(opt); } }}
                   >
                     <CardContent className="p-3 space-y-1.5">
                       <div className="flex items-center justify-between">

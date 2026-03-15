@@ -272,7 +272,8 @@ function SuggestedConnectionsSection() {
       <div className="px-4 space-y-2">
         {suggestions.map((p) => (
           <Card key={p.user_id} className="overflow-hidden">
-            <div className="flex items-center gap-3 p-3 cursor-pointer" onClick={() => navigate(`/profile/${p.user_id}`)}>
+            {/* WCAG 2.1 SC 2.1.1 — interactive content must be keyboard-operable */}
+            <div className="flex items-center gap-3 p-3 cursor-pointer" role="button" tabIndex={0} onClick={() => navigate(`/profile/${p.user_id}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/profile/${p.user_id}`); } }}>
               <Avatar className="w-10 h-10">
                 <AvatarImage src={p.avatar_url || ""} />
                 <AvatarFallback className="text-xs">{getInitials(p.display_name)}</AvatarFallback>
@@ -324,7 +325,7 @@ function YourConnectionsSection() {
         <div className="px-4 space-y-2">
           {connections.map((c) => (
             <Card key={c.id} className="overflow-hidden">
-              <div className="flex items-center gap-3 p-3 cursor-pointer" onClick={() => navigate(`/profile/${c.user_id}`)}>
+              <div className="flex items-center gap-3 p-3 cursor-pointer" role="button" tabIndex={0} onClick={() => navigate(`/profile/${c.user_id}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/profile/${c.user_id}`); } }}>
                 <Avatar className="w-9 h-9">
                   <AvatarImage src={c.avatar_url || ""} />
                   <AvatarFallback className="text-xs">{getInitials(c.display_name)}</AvatarFallback>
@@ -438,7 +439,10 @@ function CompanyDirectorySection() {
             <Card
               key={c.id}
               className="overflow-hidden cursor-pointer hover:shadow-sm transition-shadow"
+              role="button"
+              tabIndex={0}
               onClick={() => navigate(`/company/${c.id}`)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/company/${c.id}`); } }}
             >
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
@@ -550,7 +554,10 @@ function AISearchResults({
             <Card
               key={r.user_id}
               className="overflow-hidden cursor-pointer hover:shadow-sm transition-shadow"
+              role="button"
+              tabIndex={0}
               onClick={() => navigate(`/profile/${r.user_id}`)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/profile/${r.user_id}`); } }}
             >
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">

@@ -120,7 +120,7 @@ export default function MapView() {
                 <p className="text-xs text-muted-foreground">Try expanding your radius or check back later.</p>
               </div>
             ) : sorted.map(s => (
-              <Card key={s.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/events/${s.id}`)}>
+              <Card key={s.id} className="cursor-pointer hover:shadow-md transition-shadow" role="button" tabIndex={0} onClick={() => navigate(`/events/${s.id}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/events/${s.id}`); } }}>
                 <CardContent className="p-4 space-y-1">
                   <div className="flex items-start justify-between">
                     <h3 className="font-medium text-sm text-foreground">{s.title}</h3>

@@ -67,7 +67,10 @@ export function NeedsMatchCard() {
   return (
     <Card
       className="border-border/50 cursor-pointer hover:bg-muted/50 transition-colors"
+      role="button"
+      tabIndex={0}
       onClick={() => navigate("/needs?tab=matching")}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate("/needs?tab=matching"); } }}
     >
       <CardContent className="p-3 flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">

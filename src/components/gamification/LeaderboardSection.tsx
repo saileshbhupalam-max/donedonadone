@@ -119,7 +119,10 @@ export function LeaderboardSection() {
             return (
               <div
                 key={entry.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => navigate(`/profile/${entry.id}`)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/profile/${entry.id}`); } }}
                 className={`flex-shrink-0 w-[130px] rounded-xl border p-3 cursor-pointer transition-all hover:shadow-md ${
                   isMe ? "border-primary bg-primary/5" : "border-border bg-card"
                 }`}
@@ -207,7 +210,7 @@ export function LeaderboardHomeCard() {
   if (top3.length === 0) return null;
 
   return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/discover")}>
+    <Card className="cursor-pointer hover:shadow-md transition-shadow" role="button" tabIndex={0} onClick={() => navigate("/discover")} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate("/discover"); } }}>
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs font-medium text-muted-foreground">🏆 Leaderboard</p>

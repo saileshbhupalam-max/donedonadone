@@ -526,7 +526,8 @@ export default function Home() {
         {/* Check-In / Community Section */}
         <FeatureGate featureFlag="check_in">
           {currentState === "offline" ? (
-            <Card className="border-primary/20 bg-primary/5 cursor-pointer" onClick={() => setCheckInOpen(true)}>
+            // WCAG 2.1 SC 2.1.1 — interactive content must be keyboard-operable
+            <Card className="border-primary/20 bg-primary/5 cursor-pointer" role="button" tabIndex={0} onClick={() => setCheckInOpen(true)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCheckInOpen(true); } }}>
               <CardContent className="p-4 flex items-center gap-3">
                 <MapPin className="w-5 h-5 text-primary shrink-0" />
                 <div className="flex-1">
@@ -584,7 +585,7 @@ export default function Home() {
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="p-4 space-y-3">
               {crewEvents.map((ev: any) => (
-                <div key={ev.id} className="flex items-center gap-3 cursor-pointer" onClick={() => navigate(`/events/${ev.id}`)}>
+                <div key={ev.id} className="flex items-center gap-3 cursor-pointer" role="button" tabIndex={0} onClick={() => navigate(`/events/${ev.id}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/events/${ev.id}`); } }}>
                   <div className="flex -space-x-2">
                     {ev.members?.slice(0, 3).map((m: any) => (
                       <Avatar key={m.circle_user_id} className="w-7 h-7 border-2 border-background">
@@ -617,7 +618,7 @@ export default function Home() {
                 <div className="flex gap-4 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
                   {circle.slice(0, 8).map((c: any) => (
                     <div key={c.circle_user_id} className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer"
-                      onClick={() => navigate(`/profile/${c.circle_user_id}`)}>
+                      role="button" tabIndex={0} onClick={() => navigate(`/profile/${c.circle_user_id}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/profile/${c.circle_user_id}`); } }}>
                       <Avatar className="w-12 h-12">
                         <AvatarImage src={c.avatar_url || ""} />
                         <AvatarFallback className="text-xs bg-muted">{c.display_name?.[0]}</AvatarFallback>
@@ -714,7 +715,7 @@ export default function Home() {
             {/* Quick Actions row */}
             <div className="grid grid-cols-2 gap-3">
               <FeatureGate featureFlag="micro_requests">
-                <Card className="border-border/50 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setMicroRequestsOpen(true)}>
+                <Card className="border-border/50 cursor-pointer hover:bg-muted/50 transition-colors" role="button" tabIndex={0} onClick={() => setMicroRequestsOpen(true)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setMicroRequestsOpen(true); } }}>
                   <CardContent className="p-3 flex items-center gap-2">
                     <Hand className="w-4 h-4 text-primary shrink-0" />
                     <div className="min-w-0">
@@ -725,7 +726,7 @@ export default function Home() {
                 </Card>
               </FeatureGate>
               <FeatureGate featureFlag="coffee_roulette">
-                <Card className="border-border/50 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setCoffeeRouletteOpen(true)}>
+                <Card className="border-border/50 cursor-pointer hover:bg-muted/50 transition-colors" role="button" tabIndex={0} onClick={() => setCoffeeRouletteOpen(true)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCoffeeRouletteOpen(true); } }}>
                   <CardContent className="p-3 flex items-center gap-2">
                     <CoffeeIcon className="w-4 h-4 text-amber-600 shrink-0" />
                     <div className="min-w-0">
@@ -829,7 +830,7 @@ export default function Home() {
             </CardContent>
           </Card>
         ) : !loading ? (
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/me")}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" role="button" tabIndex={0} onClick={() => navigate("/me")} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate("/me"); } }}>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">📍 Set your location</p>
@@ -851,7 +852,7 @@ export default function Home() {
               <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
                 {scoredSessions.map((s: any) => (
                   <div key={s.id} className="shrink-0 w-44 rounded-lg border border-border bg-background p-3 cursor-pointer hover:shadow-sm transition-shadow"
-                    onClick={() => navigate(`/events/${s.id}`)}>
+                    role="button" tabIndex={0} onClick={() => navigate(`/events/${s.id}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/events/${s.id}`); } }}>
                     <div className="flex items-center justify-between mb-1">
                       <p className="text-xs font-medium text-foreground truncate flex-1">{s.title}</p>
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-secondary/40 text-secondary ml-1 shrink-0">
@@ -875,7 +876,7 @@ export default function Home() {
               <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
                 {discoverySessions.map((s: any) => (
                   <div key={s.id} className="shrink-0 w-44 rounded-lg border border-border bg-background p-3 cursor-pointer hover:shadow-sm transition-shadow"
-                    onClick={() => navigate(`/events/${s.id}`)}>
+                    role="button" tabIndex={0} onClick={() => navigate(`/events/${s.id}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/events/${s.id}`); } }}>
                     <p className="text-xs font-medium text-foreground truncate">{s.title}</p>
                     <p className="text-[10px] text-muted-foreground truncate">{s.venue_name}</p>
                     <p className="text-[10px] text-muted-foreground">{s.date ? format(parseISO(s.date), "EEE, MMM d") : ""}{s.start_time ? ` · ${s.start_time}` : ""}</p>
@@ -1009,7 +1010,7 @@ export default function Home() {
 
         {/* Card 1: This Week's Prompt */}
         {loading ? <Skeleton className="h-28 rounded-lg" /> : activePrompt && (
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/prompts")}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" role="button" tabIndex={0} onClick={() => navigate("/prompts")} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate("/prompts"); } }}>
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <span className="text-2xl">{activePrompt.emoji || "💬"}</span>
@@ -1046,7 +1047,7 @@ export default function Home() {
 
         {/* Card 2: Your Next Meetup */}
         {loading ? <Skeleton className="h-24 rounded-lg" /> : nextMeetup ? (
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/events/${nextMeetup.id}`)}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" role="button" tabIndex={0} onClick={() => navigate(`/events/${nextMeetup.id}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/events/${nextMeetup.id}`); } }}>
             <CardContent className="p-4">
               <p className="text-xs font-medium text-muted-foreground mb-1">Your next session</p>
               <h3 className="font-serif text-base text-foreground">{nextMeetup.title}</h3>
@@ -1074,7 +1075,7 @@ export default function Home() {
             </CardContent>
           </Card>
         ) : upcomingEvent ? (
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/events/${upcomingEvent.id}`)}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" role="button" tabIndex={0} onClick={() => navigate(`/events/${upcomingEvent.id}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/events/${upcomingEvent.id}`); } }}>
             <CardContent className="p-4">
               <p className="text-xs font-medium text-muted-foreground mb-1">Don't miss this</p>
               <h3 className="font-serif text-base text-foreground">{upcomingEvent.title}</h3>

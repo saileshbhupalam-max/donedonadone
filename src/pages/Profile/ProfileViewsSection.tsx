@@ -49,7 +49,7 @@ export function ProfileViewsSection({ userId }: { userId: string }) {
   const canSeeNames = hasFeature("profile_views_names");
 
   return (
-    <Card className="border-border/50 cursor-pointer" onClick={() => !canSeeNames && navigate("/pricing")}>
+    <Card className="border-border/50 cursor-pointer" role="button" tabIndex={0} onClick={() => !canSeeNames && navigate("/pricing")} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (!canSeeNames) navigate("/pricing"); } }}>
       <CardContent className="p-4 space-y-2">
         <div className="flex items-center gap-2">
           <Eye className="w-4 h-4 text-muted-foreground" />

@@ -215,7 +215,7 @@ export function ScrapbookCard({ entry, compact = false, onNoteUpdated }: Scrapbo
                 </div>
               </div>
             ) : entry.personal_note ? (
-              <div className="bg-background/60 rounded-lg p-3 text-sm text-foreground italic cursor-pointer" onClick={() => setEditingNote(true)}>
+              <div className="bg-background/60 rounded-lg p-3 text-sm text-foreground italic cursor-pointer" role="button" tabIndex={0} onClick={() => setEditingNote(true)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditingNote(true); } }}>
                 "{entry.personal_note}"
               </div>
             ) : null}

@@ -122,7 +122,8 @@ function BuddyCard({ eventId, userId }: { eventId: string; userId: string }) {
     <Card className="border-secondary/20 bg-secondary/5">
       <CardContent className="p-4 space-y-3">
         <p className="font-serif text-sm text-foreground">Your Welcome Buddy</p>
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate(`/profile/${buddy.id}`)}>
+        {/* WCAG 2.1 SC 2.1.1 — interactive content must be keyboard-operable */}
+        <div className="flex items-center gap-3 cursor-pointer" role="button" tabIndex={0} onClick={() => navigate(`/profile/${buddy.id}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/profile/${buddy.id}`); } }}>
           <Avatar className="w-10 h-10">
             <AvatarImage src={buddy.avatar_url || ""} />
             <AvatarFallback className="text-xs bg-muted">{getInitials(buddy.display_name)}</AvatarFallback>
@@ -464,7 +465,7 @@ export default function EventDetailPage() {
         {event.location_id && <VenuePricingCard locationId={event.location_id} eventDate={event.date} startTime={event.start_time} />}
 
         {event.creator && (
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate(`/profile/${event.creator!.id}`)}>
+          <div className="flex items-center gap-2 cursor-pointer" role="button" tabIndex={0} onClick={() => navigate(`/profile/${event.creator!.id}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/profile/${event.creator!.id}`); } }}>
             <Avatar className="w-8 h-8">
               <AvatarImage src={event.creator.avatar_url || ""} />
               <AvatarFallback className="text-xs bg-muted">{getInitials(event.creator.display_name)}</AvatarFallback>
@@ -565,7 +566,7 @@ export default function EventDetailPage() {
                 <h3 className="font-medium text-sm text-foreground mb-2">Going ({goingList.length})</h3>
                 <div className="grid grid-cols-4 gap-3">
                   {goingList.map((r) => (
-                    <div key={r.id} className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => navigate(`/profile/${r.user_id}`)}>
+                    <div key={r.id} className="flex flex-col items-center gap-1 cursor-pointer" role="button" tabIndex={0} onClick={() => navigate(`/profile/${r.user_id}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/profile/${r.user_id}`); } }}>
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={r.profile?.avatar_url || ""} />
                         <AvatarFallback className="text-xs bg-muted">{getInitials(r.profile?.display_name)}</AvatarFallback>

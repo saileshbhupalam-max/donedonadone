@@ -421,7 +421,7 @@ export function PartnersTab() {
       {/* Partner cards */}
       <div className="space-y-2">
         {filtered.map(p => (
-          <Card key={p.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedPartner(p)}>
+          <Card key={p.id} className="cursor-pointer hover:shadow-md transition-shadow" role="button" tabIndex={0} onClick={() => setSelectedPartner(p)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedPartner(p); } }}>
             <CardContent className="p-3 flex items-center justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
