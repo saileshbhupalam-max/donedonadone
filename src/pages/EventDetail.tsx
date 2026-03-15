@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Tables } from "@/integrations/supabase/types";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { getInitials } from "@/lib/utils";
+import { PhotoLightbox } from "@/components/ui/PhotoLightbox";
 import { WhatsAppShareButton, CopyLinkButton } from "@/components/sharing/WhatsAppButton";
 import { RsvpSharePrompt } from "@/components/sharing/RsvpSharePrompt";
 import { getEventShareMessage } from "@/lib/sharing";
@@ -505,6 +506,7 @@ export default function EventDetailPage() {
 
 function EventMemories({ eventId }: { eventId: string }) {
   const [photos, setPhotos] = useState<any[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
     supabase.from("session_photos").select("*").eq("event_id", eventId).order("created_at", { ascending: false })
@@ -513,18 +515,25 @@ function EventMemories({ eventId }: { eventId: string }) {
 
   if (photos.length === 0) return null;
 
+  const urls = photos.map((p: any) => p.photo_url as string);
+
   return (
-    <Card>
-      <CardContent className="p-4 space-y-3">
-        <h3 className="font-medium text-sm text-foreground">📸 Memories ({photos.length})</h3>
-        <div className="grid grid-cols-3 gap-2">
-          {photos.map((p: any) => (
-            <a key={p.id} href={p.photo_url} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-lg overflow-hidden bg-muted">
-              <img src={p.photo_url} alt="Session memory" className="w-full h-full object-cover" loading="lazy" />
-            </a>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <>
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <h3 className="font-medium text-sm text-foreground">📸 Memories ({photos.length})</h3>
+          <div className="grid grid-cols-3 gap-2">
+            {photos.map((p: any, i: number) => (
+              <button key={p.id} onClick={() => setLightboxIndex(i)} className="aspect-square rounded-lg overflow-hidden bg-muted">
+                <img src={p.photo_url} alt="Session memory" className="w-full h-full object-cover" loading="lazy" />
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      {lightboxIndex !== null && (
+        <PhotoLightbox images={urls} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} alt="Session memory" />
+      )}
+    </>
   );
 }

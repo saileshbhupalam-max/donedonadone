@@ -1,6 +1,6 @@
 /* DESIGN: 4 nav items + conditional Network for Max tier. */
 
-import { House, Compass, Calendar, User, Globe } from "lucide-react";
+import { House, Compass, Calendar, User, Globe, Map } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -8,6 +8,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 const baseItems = [
   { icon: House, label: "Home", path: "/home" },
   { icon: Compass, label: "Discover", path: "/discover" },
+  { icon: Map, label: "Map", path: "/map" },
   { icon: Calendar, label: "Sessions", path: "/events" },
   { icon: User, label: "You", path: "/me" },
 ];
@@ -16,8 +17,9 @@ export function BottomNav() {
   const { hasFeature } = useSubscription();
   const showNetwork = hasFeature("cross_space_network");
 
+  // With network: swap Map for Network (6 is too many); without: show all 5
   const navItems = showNetwork
-    ? [baseItems[0], baseItems[1], { icon: Globe, label: "Network", path: "/network" }, baseItems[2], baseItems[3]]
+    ? [baseItems[0], baseItems[1], { icon: Globe, label: "Network", path: "/network" }, baseItems[3], baseItems[4]]
     : baseItems;
 
   return (

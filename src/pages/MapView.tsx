@@ -4,15 +4,11 @@ import { AppShell } from "@/components/layout/AppShell";
 import { SessionMap } from "@/components/map/SessionMap";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { useGeolocation, haversineDistance } from "@/hooks/useGeolocation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Map, List, MapPin, CalendarIcon, Navigation } from "lucide-react";
-import { motion } from "framer-motion";
+import { Map, List, MapPin, CalendarIcon, ArrowLeft, Plus } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 interface NearbySession {
   id: string;
@@ -68,20 +64,42 @@ export default function MapView() {
   );
 
   return (
-    <AppShell>
-      <div className="h-[calc(100vh-4rem)] flex flex-col relative">
-        {/* Toggle */}
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-[1000]">
-          <div className="bg-background border border-border rounded-full shadow-lg flex p-1">
+    <AppShell hideNav>
+      <div className="h-[100dvh] flex flex-col relative">
+        {/* Floating top bar — back + branding */}
+        <div className="absolute top-0 left-0 right-0 z-[1000] flex items-center justify-between px-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+          <button
+            onClick={() => navigate(-1)}
+            className="w-10 h-10 rounded-full bg-background/90 backdrop-blur border border-border shadow-lg flex items-center justify-center"
+          >
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </button>
+          <div className="bg-background/90 backdrop-blur border border-border rounded-full shadow-lg px-4 py-1.5">
+            <span className="font-serif text-sm">Dana</span>
+            <span className="font-sans font-bold text-sm">Done</span>
+            <span className="text-xs text-muted-foreground ml-1.5">Map</span>
+          </div>
+          <button
+            onClick={() => navigate("/nominate")}
+            className="w-10 h-10 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
+            title="Add a workspace"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Bottom toggle — map / list */}
+        <div className="absolute bottom-[max(1.5rem,calc(env(safe-area-inset-bottom)+0.5rem))] left-1/2 -translate-x-1/2 z-[1000]">
+          <div className="bg-background/90 backdrop-blur border border-border rounded-full shadow-lg flex p-1">
             <button
               onClick={() => setView("map")}
-              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${view === "map" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${view === "map" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
             >
               <Map className="w-3.5 h-3.5 inline mr-1" />Map
             </button>
             <button
               onClick={() => setView("list")}
-              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${view === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${view === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
             >
               <List className="w-3.5 h-3.5 inline mr-1" />List
             </button>
@@ -93,7 +111,7 @@ export default function MapView() {
             <SessionMap focusEventId={focusEventId} />
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-24">
+          <div className="flex-1 overflow-y-auto px-4 pt-16 pb-20 space-y-3">
             <h2 className="font-serif text-lg text-foreground">Sessions near you</h2>
             {sorted.length === 0 ? (
               <div className="text-center py-12 space-y-3">

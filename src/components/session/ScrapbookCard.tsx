@@ -3,6 +3,7 @@
    and photos into a shareable journal-like card. */
 
 import { useState, useRef } from "react";
+import { PhotoLightbox } from "@/components/ui/PhotoLightbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -60,6 +61,7 @@ export function ScrapbookCard({ entry, compact = false, onNoteUpdated }: Scrapbo
   const [editingNote, setEditingNote] = useState(false);
   const [note, setNote] = useState(entry.personal_note || "");
   const [saving, setSaving] = useState(false);
+  const [showLightbox, setShowLightbox] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const saveNote = async () => {
@@ -186,11 +188,11 @@ export function ScrapbookCard({ entry, compact = false, onNoteUpdated }: Scrapbo
               </div>
             )}
 
-            {/* Photo */}
+            {/* Photo — tap to enlarge */}
             {entry.photo_url && (
-              <div className="rounded-xl overflow-hidden shadow-md">
+              <button onClick={() => setShowLightbox(true)} className="rounded-xl overflow-hidden shadow-md w-full text-left">
                 <img src={entry.photo_url} alt="Session photo" className="w-full h-40 object-cover" loading="lazy" />
-              </div>
+              </button>
             )}
 
             {/* Focus hours */}
@@ -232,6 +234,9 @@ export function ScrapbookCard({ entry, compact = false, onNoteUpdated }: Scrapbo
           )}
         </div>
       </Card>
+      {showLightbox && entry.photo_url && (
+        <PhotoLightbox images={[entry.photo_url]} onClose={() => setShowLightbox(false)} alt="Session photo" />
+      )}
     </motion.div>
   );
 }
