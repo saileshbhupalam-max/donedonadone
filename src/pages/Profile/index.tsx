@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { motion } from "framer-motion";
 import { ReferralDashboard } from "@/components/growth/ReferralDashboard";
+import { YourPlaces } from "@/components/home/YourPlaces";
 
 import { vibeOptions, genderOptions, noiseOptions, commOptions, neighborhoods, lookingSuggestions, offerSuggestions, interestSuggestions, VIBE_LABELS, PROP_EMOJIS, type EarnedBadge } from "./constants";
 import { AutopilotSettingsCard } from "./AutopilotSettingsCard";
@@ -382,6 +383,9 @@ export default function Profile() {
             <p className="text-xs text-muted-foreground">
               Your Journey — {profile.events_attended || 0} sessions and counting
             </p>
+
+            {/* Your Places — venues visited via check-ins */}
+            <YourPlaces />
 
             {/* Referral Dashboard — track invites, earn FC, progress toward Community Builder */}
             {user && (

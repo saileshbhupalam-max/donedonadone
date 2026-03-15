@@ -31,7 +31,16 @@ export type ContributionType =
   | 'parking'
   | 'food_options'
   | 'verify_info'
-  | 'suggest_venue';
+  | 'suggest_venue'
+  // A6: Exhaustive venue data types
+  | 'wall_photo'
+  | 'ambient_noise'
+  | 'lighting'
+  | 'temperature'
+  | 'restroom'
+  | 'desk_layout'
+  | 'outlet_locations'
+  | 'menu_photo';
 
 export interface ContributionData {
   rating?: number;
@@ -45,6 +54,13 @@ export interface ContributionData {
   company_name?: string;
   parking_type?: string;
   food_options?: string[];
+  // A6: Extended venue data fields
+  ambient_noise_db?: number;
+  lighting_type?: 'natural' | 'warm' | 'cool' | 'dim' | 'bright';
+  temperature_comfort?: 'too_cold' | 'comfortable' | 'too_warm';
+  restroom_rating?: 1 | 2 | 3 | 4 | 5;
+  desk_type?: 'individual' | 'shared_long' | 'round' | 'standing' | 'mixed';
+  outlet_count?: 'none' | 'few' | 'most_seats' | 'every_seat';
   [key: string]: unknown;
 }
 
@@ -65,6 +81,15 @@ export interface VenueCompleteness {
   powerOutlets: boolean;
   parking: boolean;
   foodOptions: boolean;
+  // A6: Extended data completeness
+  ambientNoise: boolean;
+  lighting: boolean;
+  temperature: boolean;
+  restroom: boolean;
+  deskLayout: boolean;
+  outletLocations: boolean;
+  menuPhotos: number;
+  wallPhotos: number;
   overallPercent: number;
 }
 
@@ -83,6 +108,15 @@ const CONTRIBUTION_CREDIT_MAP: Record<ContributionType, { action: CreditAction; 
   food_options: { action: 'report_venue_info', configKey: 'reportVenueInfo' },
   verify_info: { action: 'verify_venue_info', configKey: 'verifyVenueInfo' },
   suggest_venue: { action: 'add_new_venue', configKey: 'addNewVenue' },
+  // A6: Extended venue data — photos use upload_photo, reports use report_venue_info
+  wall_photo: { action: 'upload_photo', configKey: 'uploadPhoto' },
+  ambient_noise: { action: 'report_venue_info', configKey: 'reportVenueInfo' },
+  lighting: { action: 'report_venue_info', configKey: 'reportVenueInfo' },
+  temperature: { action: 'report_venue_info', configKey: 'reportVenueInfo' },
+  restroom: { action: 'report_venue_info', configKey: 'reportVenueInfo' },
+  desk_layout: { action: 'report_venue_info', configKey: 'reportVenueInfo' },
+  outlet_locations: { action: 'report_venue_info', configKey: 'reportVenueInfo' },
+  menu_photo: { action: 'upload_photo', configKey: 'uploadPhoto' },
 };
 
 // ─── Quality Gate Checks ──────────────────────────────
@@ -109,29 +143,50 @@ function passesQualityGate(type: ContributionType, data: ContributionData): { pa
 
 // ─── Core Functions ──────────────────────────────────
 
+/** First-mover bonus multiplier — awarded when no prior contribution of this type exists for a venue */
+const FIRST_MOVER_BONUS = 2;
+
 /**
  * Submit a venue contribution. Records it in venue_contributions and
  * awards Focus Credits (subject to quality gates and diminishing returns).
+ * First contributions of a type for a venue receive a 2x FC bonus.
  */
 export async function submitVenueContribution(
   userId: string,
   venueId: string | null,
   type: ContributionType,
   data: ContributionData
-): Promise<{ success: boolean; creditsAwarded: number; reason?: string }> {
+): Promise<{ success: boolean; creditsAwarded: number; isFirstMover: boolean; reason?: string }> {
   // Quality gate check
   const gate = passesQualityGate(type, data);
   if (!gate.pass) {
-    return { success: false, creditsAwarded: 0, reason: gate.reason };
+    return { success: false, creditsAwarded: 0, isFirstMover: false, reason: gate.reason };
   }
 
   const mapping = CONTRIBUTION_CREDIT_MAP[type];
   const config = getGrowthConfig().credits;
-  const baseAmount = (config as any)[mapping.configKey] as number;
+  let baseAmount = (config as any)[mapping.configKey] as number;
 
-  // Award credits first (enforces caps/diminishing returns)
+  // A8: First-mover bonus — check if anyone has contributed this type for this venue
+  let isFirstMover = false;
+  if (venueId) {
+    const { data: existing } = await supabase
+      .from('venue_contributions')
+      .select('id')
+      .eq('venue_id', venueId)
+      .eq('contribution_type', type)
+      .limit(1);
+
+    if (!existing || existing.length === 0) {
+      isFirstMover = true;
+      baseAmount *= FIRST_MOVER_BONUS;
+    }
+  }
+
+  // Award credits (enforces caps/diminishing returns)
   const creditResult = await awardCredits(userId, mapping.action, baseAmount, {
     venue_id: venueId ?? undefined,
+    first_mover: isFirstMover || undefined,
   } as CreditMetadata);
 
   // Record the contribution regardless of credit outcome
@@ -147,10 +202,10 @@ export async function submitVenueContribution(
     });
 
   if (error) {
-    return { success: false, creditsAwarded: 0, reason: error.message };
+    return { success: false, creditsAwarded: 0, isFirstMover, reason: error.message };
   }
 
-  return { success: true, creditsAwarded: creditResult.awarded };
+  return { success: true, creditsAwarded: creditResult.awarded, isFirstMover };
 }
 
 /**
@@ -194,6 +249,8 @@ export async function getVenueDataCompleteness(venueId: string): Promise<VenueCo
 
   const types = new Set((data || []).map((d: any) => d.contribution_type));
   const photoCount = (data || []).filter((d: any) => d.contribution_type === 'photo').length;
+  const wallPhotoCount = (data || []).filter((d: any) => d.contribution_type === 'wall_photo').length;
+  const menuPhotoCount = (data || []).filter((d: any) => d.contribution_type === 'menu_photo').length;
 
   const checks = {
     noise: types.has('noise_report'),
@@ -203,9 +260,17 @@ export async function getVenueDataCompleteness(venueId: string): Promise<VenueCo
     companyPresence: types.has('company_presence'),
     floorCount: types.has('floor_count'),
     amenities: types.has('amenities'),
-    powerOutlets: types.has('amenities'), // included in amenities
+    powerOutlets: types.has('amenities') || types.has('outlet_locations'),
     parking: types.has('parking'),
     foodOptions: types.has('food_options'),
+    ambientNoise: types.has('ambient_noise'),
+    lighting: types.has('lighting'),
+    temperature: types.has('temperature'),
+    restroom: types.has('restroom'),
+    deskLayout: types.has('desk_layout'),
+    outletLocations: types.has('outlet_locations'),
+    menuPhotos: menuPhotoCount,
+    wallPhotos: wallPhotoCount,
   };
 
   // Calculate overall completeness (photos count as complete if >= 1)
@@ -213,6 +278,8 @@ export async function getVenueDataCompleteness(venueId: string): Promise<VenueCo
     checks.noise, checks.wifi, checks.seating, photoCount > 0,
     checks.companyPresence, checks.floorCount, checks.amenities,
     checks.parking, checks.foodOptions,
+    checks.ambientNoise, checks.lighting, checks.temperature,
+    checks.restroom, checks.deskLayout, checks.outletLocations,
   ];
   const completed = categories.filter(Boolean).length;
   const overallPercent = Math.round((completed / categories.length) * 100);

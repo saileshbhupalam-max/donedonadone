@@ -97,6 +97,15 @@ export interface VenueDataConfig {
   collectPowerOutlets: boolean;
   collectParkingInfo: boolean;
   collectFoodOptions: boolean;
+  // A6: Extended venue data collection toggles
+  collectAmbientNoise: boolean;
+  collectLighting: boolean;
+  collectTemperature: boolean;
+  collectRestroom: boolean;
+  collectDeskLayout: boolean;
+  collectOutletLocations: boolean;
+  collectWallPhotos: boolean;
+  collectMenuPhotos: boolean;
   photoAIVerification: boolean;
   minPhotosForVerifiedBadge: number;
   dataFreshnessPromptDays: number;
@@ -189,6 +198,14 @@ export const DEFAULT_GROWTH_CONFIG: GrowthConfig = {
     collectPowerOutlets: true,
     collectParkingInfo: true,
     collectFoodOptions: true,
+    collectAmbientNoise: true,
+    collectLighting: true,
+    collectTemperature: true,
+    collectRestroom: true,
+    collectDeskLayout: true,
+    collectOutletLocations: true,
+    collectWallPhotos: true,
+    collectMenuPhotos: true,
     photoAIVerification: false,
     minPhotosForVerifiedBadge: 5,
     dataFreshnessPromptDays: 30,

@@ -30,6 +30,9 @@ import {
   QrCode, Star, Clock, Navigation, ChevronRight, Plus,
 } from "lucide-react";
 
+import { VenueDataCollector } from "@/components/venue/VenueDataCollector";
+import { getVenueDataCompleteness, type VenueCompleteness } from "@/lib/venueContributions";
+
 const VenueQrSection = lazy(() =>
   import("@/components/venue/VenueQrSection").then(m => ({ default: m.VenueQrSection }))
 );
@@ -109,10 +112,13 @@ export default function VenueDetail() {
   const [loading, setLoading] = useState(true);
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
+  const [dataCollectorOpen, setDataCollectorOpen] = useState(false);
+  const [completeness, setCompleteness] = useState<VenueCompleteness | null>(null);
 
   useEffect(() => {
     if (!id) return;
     loadVenue(id);
+    getVenueDataCompleteness(id).then(setCompleteness);
   }, [id]);
 
   async function loadVenue(venueId: string) {
@@ -468,27 +474,44 @@ export default function VenueDetail() {
           </div>
         )}
 
-        {/* Contribute CTA */}
+        {/* Contribute CTA — opens data collector sheet */}
         <div className="px-4 pt-4">
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="p-4 text-center space-y-2">
               <Camera className="w-6 h-6 text-primary mx-auto" />
               <p className="text-sm font-medium text-foreground">Help make this page richer</p>
               <p className="text-xs text-muted-foreground">
-                Add photos, rate the venue, or share details to earn FC
+                {completeness && completeness.overallPercent < 100
+                  ? `${completeness.overallPercent}% complete — be first to add missing data for 2x FC`
+                  : "Add photos, rate the venue, or share details to earn FC"}
               </p>
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => navigate(`/nominate`)}
+                onClick={() => setDataCollectorOpen(true)}
                 className="text-xs"
               >
                 <Plus className="w-3 h-3 mr-1" />
-                Contribute
+                Contribute data
               </Button>
             </CardContent>
           </Card>
         </div>
+
+        {/* Data collection sheet */}
+        {user && venue && (
+          <VenueDataCollector
+            open={dataCollectorOpen}
+            onOpenChange={setDataCollectorOpen}
+            venueId={venue.id}
+            venueName={venue.name}
+            userId={user.id}
+            completeness={completeness}
+            onContributed={() => {
+              getVenueDataCompleteness(venue.id).then(setCompleteness);
+            }}
+          />
+        )}
       </div>
 
       {/* Lightbox */}
