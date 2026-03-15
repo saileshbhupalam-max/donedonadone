@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
@@ -21,27 +20,10 @@ import { toast } from "sonner";
 import { useNavigate, Link } from "react-router-dom";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { getInitials } from "@/lib/utils";
-import { motion } from "framer-motion";
 import { CONFIRMATIONS, ERROR_STATES } from "@/lib/personality";
 import NotificationSettingsCard from "./NotificationSettingsCard";
 import SubscriptionCard from "./SubscriptionCard";
 import { UserSettings, DEFAULT_SETTINGS } from "./types";
-
-// ─── Runtime diagnostics: log any undefined imports ───
-const _imports = {
-  AppShell, Card, CardContent, Button, Input, Textarea, Switch,
-  RadioGroup, RadioGroupItem, Avatar, AvatarImage, AvatarFallback,
-  Label, Separator, AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
-  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
-  Camera, LogOut, Trash2, ExternalLink, Minus, Plus, Building2,
-  Link, NotificationSettingsCard, SubscriptionCard, motion,
-} as Record<string, unknown>;
-for (const [name, val] of Object.entries(_imports)) {
-  if (val === undefined || val === null) {
-    console.error(`[Settings] UNDEFINED IMPORT: ${name} is ${val}`);
-  }
-}
 
 // ─── Section error boundary to isolate which card crashes ───
 class SectionBoundary extends Component<{ name: string; children: ReactNode }, { err: Error | null }> {
@@ -171,12 +153,7 @@ export default function Settings() {
 
   return (
     <AppShell>
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-        className="max-w-lg mx-auto px-4 pt-4 pb-28 space-y-6"
-      >
+      <div className="max-w-lg mx-auto px-4 pt-4 pb-28 space-y-6">
         <h1 className="font-serif text-2xl text-foreground">Settings</h1>
 
         {/* ═══ Section 1: Profile ═══ */}
@@ -372,7 +349,7 @@ export default function Settings() {
           </CardContent>
         </Card>
         </SectionBoundary>
-      </motion.div>
+      </div>
     </AppShell>
   );
 }
