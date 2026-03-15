@@ -259,10 +259,12 @@ export async function checkReEngagement(userId: string) {
   const lastActive = parseISO(profile.last_active_at);
   const daysSinceActive = Math.floor((now - lastActive.getTime()) / (24 * 60 * 60 * 1000));
 
-  // Update last_active_at
-  await supabase.from("profiles").update({ last_active_at: new Date().toISOString() }).eq("id", userId);
-
-  if (daysSinceActive < 6) return; // Still active
+  if (daysSinceActive < 6) {
+    // Still active — update last_active_at and exit. The update happens AFTER
+    // reading the old value so that re-engagement thresholds evaluate correctly.
+    await supabase.from("profiles").update({ last_active_at: new Date().toISOString() }).eq("id", userId);
+    return;
+  }
 
   // ─── Comeback FC bonus: award small bonus for returning after 7+ days away ───
   // Capped at 1 per 30 days to prevent gaming (deliberate inactivity)

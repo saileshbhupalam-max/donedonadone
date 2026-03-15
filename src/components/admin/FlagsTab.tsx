@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { AlertTriangle, Check, ShieldAlert, Ban, Clock } from "lucide-react";
+import { AlertTriangle, Check, ShieldAlert, Ban, Clock, ShieldBan } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 
@@ -147,8 +147,9 @@ export function FlagsTab() {
   const renderFlagGroup = (userId: string, userFlags: FlagEntry[], showActions: boolean) => {
     const name = userFlags[0]?.flagged_profile?.display_name || "Unknown";
     const uniqueFlaggers = new Set(userFlags.map(f => f.flagged_by)).size;
-    const uniqueSessions = new Set(userFlags.map(f => f.session_id)).size;
-    const isEscalated = uniqueFlaggers >= 2 && uniqueSessions >= 2;
+    const uniqueSessions = new Set(userFlags.map(f => f.session_id).filter(Boolean)).size;
+    const hasBlockEscalation = userFlags.some(f => f.reason === "auto_block_escalation");
+    const isEscalated = hasBlockEscalation || (uniqueFlaggers >= 2 && uniqueSessions >= 2);
     const resolution = userFlags[0]?.resolution;
 
     return (
@@ -162,7 +163,10 @@ export function FlagsTab() {
               </p>
             </div>
             <div className="flex items-center gap-1">
-              {isEscalated && showActions && <Badge variant="destructive" className="text-[10px]">⚠️ Escalated</Badge>}
+              {hasBlockEscalation && showActions && (
+                <Badge variant="destructive" className="text-[10px] gap-1"><ShieldBan className="w-3 h-3" /> Block Escalation</Badge>
+              )}
+              {isEscalated && !hasBlockEscalation && showActions && <Badge variant="destructive" className="text-[10px]">Escalated</Badge>}
               {!showActions && resolution && (
                 <Badge variant={resolution === "suspended" ? "destructive" : resolution === "warned" ? "secondary" : "outline"} className="text-[10px] capitalize">
                   {resolution === "dismissed" && <Check className="w-3 h-3 mr-1" />}
@@ -177,9 +181,13 @@ export function FlagsTab() {
           <div className="space-y-1">
             {userFlags.map(f => (
               <div key={f.id} className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
-                <Badge variant="outline" className="text-[10px]">{f.reason}</Badge>
-                <span>by {f.flagger_profile?.display_name || "anonymous"}</span>
-                <span>at {f.event?.title || "unknown session"}</span>
+                <Badge variant={f.reason === "auto_block_escalation" ? "destructive" : "outline"} className="text-[10px]">
+                  {f.reason === "auto_block_escalation" ? "Block escalation" : f.reason}
+                </Badge>
+                {f.reason !== "auto_block_escalation" && (
+                  <span>by {f.flagger_profile?.display_name || "anonymous"}</span>
+                )}
+                {f.session_id && <span>at {f.event?.title || "unknown session"}</span>}
                 {f.notes && <span className="italic">"{f.notes}"</span>}
                 {f.resolved_at && <span className="text-[10px]">· {format(parseISO(f.resolved_at), "MMM d, yyyy")}</span>}
               </div>

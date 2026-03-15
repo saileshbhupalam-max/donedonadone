@@ -13,6 +13,7 @@ import { getInitials } from "@/lib/utils";
 import { MapPin, Users, Clock, Repeat, BarChart3, Loader2, QrCode, Calendar } from "lucide-react";
 import { VenueQrSection } from "@/components/venue/VenueQrSection";
 import { ScheduleBuilder } from "@/components/partner/ScheduleBuilder";
+import { PendingApprovals } from "@/components/partner/PendingApprovals";
 import { motion } from "framer-motion";
 import { format, parseISO, subDays } from "date-fns";
 
@@ -166,6 +167,9 @@ export default function PartnerDashboard() {
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">{application?.neighborhood} · Partner Dashboard</p>
         </div>
+
+        {/* Pending venue approvals — shown at top because they're time-sensitive */}
+        {locationId && <PendingApprovals locationId={locationId} />}
 
         {/* Stats */}
         {stats && (

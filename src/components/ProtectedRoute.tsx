@@ -22,8 +22,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/" replace />;
   }
 
-  // Check suspension
-  if (profile && profile.suspended_until) {
+  // Check suspension — all suspension paths (admin + auto-escalation) now set suspended_until
+  if (profile?.suspended_until) {
     const suspendedUntil = parseISO(profile.suspended_until);
     if (suspendedUntil > new Date()) {
       return <SuspensionNotice suspendedUntil={profile.suspended_until} reason={profile.suspension_reason} />;

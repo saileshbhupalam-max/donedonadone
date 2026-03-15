@@ -6,7 +6,6 @@
  * Key exports:
  * - nominateVenue() — Submit a new venue nomination, award FC
  * - vouchForVenue() — Vouch for an existing nomination, check activation
- * - activateVenue() — Promote verified nomination to locations table
  * - getNominations() — Get nominations for a neighborhood
  * - getNeighborhoodReadiness() — Member count, unlock status, nominations
  * - getUserNominations() — Get nominations by a specific user
@@ -16,6 +15,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { awardCredits } from "@/lib/focusCredits";
+import { getGrowthConfig } from "@/lib/growthConfig";
 import { normalizeNeighborhood } from "@/lib/neighborhoods";
 
 // ─── Types ──────────────────────────────────
@@ -246,63 +246,6 @@ export async function vouchForVenue(
 }
 
 /**
- * Promote a verified nomination to the locations table.
- * Awards big FC bonus (30) to the original nominator.
- */
-export async function activateVenue(nominationId: string): Promise<boolean> {
-  // Get nomination details
-  const { data: nomination } = await supabase
-    .from("venue_nominations")
-    .select("*")
-    .eq("id", nominationId)
-    .single();
-
-  if (!nomination || nomination.location_id) return false;
-
-  // Create location entry
-  const { data: location, error } = await supabase
-    .from("locations")
-    .insert({
-      name: nomination.venue_name,
-      address: nomination.address,
-      neighborhood: nomination.neighborhood,
-      latitude: nomination.latitude,
-      longitude: nomination.longitude,
-      location_type: "cafe", // default; can be updated later
-      wifi_available: nomination.wifi_available,
-      photo_url: nomination.photo_url,
-      google_maps_url: nomination.google_maps_url,
-    })
-    .select("id")
-    .single();
-
-  if (error || !location) return false;
-
-  // Link location to nomination and mark as active
-  await supabase
-    .from("venue_nominations")
-    .update({
-      location_id: location.id,
-      status: "active",
-      activated_at: new Date().toISOString(),
-    })
-    .eq("id", nominationId);
-
-  // Update neighborhood stats
-  await supabase.rpc("update_neighborhood_stats", {
-    p_neighborhood: nomination.neighborhood,
-  });
-
-  // Award bonus FC to the nominator for successful activation
-  await awardCredits(nomination.nominated_by, "add_new_venue", 30, {
-    venue_id: location.id,
-    activation_bonus: true,
-  } as any);
-
-  return true;
-}
-
-/**
  * Get all nominations for a neighborhood with nominator info.
  */
 export async function getNominations(
@@ -344,7 +287,7 @@ export async function getNominations(
 export async function getNeighborhoodReadiness(
   neighborhood: string
 ): Promise<NeighborhoodReadiness> {
-  const THRESHOLD = 10;
+  const THRESHOLD = getGrowthConfig().growth.neighborhoodLaunchThreshold;
   const normalized = normalizeNeighborhood(neighborhood);
 
   // Check cached stats first

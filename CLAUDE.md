@@ -140,9 +140,9 @@ All neighborhood comparisons use normalized slugs.
    This prevents fake accounts but also blocks brand-new legitimate users.
    This is intentional — attend one session first, then contribute.
 
-4. **The `check_nomination_activation()` SQL function** sets status to 'verified',
-   NOT 'active'. The `activateVenue()` TypeScript function then promotes to
-   'active' and creates the locations table entry. Two-step process.
+4. **The `check_nomination_activation()` SQL function** handles the full pipeline:
+   3 vouches → status 'verified' → calls `server_activate_venue` RPC → creates
+   `locations` entry → status 'active'. All server-side, no client activation.
 
 5. **growthConfig `neighborhoodLaunchThreshold`** is set to 10 (was 100).
    This is the threshold for neighborhood unlock. Change in `growthConfig.ts`.

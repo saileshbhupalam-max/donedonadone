@@ -10,7 +10,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PersonalityLoader } from "@/components/ui/PersonalityLoader";
-import { ArrowLeft, CalendarIcon, MapPin, Clock, ExternalLink, Share2, MessageCircle, Hand, Timer, Copy, Bookmark, ShieldAlert, KeyRound } from "lucide-react";
+import { ArrowLeft, CalendarIcon, MapPin, Clock, ExternalLink, Share2, MessageCircle, Hand, Timer, Copy, Bookmark, ShieldAlert, KeyRound, IndianRupee } from "lucide-react";
 import { AddToCalendarButton } from "@/components/session/AddToCalendarButton";
 import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -148,7 +148,59 @@ interface EventDetail {
   neighborhood: string | null; whatsapp_group_link: string | null; max_spots: number | null;
   women_only: boolean | null; created_by: string | null; rsvp_count: number | null;
   created_at: string | null; session_format: string | null; checkin_pin: string | null;
+  location_id: string | null; status: string | null;
   creator?: Profile; rsvps: EventRsvp[];
+}
+
+/* Venue pricing breakdown — shows when the event's venue has configured pricing via venue_slots */
+function VenuePricingCard({ locationId, eventDate, startTime }: { locationId: string; eventDate: string; startTime: string | null }) {
+  const [pricing, setPricing] = useState<{ member: number; outsider: number; platform: number } | null>(null);
+
+  useEffect(() => {
+    if (!locationId || !eventDate) return;
+    (async () => {
+      const date = parseISO(eventDate);
+      const dayOfWeek = date.getDay();
+      // Find the venue slot matching this event's day and time
+      const query = supabase.from("venue_slots").select("price_member_paise, price_outsider_paise, platform_fee_paise")
+        .eq("location_id", locationId).eq("day_of_week", dayOfWeek).eq("is_active", true);
+      if (startTime) query.lte("start_time", startTime).gte("end_time", startTime);
+      const { data } = await query.limit(1);
+      if (data && data.length > 0) {
+        const slot = data[0];
+        const member = (slot.price_member_paise || 0) / 100;
+        const platform = (slot.platform_fee_paise || 0) / 100;
+        const outsider = (slot.price_outsider_paise || 0) / 100;
+        if (member > 0 || outsider > 0) setPricing({ member, outsider, platform });
+      }
+    })();
+  }, [locationId, eventDate, startTime]);
+
+  if (!pricing) return null;
+
+  return (
+    <Card className="border-primary/10">
+      <CardContent className="p-3 space-y-1">
+        <p className="text-xs font-medium text-foreground flex items-center gap-1.5">
+          <IndianRupee className="w-3.5 h-3.5 text-primary" /> Session Pricing
+        </p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
+          {pricing.member > 0 && (
+            <>
+              <span>Member price</span>
+              <span className="text-right font-medium text-foreground">{"\u20B9"}{pricing.member}{pricing.platform > 0 ? ` + \u20B9${pricing.platform} platform fee` : ""}</span>
+            </>
+          )}
+          {pricing.outsider > 0 && (
+            <>
+              <span>Day pass price</span>
+              <span className="text-right font-medium text-foreground">{"\u20B9"}{pricing.outsider}{pricing.platform > 0 ? ` + \u20B9${pricing.platform} platform fee` : ""}</span>
+            </>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 const NEIGHBORHOODS: Record<string, string> = {
@@ -194,6 +246,8 @@ export default function EventDetailPage() {
       setEvent({
         ...eventData,
         checkin_pin: (eventData as any).checkin_pin ?? null,
+        location_id: (eventData as any).location_id ?? null,
+        status: (eventData as any).status ?? null,
         creator: eventData.created_by ? profileMap.get(eventData.created_by) : undefined,
         rsvps: (rsvps || []).map((r) => ({ ...r, profile: profileMap.get(r.user_id) })),
       } as EventDetail);
@@ -336,6 +390,14 @@ export default function EventDetailPage() {
         </button>
 
         {isPast && <Badge variant="outline" className="text-muted-foreground">That ship has sailed, that session has sessioned.</Badge>}
+        {event.status === "pending_venue_approval" && (
+          <Card className="border-orange-200 dark:border-orange-500/30">
+            <CardContent className="p-3 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-orange-500 shrink-0" />
+              <p className="text-sm text-muted-foreground">Waiting for venue confirmation. We'll notify you once it's approved.</p>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
@@ -372,6 +434,9 @@ export default function EventDetailPage() {
             hasAttended={isPast && userRsvp?.status === "going"}
           />
         )}
+
+        {/* Venue pricing breakdown — shows when venue has configured pricing */}
+        {event.location_id && <VenuePricingCard locationId={event.location_id} eventDate={event.date} startTime={event.start_time} />}
 
         {event.creator && (
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate(`/profile/${event.creator!.id}`)}>

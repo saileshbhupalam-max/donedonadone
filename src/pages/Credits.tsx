@@ -76,6 +76,7 @@ interface RedeemOption {
   description: string;
   cost: number;
   icon: React.ElementType;
+  comingSoon?: boolean;
 }
 
 export default function Credits() {

@@ -339,25 +339,16 @@ export default function Settings() {
               </AlertDialogContent>
             </AlertDialog>
 
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" className="w-full gap-2 text-destructive hover:text-destructive">
-                  <Trash2 className="w-4 h-4" /> Delete account
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-                  <AlertDialogDescription>This action cannot be undone. All your data will be permanently removed.</AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => toast.info("Contact support to delete your account")}>
-                    I understand, delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <Button
+              variant="ghost"
+              className="w-full gap-2 text-destructive hover:text-destructive"
+              onClick={() => {
+                window.open("mailto:support@danadone.club?subject=Account%20Deletion%20Request&body=Please%20delete%20my%20account.%20My%20email%20is%3A%20", "_blank");
+                toast.info("Email support@danadone.club to request account deletion.");
+              }}
+            >
+              <Trash2 className="w-4 h-4" /> Request account deletion
+            </Button>
           </CardContent>
         </Card>
         </SectionBoundary>

@@ -95,6 +95,7 @@ export default function Onboarding() {
   const canAdvance = () => {
     switch (step) {
       case 1: return data.display_name.trim().length > 0;
+      case 2: return data.neighborhood.trim().length > 0;
       case 3: return data.looking_for.length > 0;
       default: return true;
     }

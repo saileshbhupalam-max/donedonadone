@@ -13,8 +13,8 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const MIN_CLUSTER_SIZE = 3;
 const MAX_SESSION_SIZE = 8;
-// Notify this many times more people than needed — not everyone responds
-const OVERBOOK_MULTIPLIER = 2.5;
+// Base multiplier — adjusted by getAdaptiveMultiplier() for proximity clubbing
+const BASE_OVERBOOK_MULTIPLIER = 2.5;
 
 const TIME_SLOT_MAP: Record<string, { start: string; end: string; format: string; label: string }> = {
   morning:   { start: "09:30", end: "13:30", format: "focus_only_4hr",  label: "Morning Focus" },
@@ -29,6 +29,61 @@ function getCurrentWindow(): string | null {
   if (istHour >= 11 && istHour < 16) return "afternoon";
   if (istHour >= 16 && istHour < 21) return "evening";
   return null;
+}
+
+// Adaptive overbook multiplier — adjusts based on time, day, and historical response data.
+// Morning nudges get low response (people settled), evenings get high response (spontaneous).
+// Weekends people are more available. Historical data refines further.
+async function getAdaptiveMultiplier(
+  supabase: ReturnType<typeof createClient>,
+  locationId: string,
+  window: string,
+): Promise<number> {
+  // Time-of-day baseline: mornings need more overbooking, evenings less
+  const timeMultiplier: Record<string, number> = {
+    morning: 3.0,
+    afternoon: 2.5,
+    evening: 2.0,
+  };
+  let multiplier = timeMultiplier[window] ?? BASE_OVERBOOK_MULTIPLIER;
+
+  // Weekend discount — people are more available and spontaneous
+  const dayOfWeek = new Date().getDay();
+  if (dayOfWeek === 0 || dayOfWeek === 6) multiplier -= 0.5;
+
+  // Historical adjustment: look at past proximity nudge logs for this venue
+  // Compare extra_notified vs actual additional check-ins to estimate response rate
+  const { data: pastLogs } = await supabase
+    .from("notification_log")
+    .select("metadata")
+    .eq("category", "proximity_session")
+    .eq("metadata->>location_id", locationId)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  if (pastLogs && pastLogs.length >= 3) {
+    const totalNotified = pastLogs.reduce(
+      (sum, log) => sum + (Number((log.metadata as any)?.extra_notified) || 0), 0
+    );
+    const totalCluster = pastLogs.reduce(
+      (sum, log) => sum + (Number((log.metadata as any)?.cluster_size) || 0), 0
+    );
+
+    if (totalNotified > 0 && totalCluster > 0) {
+      // Rough response proxy: if clusters grew larger over time, response rate is good
+      const avgClusterSize = totalCluster / pastLogs.length;
+      const avgNotified = totalNotified / pastLogs.length;
+
+      // If we're notifying a lot but clusters stay small, bump the multiplier up
+      // If clusters are healthy relative to notifications, we can ease off
+      const efficiency = avgClusterSize / (avgClusterSize + avgNotified);
+      if (efficiency > 0.5) multiplier -= 0.3; // Good response, ease off
+      else if (efficiency < 0.25) multiplier += 0.3; // Poor response, notify more
+    }
+  }
+
+  // Clamp to reasonable bounds
+  return Math.max(1.5, Math.min(4.0, multiplier));
 }
 
 Deno.serve(async (_req) => {
@@ -63,11 +118,49 @@ Deno.serve(async (_req) => {
 
       const neighborhood = reqs[0].neighborhood;
       const preferredTime = reqs[0].preferred_time;
+      const timeSlot = TIME_SLOT_MAP[preferredTime] || TIME_SLOT_MAP.morning;
 
-      const { data: locations } = await supabase
-        .from("locations").select("id, name").eq("neighborhood", neighborhood).limit(1);
-      if (!locations || locations.length === 0) continue;
-      const venue = locations[0];
+      // Find next non-weekend day
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + 1);
+      while (targetDate.getDay() === 0 || targetDate.getDay() === 6) targetDate.setDate(targetDate.getDate() + 1);
+      const dateStr = targetDate.toISOString().split("T")[0];
+
+      // Check venue capacity via venue_slots before picking a venue
+      // Maps preferred_time to the time_slot parameter the RPC expects
+      const { data: availableSlots } = await supabase.rpc("find_available_venue_slots", {
+        p_neighborhood: neighborhood,
+        p_date: dateStr,
+        p_time_slot: preferredTime || "morning",
+      });
+
+      let venueId: string;
+      let venueName: string;
+      let maxSeats: number;
+
+      let needsVenueApproval = false;
+
+      if (availableSlots && availableSlots.length > 0) {
+        // Use the venue with the most available seats
+        const best = availableSlots[0]; // Already sorted by available_seats DESC
+        venueId = best.location_id;
+        venueName = best.location_name;
+        maxSeats = Math.min(Number(best.available_seats), MAX_SESSION_SIZE);
+
+        // Check if venue requires approval for this group size
+        const groupSize = Math.min(reqs.length + 2, maxSeats);
+        if (!best.auto_approve || (best.auto_approve_max && groupSize > best.auto_approve_max)) {
+          needsVenueApproval = true;
+        }
+      } else {
+        // Fallback: pick any venue in the neighborhood (no slots configured = open availability)
+        const { data: locations } = await supabase
+          .from("locations").select("id, name").eq("neighborhood", neighborhood).limit(1);
+        if (!locations || locations.length === 0) continue;
+        venueId = locations[0].id;
+        venueName = locations[0].name;
+        maxSeats = MAX_SESSION_SIZE;
+      }
 
       const userIds = reqs.map((r) => r.user_id);
       const { data: profiles } = await supabase
@@ -75,38 +168,59 @@ Deno.serve(async (_req) => {
         .in("id", userIds).order("events_attended", { ascending: false });
       const captainId = profiles?.find((p) => p.is_table_captain)?.id || profiles?.[0]?.id || userIds[0];
 
-      const timeSlot = TIME_SLOT_MAP[preferredTime] || TIME_SLOT_MAP.morning;
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      while (tomorrow.getDay() === 0 || tomorrow.getDay() === 6) tomorrow.setDate(tomorrow.getDate() + 1);
+      const eventStatus = needsVenueApproval ? "pending_venue_approval" : "upcoming";
 
       const { data: event } = await supabase
         .from("events").insert({
-          title: `${timeSlot.label} at ${venue.name}`,
-          date: tomorrow.toISOString().split("T")[0],
+          title: `${timeSlot.label} at ${venueName}`,
+          date: dateStr,
           start_time: timeSlot.start, end_time: timeSlot.end,
           session_format: timeSlot.format,
-          location_id: venue.id, neighborhood,
-          max_attendees: Math.min(reqs.length + 2, MAX_SESSION_SIZE),
+          location_id: venueId, neighborhood,
+          max_attendees: Math.min(reqs.length + 2, maxSeats),
           auto_created: true, demand_cluster_key: clusterKey,
-          created_by: captainId, status: "upcoming",
+          created_by: captainId, status: eventStatus,
         }).select("id").single();
 
       if (!event) continue;
 
       await supabase.from("session_requests").update({ status: "fulfilled" }).in("id", reqs.map((r) => r.id));
-      await supabase.from("rsvps").upsert(
+      await supabase.from("event_rsvps").upsert(
         userIds.map((uid) => ({ event_id: event.id, user_id: uid, status: "going" })),
         { onConflict: "event_id,user_id" }
       );
-      await supabase.from("notifications").insert(
-        userIds.map((uid) => ({
-          user_id: uid, type: "session_auto_created",
-          title: `${timeSlot.label} created!`,
-          body: `${reqs.length} people want to cowork — session at ${venue.name}. You're in!`,
-          data: { event_id: event.id }, read: false,
-        }))
-      );
+
+      if (needsVenueApproval) {
+        // Notify venue partner that approval is needed
+        const { data: loc } = await supabase
+          .from("locations").select("partner_user_id").eq("id", venueId).single();
+        if (loc?.partner_user_id) {
+          await supabase.from("notifications").insert({
+            user_id: loc.partner_user_id, type: "venue_approval_needed",
+            title: "Session needs your approval",
+            body: `${reqs.length} people want a ${timeSlot.label} at your venue on ${dateStr}. Approve or decline from your dashboard.`,
+            data: { event_id: event.id }, read: false,
+          });
+        }
+        // Notify attendees that it's pending
+        await supabase.from("notifications").insert(
+          userIds.map((uid) => ({
+            user_id: uid, type: "session_auto_created",
+            title: `${timeSlot.label} requested!`,
+            body: `${reqs.length} people want to cowork at ${venueName}. Waiting for venue confirmation.`,
+            data: { event_id: event.id }, read: false,
+          }))
+        );
+      } else {
+        await supabase.from("notifications").insert(
+          userIds.map((uid) => ({
+            user_id: uid, type: "session_auto_created",
+            title: `${timeSlot.label} created!`,
+            body: `${reqs.length} people want to cowork — session at ${venueName}. You're in!`,
+            data: { event_id: event.id }, read: false,
+          }))
+        );
+      }
       results.demand_sessions++;
     }
   }
@@ -142,9 +256,10 @@ Deno.serve(async (_req) => {
       if (existingNudge && existingNudge.length > 0) continue;
 
       // OVERBOOK: find additional nearby users to notify
-      // Get users in the same neighborhood who aren't already checked in at this venue
+      // Adaptive multiplier adjusts based on time, day, and historical response
+      const overbookMultiplier = await getAdaptiveMultiplier(supabase, location_id, currentWindow);
       const spotsToFill = Math.min(MAX_SESSION_SIZE, cluster_size + 3);
-      const extraNotifyCount = Math.ceil(spotsToFill * OVERBOOK_MULTIPLIER) - cluster_size;
+      const extraNotifyCount = Math.ceil(spotsToFill * overbookMultiplier) - cluster_size;
 
       let extraUserIds: string[] = [];
       if (extraNotifyCount > 0 && neighborhood) {
@@ -207,7 +322,7 @@ Deno.serve(async (_req) => {
           metadata: {
             nudge_key: nudgeKey,
             cluster_size, extra_notified: extraUserIds.length,
-            overbook_multiplier: OVERBOOK_MULTIPLIER,
+            overbook_multiplier: overbookMultiplier,
             location_id, neighborhood,
           },
         });

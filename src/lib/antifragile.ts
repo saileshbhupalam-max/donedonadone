@@ -37,10 +37,24 @@ export function createSmartGroups(attendees: MatchAttendee[], groupSize: number 
   const numGroups = Math.max(1, Math.ceil(attendees.length / groupSize));
   const groups: MatchAttendee[][] = Array.from({ length: numGroups }, () => []);
 
-  // Sort: captains first, then experienced, then new
-  const captains = attendees.filter(a => a.is_table_captain);
-  const experienced = attendees.filter(a => !a.is_table_captain && a.events_attended >= 3);
-  const newbies = attendees.filter(a => !a.is_table_captain && a.events_attended < 3);
+  // Reliability filter: unreliable members (2+ no-shows or "unreliable" status)
+  // should not become captain, and should be distributed last within their tier
+  // so they don't cluster in the same group
+  const isUnreliable = (a: MatchAttendee) =>
+    a.no_show_count >= 2 || a.reliability_status === 'unreliable';
+  const reliabilitySort = (a: MatchAttendee, b: MatchAttendee) =>
+    (isUnreliable(a) ? 1 : 0) - (isUnreliable(b) ? 1 : 0);
+
+  // Sort: captains first (reliable only), then experienced, then new
+  // Unreliable captains are demoted to experienced pool
+  const captains = attendees
+    .filter(a => a.is_table_captain && !isUnreliable(a));
+  const experienced = attendees
+    .filter(a => (!a.is_table_captain || isUnreliable(a)) && a.events_attended >= 3)
+    .sort(reliabilitySort);
+  const newbies = attendees
+    .filter(a => !a.is_table_captain && a.events_attended < 3)
+    .sort(reliabilitySort);
 
   // 1. Distribute captains across groups
   captains.forEach((c, i) => groups[i % numGroups].push(c));
@@ -236,13 +250,11 @@ export async function updateReliability(userId: string, type: "rsvp" | "show" | 
 }
 
 // ─── Waitlist System ───────────────────────────────────
-export async function joinWaitlist(eventId: string, userId: string): Promise<number> {
-  // Get current max position
-  const { data: existing } = await supabase.from("session_waitlist").select("position").eq("event_id", eventId).order("position", { ascending: false }).limit(1);
-  const nextPos = (existing && existing.length > 0) ? existing[0].position + 1 : 1;
-  
-  await supabase.from("session_waitlist").insert({ event_id: eventId, user_id: userId, position: nextPos });
-  return nextPos;
+export async function joinWaitlist(eventId: string, _userId: string): Promise<number> {
+  // Atomic position assignment via server RPC — prevents TOCTOU race
+  const { data, error } = await supabase.rpc("user_join_waitlist", { p_event_id: eventId });
+  if (error) throw error;
+  return data as number;
 }
 
 export async function promoteWaitlist(eventId: string): Promise<string | null> {
