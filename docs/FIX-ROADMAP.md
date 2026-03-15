@@ -157,8 +157,8 @@ Don't build full WhatsApp automation. Start with:
 
 ---
 
-### 1.3 RESILIENCE: Session Graceful Degradation
-**Fixes: F-03, F-19 | Leverage: MEDIUM**
+### 1.3 ✅ RESILIENCE: Session Graceful Degradation
+**Fixes: F-03, F-19 | Leverage: MEDIUM | DONE 2026-03-15**
 
 **What to do:**
 
@@ -181,8 +181,8 @@ Don't build full WhatsApp automation. Start with:
 
 ## Phase 2: Weeks 2-4
 
-### 2.1 ECONOMY: Fix the FC System
-**Fixes: F-08, F-21 | Leverage: HIGH**
+### 2.1 ✅ ECONOMY: Fix the FC System
+**Fixes: F-08, F-21 | Leverage: HIGH | DONE 2026-03-15**
 
 **What to do:**
 

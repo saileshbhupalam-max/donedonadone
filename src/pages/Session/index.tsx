@@ -83,7 +83,9 @@ export default function SessionPage() {
   const [scrapbookGenerated, setScrapbookGenerated] = useState(false);
   const [wrapUpMode, setWrapUpMode] = useState<"quick" | "detailed">("quick");
   const [dnaPromptDismissed, setDnaPromptDismissed] = useState(false);
+  const [smallGroupMode, setSmallGroupMode] = useState(false);
   const { dnaComplete } = useUserContext();
+  const autoPromotedRef = useRef(false);
 
   // Load event + phases
   useEffect(() => {
@@ -99,6 +101,20 @@ export default function SessionPage() {
         .eq("event_id", eventId)
         .order("phase_order", { ascending: true });
       setPhases(ph || []);
+
+      // Small group detection: 2-3 people with structured format → skip icebreaker
+      const { count: goingCount } = await supabase
+        .from("event_rsvps")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", eventId)
+        .eq("status", "going");
+      if (goingCount !== null && goingCount > 0 && goingCount <= 3 && !isFocusOnlyFormat(ev.session_format)) {
+        setSmallGroupMode(true);
+        // Skip icebreaker phase for small groups (awkward with 2-3 people)
+        if (ph && ph.length > 0 && ph[0].phase_type === "icebreaker") {
+          setCurrentPhaseIdx(1);
+        }
+      }
 
       // Check if already checked in
       if (user) {
@@ -221,8 +237,8 @@ export default function SessionPage() {
     } else if (phase.phase_type === "social_break" || phase.phase_type === "icebreaker") {
       updateMyStatus("green");
     }
-    // Captain nudge — skip for focus_only formats
-    if (!isFocusOnlyFormat(event?.session_format) && profile?.is_table_captain && CAPTAIN_NUDGES[phase.phase_type]) {
+    // Captain nudge — skip for focus_only formats, use acting captain (includes auto-promoted)
+    if (!isFocusOnlyFormat(event?.session_format) && isActingCaptain && CAPTAIN_NUDGES[phase.phase_type]) {
       toast(CAPTAIN_NUDGES[phase.phase_type], { duration: 6000 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -309,6 +325,31 @@ export default function SessionPage() {
       .filter(m => m.matchingSkills.length > 0);
   }, [groupStatuses, profile, currentPhaseIdx, phases, user]);
 
+  // Auto-captain fallback: if no real captain in group, promote most experienced member
+  const isActingCaptain = useMemo(() => {
+    if (!user || !sessionStarted) return false;
+    if (profile?.is_table_captain) return true;
+    const hasRealCaptain = groupStatuses.some(s =>
+      s.user_id !== user.id && s.profile?.is_table_captain
+    );
+    if (hasRealCaptain) return false;
+    const myAttended = (profile as any)?.events_attended || 0;
+    const moreExperienced = groupStatuses.some(s =>
+      s.user_id !== user.id && (s.profile?.events_attended || 0) > myAttended
+    );
+    return !moreExperienced;
+  }, [user, sessionStarted, profile, groupStatuses]);
+
+  // One-time promotion toast for auto-promoted captains (wait for others to join)
+  useEffect(() => {
+    const otherMembers = groupStatuses.filter(s => s.user_id !== user?.id);
+    if (sessionStarted && isActingCaptain && !profile?.is_table_captain
+        && !autoPromotedRef.current && otherMembers.length > 0) {
+      autoPromotedRef.current = true;
+      toast("You've been promoted to captain for this session!", { duration: 5000 });
+    }
+  }, [sessionStarted, isActingCaptain, profile, groupStatuses, user]);
+
   if (loading) return (
     <AppShell><div className="px-4 py-4 space-y-4 max-w-lg mx-auto">
       <PersonalityLoader /><Skeleton className="h-8 w-32" /><Skeleton className="h-64" />
@@ -345,6 +386,16 @@ export default function SessionPage() {
         </button>
 
         <h1 className="font-serif text-xl text-foreground">{event.title}</h1>
+
+        {/* Small group mode banner */}
+        {smallGroupMode && (
+          <Card className="border-amber-500/30 bg-amber-500/5">
+            <CardContent className="p-3 text-center">
+              <p className="text-sm font-medium text-foreground">Small group today — focused session!</p>
+              <p className="text-xs text-muted-foreground mt-1">Icebreaker skipped. More time for deep work.</p>
+            </CardContent>
+          </Card>
+        )}
 
         {!sessionStarted ? (
           <SessionPreStart

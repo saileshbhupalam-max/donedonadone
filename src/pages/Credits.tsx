@@ -25,10 +25,11 @@ import {
   ArrowDown,
   ArrowUp,
   Loader2,
+  Zap,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { getBalance, spendCredits, type CreditAction } from "@/lib/focusCredits";
+import { getBalance, fulfillRedemption, type CreditAction } from "@/lib/focusCredits";
 import { getGrowthConfig } from "@/lib/growthConfig";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -66,6 +67,7 @@ const ACTION_LABELS: Record<string, string> = {
   redeem_pick_seat: "Pick your seat",
   redeem_gift_session: "Gift a session",
   redeem_exclusive_session: "Exclusive session",
+  redeem_session_boost: "Session boost",
 };
 
 interface RedeemOption {
@@ -130,6 +132,13 @@ export default function Credits() {
       cost: config.giftSession,
       icon: Gift,
     },
+    {
+      action: "redeem_session_boost",
+      label: "Session Boost",
+      description: "Move up in matching priority for your next session",
+      cost: 15,
+      icon: Zap,
+    },
   ];
 
   const fetchData = async () => {
@@ -160,10 +169,20 @@ export default function Credits() {
     if (!user || !redeemTarget) return;
     setRedeeming(true);
 
-    const result = await spendCredits(user.id, redeemTarget.action, redeemTarget.cost);
+    const result = await fulfillRedemption(user.id, redeemTarget.action, redeemTarget.cost);
 
     if (result.success) {
-      toast.success(`Redeemed: ${redeemTarget.label}!`);
+      if (redeemTarget.action === "redeem_free_session") {
+        toast.success(`Free session activated! Code: ${result.data?.access_code}`);
+      } else if (redeemTarget.action === "redeem_gift_session") {
+        toast.success(`Gift code: ${result.data?.gift_code} — share with a friend!`);
+      } else if (redeemTarget.action === "redeem_priority_matching") {
+        toast.success("Priority matching active for 7 days!");
+      } else if (redeemTarget.action === "redeem_session_boost") {
+        toast.success("Boost active! You'll get priority in your next session.");
+      } else {
+        toast.success(`Redeemed: ${redeemTarget.label}!`);
+      }
       setRedeemTarget(null);
       fetchData();
     } else {
@@ -265,6 +284,27 @@ export default function Credits() {
             </div>
           )}
         </section>
+
+        {/* Monthly Statement */}
+        {!loading && history.length > 0 && (() => {
+          const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+          const thisMonth = history.filter((e) => e.created_at >= monthStart);
+          const mEarned = thisMonth.filter((e) => e.amount > 0).reduce((s, e) => s + e.amount, 0);
+          const mSpent = thisMonth.filter((e) => e.amount < 0).reduce((s, e) => s + Math.abs(e.amount), 0);
+          if (mEarned === 0 && mSpent === 0) return null;
+          return (
+            <Card className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-amber-200 dark:border-amber-800">
+              <CardContent className="p-4">
+                <p className="text-xs font-medium text-muted-foreground mb-1">This Month</p>
+                <p className="text-sm text-foreground">
+                  You earned <span className="font-semibold text-green-600">{mEarned} FC</span>
+                  {mSpent > 0 && <> and spent <span className="font-semibold text-red-500">{mSpent} FC</span></>}
+                  {mSpent > 0 ? "." : " so far."}
+                </p>
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         <Separator />
 

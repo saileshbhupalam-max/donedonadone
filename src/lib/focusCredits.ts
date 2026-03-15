@@ -47,7 +47,8 @@ export type CreditAction =
   | 'comeback_bonus'
   | 'taste_answer'
   | 'no_show_penalty'
-  | 'late_cancel_penalty';
+  | 'late_cancel_penalty'
+  | 'redeem_session_boost';
 
 export interface CreditMetadata {
   venue_id?: string;
@@ -185,6 +186,34 @@ export async function spendCredits(
     success: result.success,
     awarded: result.awarded,
     reason: result.reason,
+  };
+}
+
+/**
+ * Fulfill a redemption: spend FC + create tangible result server-side.
+ * Free session → day_pass, gift → transferable code, priority → 7-day flag.
+ */
+export async function fulfillRedemption(
+  userId: string,
+  action: CreditAction,
+  cost: number
+): Promise<{ success: boolean; data?: Record<string, unknown>; reason?: string }> {
+  const { data, error } = await supabase.rpc('server_fulfill_redemption', {
+    p_user_id: userId,
+    p_action: action,
+    p_cost: cost,
+  });
+
+  if (error) {
+    console.error('[focusCredits] server_fulfill_redemption error:', error);
+    return { success: false, reason: error.message };
+  }
+
+  const result = data as Record<string, unknown>;
+  return {
+    success: (result.success as boolean) ?? false,
+    data: result,
+    reason: result.reason as string | undefined,
   };
 }
 
