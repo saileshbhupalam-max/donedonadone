@@ -7,7 +7,8 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
-import { Bell, Clock, MessageSquare } from "lucide-react";
+import { Bell, Clock, MessageSquare, CalendarOff } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { UserSettings, NotifPrefs, DEFAULT_NOTIF_PREFS } from "./types";
 
@@ -37,6 +38,7 @@ function NotificationSettingsCard({ settings, settingsLoaded, updateSetting }: {
             whatsapp_number: data.whatsapp_number ?? "",
             quiet_hours_start: data.quiet_hours_start ?? "22:00",
             quiet_hours_end: data.quiet_hours_end ?? "08:00",
+            silent_days: (data as any).silent_days ?? [],
             channels: (data.channels as Record<string, boolean>) ?? DEFAULT_NOTIF_PREFS.channels,
           });
         }
@@ -55,6 +57,7 @@ function NotificationSettingsCard({ settings, settingsLoaded, updateSetting }: {
     if ("whatsapp_number" in updates) dbUpdate.whatsapp_number = updates.whatsapp_number;
     if ("quiet_hours_start" in updates) dbUpdate.quiet_hours_start = updates.quiet_hours_start;
     if ("quiet_hours_end" in updates) dbUpdate.quiet_hours_end = updates.quiet_hours_end;
+    if ("silent_days" in updates) dbUpdate.silent_days = updates.silent_days;
     if ("channels" in updates) dbUpdate.channels = updates.channels;
 
     const { error } = await supabase
@@ -174,6 +177,36 @@ function NotificationSettingsCard({ settings, settingsLoaded, updateSetting }: {
             />
           </div>
           <p className="text-[10px] text-muted-foreground">No push or WhatsApp during these hours</p>
+        </div>
+
+        <Separator />
+
+        {/* Silent days */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <CalendarOff className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">Silent days</span>
+          </div>
+          <div className="flex gap-1">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((name, i) => {
+              const isSilent = notifPrefs.silent_days.includes(i);
+              return (
+                <button key={i} onClick={() => {
+                  const next = isSilent
+                    ? notifPrefs.silent_days.filter((d) => d !== i)
+                    : [...notifPrefs.silent_days, i];
+                  updateNotifPref({ silent_days: next });
+                }}
+                  disabled={!prefsLoaded}
+                  className={cn("flex-1 py-1.5 rounded-md text-xs font-medium transition-all",
+                    isSilent ? "bg-destructive/10 text-destructive border border-destructive/30" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  )}>
+                  {name}
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-muted-foreground">No push, email, or WhatsApp on selected days</p>
         </div>
 
         <Separator />

@@ -31,59 +31,109 @@ function getCurrentWindow(): string | null {
   return null;
 }
 
-// Adaptive overbook multiplier — adjusts based on time, day, and historical response data.
-// Morning nudges get low response (people settled), evenings get high response (spontaneous).
-// Weekends people are more available. Historical data refines further.
+// Adaptive overbook multiplier — learns from historical response data.
+// Computes response rate from past nudge logs, narrowing by the most specific
+// matching dimensions available: venue + window + day of week.
+// Falls back to broader slices when not enough data at a narrow level.
 async function getAdaptiveMultiplier(
   supabase: ReturnType<typeof createClient>,
   locationId: string,
   window: string,
 ): Promise<number> {
-  // Time-of-day baseline: mornings need more overbooking, evenings less
-  const timeMultiplier: Record<string, number> = {
-    morning: 3.0,
-    afternoon: 2.5,
-    evening: 2.0,
-  };
-  let multiplier = timeMultiplier[window] ?? BASE_OVERBOOK_MULTIPLIER;
+  const dayOfWeek = new Date().getDay(); // 0=Sun, 6=Sat
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const dayType = isWeekend ? "weekend" : "weekday";
 
-  // Weekend discount — people are more available and spontaneous
-  const dayOfWeek = new Date().getDay();
-  if (dayOfWeek === 0 || dayOfWeek === 6) multiplier -= 0.5;
+  // Try progressively broader slices until we have enough data (>=3 logs)
+  // 1. Exact match: same venue + same window + same day type
+  // 2. Same venue + same window (any day)
+  // 3. Same venue (any window, any day)
+  // 4. Same window + same day type (any venue — system-wide learning)
+  // 5. Default
+  const slices: Array<{ location?: string; window?: string; dayType?: string }> = [
+    { location: locationId, window, dayType },
+    { location: locationId, window },
+    { location: locationId },
+    { window, dayType },
+  ];
 
-  // Historical adjustment: look at past proximity nudge logs for this venue
-  // Compare extra_notified vs actual additional check-ins to estimate response rate
-  const { data: pastLogs } = await supabase
-    .from("notification_log")
-    .select("metadata")
-    .eq("category", "proximity_session")
-    .eq("metadata->>location_id", locationId)
-    .order("created_at", { ascending: false })
-    .limit(10);
-
-  if (pastLogs && pastLogs.length >= 3) {
-    const totalNotified = pastLogs.reduce(
-      (sum, log) => sum + (Number((log.metadata as any)?.extra_notified) || 0), 0
-    );
-    const totalCluster = pastLogs.reduce(
-      (sum, log) => sum + (Number((log.metadata as any)?.cluster_size) || 0), 0
-    );
-
-    if (totalNotified > 0 && totalCluster > 0) {
-      // Rough response proxy: if clusters grew larger over time, response rate is good
-      const avgClusterSize = totalCluster / pastLogs.length;
-      const avgNotified = totalNotified / pastLogs.length;
-
-      // If we're notifying a lot but clusters stay small, bump the multiplier up
-      // If clusters are healthy relative to notifications, we can ease off
-      const efficiency = avgClusterSize / (avgClusterSize + avgNotified);
-      if (efficiency > 0.5) multiplier -= 0.3; // Good response, ease off
-      else if (efficiency < 0.25) multiplier += 0.3; // Poor response, notify more
+  for (const slice of slices) {
+    const rate = await computeResponseRate(supabase, slice.location, slice.window, slice.dayType);
+    if (rate !== null) {
+      // Add 20% safety buffer — better to over-notify than have empty seats
+      const computed = (rate > 0 ? 1 / rate : 4.5) * 1.2;
+      return Math.max(2.0, Math.min(5.0, computed));
     }
   }
 
-  // Clamp to reasonable bounds
-  return Math.max(1.5, Math.min(4.0, multiplier));
+  // No data: start high, let it come down as we learn
+  return 3.0;
+}
+
+// Compute response rate for a given slice of past proximity nudge logs.
+// Returns null if not enough data (<3 logs with notifications).
+async function computeResponseRate(
+  supabase: ReturnType<typeof createClient>,
+  locationId?: string,
+  window?: string,
+  dayType?: string, // "weekday" or "weekend"
+): Promise<number | null> {
+  let query = supabase
+    .from("notification_log")
+    .select("metadata, created_at")
+    .eq("category", "proximity_session")
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  if (locationId) query = query.eq("metadata->>location_id", locationId);
+  if (window) query = query.eq("metadata->>window", window);
+
+  const { data: logs } = await query;
+  if (!logs || logs.length === 0) return null;
+
+  // Filter by day type if requested
+  let filtered = logs;
+  if (dayType) {
+    filtered = logs.filter((log) => {
+      const date = new Date(log.created_at || "");
+      const dow = date.getDay();
+      const isWe = dow === 0 || dow === 6;
+      return dayType === "weekend" ? isWe : !isWe;
+    });
+  }
+
+  // Need at least 3 data points to be meaningful
+  let totalNotified = 0;
+  let totalResponded = 0;
+  let usable = 0;
+
+  for (const log of filtered) {
+    const meta = log.metadata as any;
+    const extraNotified = Number(meta?.extra_notified) || 0;
+    const clusterSize = Number(meta?.cluster_size) || 0;
+    const locId = meta?.location_id;
+    if (extraNotified === 0 || !locId) continue;
+
+    const nudgeDate = (log.created_at || "").split("T")[0];
+    if (!nudgeDate) continue;
+
+    const { count } = await supabase
+      .from("check_ins")
+      .select("id", { count: "exact", head: true })
+      .eq("location_id", locId)
+      .gte("checked_in_at", nudgeDate + "T00:00:00")
+      .lt("checked_in_at", nudgeDate + "T23:59:59");
+
+    const responded = Math.max(0, (count || 0) - clusterSize);
+    totalNotified += extraNotified;
+    totalResponded += responded;
+    usable++;
+  }
+
+  if (usable < 3) return null;
+  if (totalNotified === 0) return null;
+
+  return totalResponded / totalNotified;
 }
 
 Deno.serve(async (_req) => {
@@ -323,6 +373,7 @@ Deno.serve(async (_req) => {
             nudge_key: nudgeKey,
             cluster_size, extra_notified: extraUserIds.length,
             overbook_multiplier: overbookMultiplier,
+            window: currentWindow,
             location_id, neighborhood,
           },
         });

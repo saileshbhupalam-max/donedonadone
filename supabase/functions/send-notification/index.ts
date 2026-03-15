@@ -83,6 +83,12 @@ Deno.serve(async (req) => {
       inQuietHours = currentMinutes >= qsMin && currentMinutes < qeMin;
     }
 
+    // Check silent days (0=Sun, 6=Sat)
+    const silentDays: number[] = (prefs as any)?.silent_days || [];
+    const istDayOfWeek = istNow.getUTCDay();
+    const isSilentDay = silentDays.includes(istDayOfWeek);
+    if (isSilentDay) inQuietHours = true; // Treat silent days same as quiet hours
+
     // 3. Always create in-app notification
     await supabase.from("notifications").insert({
       user_id,

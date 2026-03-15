@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { Bell } from "lucide-react";
 import { toast } from "sonner";
 
 export function PushOptInCard() {
+  const navigate = useNavigate();
   const { isPushSupported, isPushEnabled, requestPushPermission } = usePushNotifications();
   const [dismissed, setDismissed] = useState(() => localStorage.getItem("fc_push_dismissed") === "true");
   const [totalCheckins, setTotalCheckins] = useState(0);
@@ -40,7 +42,7 @@ export function PushOptInCard() {
             <p className="text-xs text-muted-foreground">Get notified about matches, props, and session updates even when you're away.</p>
             <div className="flex gap-2">
               <Button size="sm" className="text-xs" onClick={handleEnable}>Enable notifications</Button>
-              <Button size="sm" variant="ghost" className="text-xs text-muted-foreground" onClick={handleDismiss}>Not now</Button>
+              <Button size="sm" variant="ghost" className="text-xs text-muted-foreground" onClick={() => { handleDismiss(); navigate("/settings#notifications"); }}>Customize instead</Button>
             </div>
           </div>
         </div>

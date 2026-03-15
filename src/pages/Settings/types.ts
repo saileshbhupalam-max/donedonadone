@@ -25,6 +25,7 @@ export interface NotifPrefs {
   whatsapp_number: string;
   quiet_hours_start: string;
   quiet_hours_end: string;
+  silent_days: number[]; // 0=Sun, 1=Mon, ..., 6=Sat
   channels: Record<string, boolean>;
 }
 
@@ -35,6 +36,7 @@ export const DEFAULT_NOTIF_PREFS: NotifPrefs = {
   whatsapp_number: "",
   quiet_hours_start: "22:00",
   quiet_hours_end: "08:00",
+  silent_days: [],
   channels: {
     session_reminders: true,
     streak_warnings: true,
