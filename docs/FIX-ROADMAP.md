@@ -11,8 +11,8 @@
 
 ## Phase 0: Pre-Launch Survival (Before first real user)
 
-### 0.1 ARCHITECT: Move Business Logic to Server Side
-**Fixes: F-04, F-07, F-14, F-15, F-25, F-29 | Leverage: HIGHEST**
+### 0.1 ✅ ARCHITECT: Move Business Logic to Server Side
+**Fixes: F-04, F-07, F-14, F-15, F-25, F-29 | Leverage: HIGHEST | DONE 2026-03-15**
 
 This is the single highest-leverage change. Every security and integrity failure
 traces back to running business logic on the client with the anon key.
@@ -52,8 +52,8 @@ traces back to running business logic on the client with the anon key.
 
 ---
 
-### 0.2 BOOTSTRAP: Solve the Empty Room Problem
-**Fixes: F-01, F-02, F-18 | Leverage: HIGH**
+### 0.2 ✅ BOOTSTRAP: Solve the Empty Room Problem
+**Fixes: F-01, F-02, F-18 | Leverage: HIGH | DONE 2026-03-15**
 
 The product cannot launch with zero sessions. The auto-session system is for steady state, not cold start.
 
@@ -82,8 +82,8 @@ The product cannot launch with zero sessions. The auto-session system is for ste
 
 ---
 
-### 0.3 SAFETY NET: No-Show Consequences
-**Fixes: F-09, F-12 | Leverage: HIGH**
+### 0.3 ✅ SAFETY NET: No-Show Consequences
+**Fixes: F-09, F-12 | Leverage: HIGH | DONE 2026-03-15**
 
 **What to do:**
 

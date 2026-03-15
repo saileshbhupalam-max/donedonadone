@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
-import { Users } from "lucide-react";
+import { Users, Shield, AlertTriangle } from "lucide-react";
 import { createSmartGroups } from "@/lib/antifragile";
+import { processSessionNoShows } from "@/lib/sessionSafety";
 import { NOTIFICATION_COPY } from "@/lib/personality";
 import { GroupPreviewModal, type GroupMember } from "@/components/admin/GroupPreviewModal";
 
@@ -54,6 +55,24 @@ export function EventsTab() {
 
   if (loading) return <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16" />)}</div>;
 
+  const handleToggleGuaranteed = async (eventId: string, current: boolean) => {
+    const { error } = await supabase.from("events").update({ guaranteed: !current }).eq("id", eventId);
+    if (error) { toast.error("Failed to update"); return; }
+    setEvents((prev) => prev.map((e) => e.id === eventId ? { ...e, guaranteed: !current } : e));
+    toast.success(!current ? "Session guaranteed — runs even with 1 attendee" : "Guarantee removed");
+  };
+
+  const handleProcessNoShows = async (eventId: string, title: string) => {
+    const result = await processSessionNoShows(eventId);
+    if (result.success) {
+      toast.success(result.noShowsProcessed > 0
+        ? `Processed ${result.noShowsProcessed} no-show${result.noShowsProcessed > 1 ? "s" : ""} for ${title}`
+        : `No ghost no-shows found for ${title}`);
+    } else {
+      toast.error(result.error || "Failed to process no-shows");
+    }
+  };
+
   const renderEvent = (e: any, showFlag: boolean) => {
     const isFlagged = showFlag && (e.rsvp_count || 0) < minThreshold;
     return (
@@ -61,10 +80,14 @@ export function EventsTab() {
         <CardContent className="p-3">
           <div className="flex items-start justify-between">
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-sm font-medium text-foreground truncate">{e.title}</p>
-                {e.women_only && <Badge className="bg-secondary/20 text-secondary border-0 text-[10px]">👩</Badge>}
-                {isFlagged && <Badge variant="destructive" className="text-[10px]">⚠️ Low RSVPs</Badge>}
+                {e.women_only && <Badge className="bg-secondary/20 text-secondary border-0 text-[10px]">W</Badge>}
+                {e.admin_seeded && <Badge className="bg-blue-500/20 text-blue-600 border-0 text-[10px]">Seeded</Badge>}
+                {e.guaranteed && <Badge className="bg-green-500/20 text-green-600 border-0 text-[10px]">Guaranteed</Badge>}
+                {e.auto_created && <Badge className="bg-amber-500/20 text-amber-600 border-0 text-[10px]">Auto</Badge>}
+                {e.status === "cancelled" && <Badge variant="destructive" className="text-[10px]">Cancelled</Badge>}
+                {isFlagged && <Badge variant="destructive" className="text-[10px]">Low RSVPs</Badge>}
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {format(parseISO(e.date), "MMM d")} · {e.neighborhood || "—"} · by {(e.profiles as { display_name: string } | null)?.display_name || "Unknown"}
@@ -176,7 +199,11 @@ export function EventsTab() {
         <div className="space-y-2">{upcoming.map((e) => (
           <div key={e.id} className="space-y-1">
             {renderEvent(e, true)}
-            <Button size="sm" variant="outline" className="text-xs ml-3" onClick={async () => {
+            <div className="flex gap-1 ml-3">
+            <Button size="sm" variant="outline" className="text-xs" onClick={() => handleToggleGuaranteed(e.id, !!e.guaranteed)}>
+              <Shield className="w-3 h-3 mr-1" /> {e.guaranteed ? "Remove Guarantee" : "Guarantee"}
+            </Button>
+            <Button size="sm" variant="outline" className="text-xs" onClick={async () => {
               try {
                 const { data: rsvps } = await supabase.from("event_rsvps").select("user_id").eq("event_id", e.id).eq("status", "going");
                 if (!rsvps || rsvps.length === 0) { toast.error("No confirmed RSVPs for this session"); return; }
@@ -207,11 +234,21 @@ export function EventsTab() {
             }}>
               <Users className="w-3 h-3 mr-1" /> Create Groups
             </Button>
+            </div>
           </div>
         ))}</div>}
       <p className="text-xs font-medium text-muted-foreground">Past ({past.length})</p>
       {past.length === 0 ? <p className="text-xs text-muted-foreground">No past sessions</p> :
-        <div className="space-y-2">{past.map((e) => renderEvent(e, false))}</div>}
+        <div className="space-y-2">{past.map((e) => (
+          <div key={e.id} className="space-y-1">
+            {renderEvent(e, false)}
+            {e.status !== "completed" && e.status !== "cancelled" && (
+              <Button size="sm" variant="outline" className="text-xs ml-3" onClick={() => handleProcessNoShows(e.id, e.title)}>
+                <AlertTriangle className="w-3 h-3 mr-1" /> Process No-Shows
+              </Button>
+            )}
+          </div>
+        ))}</div>}
 
       {/* Session Requests */}
       <GroupPreviewModal

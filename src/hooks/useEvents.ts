@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { startOfMonth, endOfMonth } from "date-fns";
 import { ERROR_STATES, CONFIRMATIONS } from "@/lib/personality";
 import { updateReliability, promoteWaitlist } from "@/lib/antifragile";
+import { cancelRsvp } from "@/lib/sessionSafety";
 import { trackAnalyticsEvent } from "@/lib/growth";
 import { saveToCache, getFromCache } from "@/lib/offlineCache";
 import { captureSupabaseError } from "@/lib/sentry";
@@ -169,28 +170,48 @@ export function useEvents() {
       try {
         if (existing?.status === status) {
           // Toggle off = cancellation
-          const { error } = await supabase.from("event_rsvps").delete().eq("event_id", eventId).eq("user_id", user.id);
-          if (error) throw error;
-          await supabase.from("events").update({ rsvp_count: Math.max(0, (events.find(e => e.id === eventId)?.rsvp_count || 1) - (existing.status === "going" ? 1 : 0)) }).eq("id", eventId);
           if (existing.status === "going") {
-            promoteWaitlist(eventId).catch(() => {});
+            // Server-side cascade: penalty, waitlist promotion, at-risk notifications
+            const result = await cancelRsvp(eventId, user.id);
+            if (!result.success) throw new Error(result.error || "Cancel failed");
+            if (result.penaltyAmount > 0) {
+              toast(`Late cancel: -${result.penaltyAmount} FC. Cancel earlier next time.`);
+            }
+            if (result.sessionCancelled) {
+              toast("Session cancelled — not enough people confirmed.");
+            } else if (result.sessionAtRisk) {
+              toast("Session is at risk — needs more people.");
+            }
+          } else {
+            // Non-going RSVP (e.g. "interested"): simple delete
+            const { error } = await supabase.from("event_rsvps").delete().eq("event_id", eventId).eq("user_id", user.id);
+            if (error) throw error;
           }
           trackAnalyticsEvent('rsvp_cancel', user.id, { event_id: eventId }).catch(() => {});
         } else if (existing) {
-          const { error } = await supabase.from("event_rsvps").update({ status }).eq("event_id", eventId).eq("user_id", user.id);
-          if (error) throw error;
-          const event = events.find(e => e.id === eventId);
-          const delta = (status === "going" ? 1 : 0) - (existing.status === "going" ? 1 : 0);
-          if (delta !== 0) {
-            await supabase.from("events").update({ rsvp_count: Math.max(0, (event?.rsvp_count || 0) + delta) }).eq("id", eventId);
-          }
-          if (status === "going") {
-            updateReliability(user.id, 'rsvp').catch(() => {});
-            trackAnalyticsEvent('rsvp', user.id, { event_id: eventId }).catch(() => {});
-          }
           if (existing.status === "going" && status !== "going") {
-            promoteWaitlist(eventId).catch(() => {});
+            // Downgrade from going → non-going: cascade FIRST (deletes RSVP), then re-insert
+            const cancelResult = await cancelRsvp(eventId, user.id);
+            if (!cancelResult.success) throw new Error(cancelResult.error || "Cancel failed");
+            if (cancelResult.penaltyAmount > 0) {
+              toast(`Late change: -${cancelResult.penaltyAmount} FC`);
+            }
+            // Re-insert as the new status since cancel deleted the RSVP
+            await supabase.from("event_rsvps").upsert({ event_id: eventId, user_id: user.id, status }, { onConflict: "event_id,user_id" });
             trackAnalyticsEvent('rsvp_cancel', user.id, { event_id: eventId }).catch(() => {});
+          } else {
+            // Non-going → going, or interested → interested (simple update)
+            const { error } = await supabase.from("event_rsvps").update({ status }).eq("event_id", eventId).eq("user_id", user.id);
+            if (error) throw error;
+            const event = events.find(e => e.id === eventId);
+            const delta = (status === "going" ? 1 : 0) - (existing.status === "going" ? 1 : 0);
+            if (delta !== 0) {
+              await supabase.from("events").update({ rsvp_count: Math.max(0, (event?.rsvp_count || 0) + delta) }).eq("id", eventId);
+            }
+            if (status === "going") {
+              updateReliability(user.id, 'rsvp').catch(() => {});
+              trackAnalyticsEvent('rsvp', user.id, { event_id: eventId }).catch(() => {});
+            }
           }
         } else {
           const { error } = await supabase.from("event_rsvps").insert({ event_id: eventId, user_id: user.id, status });
