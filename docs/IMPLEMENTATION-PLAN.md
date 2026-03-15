@@ -279,12 +279,14 @@ EASY ─────────────────────┼───
 | E4 | **Configurable session formats** | Nothing | Medium — template system |
 | E5 | **Cross-space network** | 10+ spaces | High — multi-tenant architecture |
 
-### Current Execution Plan
+### Current Execution Plan (Updated 2026-03-15)
 
-**Now (Track A):** Quick Questions → Venue Detail → Content Seeding → Map enrichment
-**Next (Track B):** Payment + notifications (launch blockers)
-**Then (Track C+D):** Smart intros, nudges, B2B prominence
-**Later (Track E):** AI features, cross-space network
+**DONE (Track A):** Quick Questions, Venue Detail, Content Seeding, Map swap, Venue links, Exhaustive data model, Your Places, First-mover bonuses, Map enrichment — ALL COMPLETE
+**DONE (Track C):** C1 Smart Intros (wired into EventDetail), C3 Workspace Insights (SpaceInsights.tsx). C2 blocked by Track B.
+**DONE (Track D):** D1 B2B matching (Companies page + Home card), D3 Needs board (page + matching + Home NeedsMatchCard), D4 Mentor/mentee (mentorMatch.ts + MentorSection). D2 blocked by Track B.
+**DONE (Track E):** E4 Configurable session formats (sessionTemplates.ts + Admin TemplatesTab).
+**NOW (Track B):** Payment + notifications — the launch blocker. Unblocks C2 and D2.
+**NEXT (Track E):** E1-E3 AI features (Claude Edge Functions for community manager, LLM search, session debrief)
 
 ---
 
