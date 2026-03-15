@@ -456,3 +456,99 @@ Phase 6 is polish after the core loop works.
 | Inaccurate seeded data | Mark seeded venues as "community data — help verify" |
 | Users game first-mover bonuses | Quality gates (photo min size, review min length) already exist |
 | Map performance with many markers | Clustering + lazy loading markers by viewport |
+
+---
+
+## Part G: Session Handoff — What To Build Next
+
+**Last updated: 2026-03-15. Read this section at the start of the next session.**
+
+### Completed This Session (commit a934ab1)
+- MapView: fullscreen with `hideNav`, floating controls, `100dvh`
+- BottomNav: Map as 5th item `[Home] [Discover] [Map] [Sessions] [You]`
+- PhotoLightbox: swipe/keyboard/download, wired into EventMemories + ScrapbookCard
+- MapSwapToggle: reusable component created (not yet integrated into Discover/Home)
+- Guard tests: 22 tests covering tile URLs, react-leaflet version, vite config, lightbox
+- Bug prevention memories saved (react-leaflet v5, Stadia Maps, keepNames)
+
+### User's Additional Requirements (not yet in phases above)
+
+1. **Map as swap on almost all screens** — User wants map/list toggle on Home,
+   Discover, Events (Events already has it). Use `MapSwapToggle` component.
+   The `SessionMap` is already lazy-loaded in Events. Do the same for Discover
+   and Home. Show checked-in people on map (Discover) and upcoming sessions (Home).
+
+2. **Exhaustive venue data collection** — User wants EVERYTHING captured:
+   - Every wall/angle photographed (multi-photo upload per venue)
+   - Sounds at different times of day (noise level with timestamp)
+   - Ambient noise recordings (future: audio clips)
+   - Floor plans and layout descriptions
+   - Lighting conditions (natural light, fluorescent, etc.)
+   - Temperature/AC quality
+   - Restroom quality rating
+   - Parking details and photos
+   - Menu/pricing photos
+   - Power outlet locations and count
+   - Desk/table dimensions and types
+   - **Goal: enough data to recreate a 3D rendering later**
+   - All of this incentivized with FC (first-mover bonuses)
+
+3. **Taste graph as continuous collection** — NOT a long form:
+   - 2-3 quick questions every app open (Home page card)
+   - Skippable with "Skip for now"
+   - Nudge: "Your matches are X% accurate"
+   - FC reward per answer (2 FC each)
+   - Infinite question pool (never runs out)
+   - Questions should feel conversational, not form-like
+   - This-or-that, emoji pick, chip select, slider, quick text formats
+   - See Part A of this plan for full design
+
+### Recommended Next Session Order
+
+1. **Phase 1: Quick Questions** — Build the taste_questions + taste_answers
+   tables (migration), seed ~60 questions, create QuickQuestionsCard component
+   for Home page. Replace ProfilePromptCard's role. FC rewards via awardCredits.
+
+2. **Phase 2: Venue Detail Page** — Create `/venue/:id` page showing everything
+   from locations + venue_vibes + venue_contributions + session_photos + check_ins.
+   Route in App.tsx. Link from SessionMap popups and EventDetail venue name.
+
+3. **Exhaustive Data Model** — Extend venue_contributions schema for new types:
+   wall_photo, ambient_noise, lighting, temperature, restroom, desk_layout,
+   outlet_locations, menu_photo. Add `captured_at` timestamp and `time_of_day`
+   field for time-varying data (noise, lighting, temperature).
+
+4. **Map Swap Integration** — Add MapSwapToggle + lazy SessionMap to Discover
+   (show people on map) and Home (show nearby sessions on map). Events already
+   has this pattern — copy it.
+
+5. **Content Seeding** — Seed 25 HSR Layout venues via migration. Include
+   real coordinates. The user mentioned "leads we collected" but venue_partners
+   table is empty — ask user for their lead list, or research and seed known
+   popular workspaces.
+
+### Key Files for Next Session
+
+| File | Purpose |
+|------|---------|
+| `docs/MAP-WORLD-PLAN.md` | This plan — read Part A for taste engine design |
+| `src/components/map/MapSwapToggle.tsx` | Reusable map/list toggle (created, not integrated) |
+| `src/components/map/SessionMap.tsx` | Main map component (already shows venues + sessions) |
+| `src/components/ui/PhotoLightbox.tsx` | Photo lightbox (created, integrated) |
+| `src/pages/Events/index.tsx:48,58,183` | Example of map swap pattern (already working) |
+| `src/lib/venueContributions.ts` | Venue data contribution + FC awards |
+| `src/lib/focusCredits.ts` | FC economy — use awardCredits() for taste answers |
+| `src/lib/dnaCompletion.ts` | Current DNA completion calc — extend for quick questions |
+| `src/components/home/ProfilePromptCard.tsx` | Current progressive profiling — QuickQuestions replaces this |
+| `src/test/unit/mapGuards.test.ts` | Guard tests — add new guards for any new features |
+
+### Database Tables to Create (Next Session)
+
+```sql
+-- taste_questions: expandable question pool
+-- taste_answers: user answers (event-sourced)
+-- visit_summaries: materialized visit history per user per venue
+-- Extended venue_contributions types for exhaustive data
+```
+
+See Part A (taste engine) and Part B Phase 3-4 for full schema designs.
