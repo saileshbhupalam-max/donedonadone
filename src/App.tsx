@@ -49,7 +49,17 @@ const PartnerDashboard = lazy(() => import("./pages/PartnerDashboard"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const MapView = lazy(() => import("./pages/MapView"));
 const TasteGraphBuilder = lazy(() => import("./pages/TasteGraphBuilder"));
-const Settings = lazy(() => import("./pages/Settings"));
+const Settings = lazy(() => import("./pages/Settings").then(mod => {
+  console.log("[Settings lazy] module loaded:", mod);
+  console.log("[Settings lazy] default export:", mod.default, "typeof:", typeof mod.default);
+  if (typeof mod.default !== "function") {
+    console.error("[Settings lazy] DEFAULT IS NOT A FUNCTION! It is:", typeof mod.default, mod.default);
+  }
+  return mod;
+}).catch(err => {
+  console.error("[Settings lazy] CHUNK FAILED TO LOAD:", err);
+  throw err;
+}));
 const CompanyCreate = lazy(() => import("./pages/CompanyCreate"));
 const CompanyProfile = lazy(() => import("./pages/CompanyProfile"));
 const Pricing = lazy(() => import("./pages/Pricing"));
